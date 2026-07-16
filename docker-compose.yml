@@ -2,6 +2,8 @@ services:
   app:
     build: .
     restart: unless-stopped
+    environment:
+      - EXECUTOR_URL=${EXECUTOR_URL}
     expose:
       - "8000"
 
