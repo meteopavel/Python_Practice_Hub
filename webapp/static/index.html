@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Python Practice Hub — проверка кода</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 16px; }
+  select, textarea, button { font-family: inherit; font-size: 14px; }
+  textarea { width: 100%; height: 220px; box-sizing: border-box; padding: 8px; font-family: Menlo, monospace; }
+  #description { white-space: pre-wrap; background: #f5f5f5; padding: 12px; border-radius: 6px; margin: 12px 0; }
+  button { padding: 8px 16px; margin-top: 12px; cursor: pointer; }
+  button:disabled { opacity: 0.6; cursor: default; }
+  .test { padding: 8px 12px; margin: 6px 0; border-radius: 6px; }
+  .test.pass { background: #e6f4ea; }
+  .test.fail { background: #fce8e6; }
+  #summary { font-weight: bold; margin-top: 16px; }
+  pre { white-space: pre-wrap; word-break: break-word; }
+</style>
+</head>
+<body>
+<h1>Проверка кода</h1>
+<label for="task-select">Задание:</label>
+<select id="task-select"></select>
+<div id="description"></div>
+
+<p>Напиши решение в виде функции <code>solve(data)</code>:</p>
+<textarea id="code">def solve(data):
+    pass
+</textarea>
+<button id="submit-btn">Проверить</button>
+
+<div id="summary"></div>
+<div id="results"></div>
+
+<script>
+const taskSelect = document.getElementById('task-select');
+const description = document.getElementById('description');
+const codeArea = document.getElementById('code');
+const submitBtn = document.getElementById('submit-btn');
+const summary = document.getElementById('summary');
+const results = document.getElementById('results');
+
+let tasks = [];
+
+function escapeHtml(value) {
+  const div = document.createElement('div');
+  div.textContent = value === undefined ? '' : String(value);
+  return div.innerHTML;
+}
+
+async function loadTasks() {
+  const res = await fetch('/api/tasks');
+  tasks = await res.json();
+  taskSelect.innerHTML = tasks.map(t => `<option value="${t.id}">Задание ${t.id}</option>`).join('');
+  showDescription();
+}
+
+function showDescription() {
+  const task = tasks.find(t => t.id === Number(taskSelect.value));
+  description.textContent = task ? `${task.description}\nПример: ${task.example}` : '';
+}
+
+taskSelect.addEventListener('change', showDescription);
+
+submitBtn.addEventListener('click', async () => {
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Проверяю...';
+  summary.textContent = '';
+  results.innerHTML = '';
+  try {
+    const res = await fetch('/api/submit', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({task_id: Number(taskSelect.value), code: codeArea.value}),
+    });
+    const data = await res.json();
+    render(data);
+  } catch (e) {
+    summary.textContent = 'Ошибка запроса: ' + e;
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Проверить';
+  }
+});
+
+function render(data) {
+  if (data.error) {
+    summary.textContent = data.error;
+    return;
+  }
+  summary.textContent = data.all_passed
+    ? `✅ Все тесты пройдены (${data.passed}/${data.total})`
+    : `❌ Пройдено ${data.passed} из ${data.total}`;
+  results.innerHTML = data.results.map((r, i) => {
+    const input = escapeHtml(JSON.stringify(r.input));
+    if (!r.passed && r.error) {
+      return `<div class="test fail">
+        <div>Тест ${i + 1}: ❌</div>
+        <div>Вход: <code>${input}</code></div>
+        <div>Ошибка: <pre>${escapeHtml(r.error)}</pre></div>
+      </div>`;
+    }
+    return `<div class="test ${r.passed ? 'pass' : 'fail'}">
+      <div>Тест ${i + 1}: ${r.passed ? '✅' : '❌'}</div>
+      <div>Вход: <code>${input}</code></div>
+      <div>Ожидалось: <code>${escapeHtml(JSON.stringify(r.expected))}</code></div>
+      <div>Получено: <code>${escapeHtml(JSON.stringify(r.actual))}</code></div>
+    </div>`;
+  }).join('');
+}
+
+loadTasks();
+</script>
+</body>
+</html>
