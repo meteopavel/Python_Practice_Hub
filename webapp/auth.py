@@ -30,14 +30,13 @@ def current_user_id(request: Request) -> int | None:
     return request.session.get("user_id")
 
 
-def login_required_page(request: Request):
-    """Для HTML-страниц: без сессии — редирект на /login (см. main.py)."""
-    return current_user_id(request)
+def current_user_role(request: Request) -> str | None:
+    return request.session.get("role")
 
 
-def login_required_api(request: Request) -> int | JSONResponse:
-    """Для API: без сессии — 401 JSON вместо редиректа (JS ждёт JSON)."""
-    user_id = current_user_id(request)
-    if user_id is None:
-        return JSONResponse(status_code=401, content={"error": "Не авторизован"})
-    return user_id
+def unauthorized() -> JSONResponse:
+    return JSONResponse(status_code=401, content={"error": "Не авторизован"})
+
+
+def forbidden() -> JSONResponse:
+    return JSONResponse(status_code=403, content={"error": "Доступно только репетитору"})

@@ -6,17 +6,17 @@ import os
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, Form, Request
-from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
+from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from starlette.middleware.sessions import SessionMiddleware
 
-from auth import authenticate, current_user_id
+from auth import authenticate, current_user_id, current_user_role, forbidden, unauthorized
 from bot_bridge import TASKS
 from db import Base, SessionLocal, engine, get_db
 from grading import grade
-from models import Attempt
+from models import ROLE_TUTOR, Attempt, User
 from test_cases import TEST_CASES
 
 SESSION_SECRET = os.environ.get("SESSION_SECRET")
@@ -52,6 +52,7 @@ def login_submit(request: Request, username: str = Form(...), password: str = Fo
         return RedirectResponse(url="/login?error=1", status_code=303)
     request.session["user_id"] = user.id
     request.session["username"] = user.username
+    request.session["role"] = user.role
     return RedirectResponse(url="/", status_code=303)
 
 
@@ -68,10 +69,19 @@ def index(request: Request):
     return FileResponse(STATIC_DIR / "index.html")
 
 
+@app.get("/tutor")
+def tutor_page(request: Request):
+    if current_user_id(request) is None:
+        return RedirectResponse(url="/login", status_code=303)
+    if current_user_role(request) != ROLE_TUTOR:
+        return RedirectResponse(url="/", status_code=303)
+    return FileResponse(STATIC_DIR / "tutor.html")
+
+
 @app.get("/api/tasks")
 def list_tasks(request: Request):
     if current_user_id(request) is None:
-        return JSONResponse(status_code=401, content={"error": "Не авторизован"})
+        return unauthorized()
     return [
         {"id": task_id, "description": TASKS[task_id]["description"], "example": TASKS[task_id]["example"]}
         for task_id in sorted(TEST_CASES)
@@ -80,17 +90,40 @@ def list_tasks(request: Request):
 
 @app.get("/api/me")
 def me(request: Request):
-    user_id = current_user_id(request)
-    if user_id is None:
-        return JSONResponse(status_code=401, content={"error": "Не авторизован"})
-    return {"username": request.session.get("username")}
+    if current_user_id(request) is None:
+        return unauthorized()
+    return {"username": request.session.get("username"), "role": request.session.get("role")}
+
+
+@app.get("/api/attempts")
+def list_attempts(request: Request, db: Session = Depends(get_db)):
+    if current_user_id(request) is None:
+        return unauthorized()
+    if current_user_role(request) != ROLE_TUTOR:
+        return forbidden()
+    rows = (
+        db.query(Attempt, User.username)
+        .join(User, Attempt.user_id == User.id)
+        .order_by(Attempt.created_at.desc())
+        .limit(200)
+        .all()
+    )
+    return [
+        {
+            "username": username,
+            "task_id": attempt.task_id,
+            "passed": attempt.passed,
+            "created_at": attempt.created_at.isoformat() if attempt.created_at else None,
+        }
+        for attempt, username in rows
+    ]
 
 
 @app.post("/api/submit")
 def submit(payload: SubmissionRequest, request: Request, db: Session = Depends(get_db)):
     user_id = current_user_id(request)
     if user_id is None:
-        return JSONResponse(status_code=401, content={"error": "Не авторизован"})
+        return unauthorized()
 
     result = grade(payload.task_id, payload.code)
 

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Успехи учеников — Python Practice Hub</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 700px; margin: 40px auto; padding: 0 16px; }
+  table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+  th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid #ddd; }
+  .pass { color: #1a7f37; }
+  .fail { color: #b00020; }
+  a { color: inherit; }
+</style>
+</head>
+<body>
+<p><a href="/">← к проверке кода</a></p>
+<h1>Успехи учеников</h1>
+<table>
+  <thead>
+    <tr><th>Ученик</th><th>Задание</th><th>Результат</th><th>Когда</th></tr>
+  </thead>
+  <tbody id="rows"></tbody>
+</table>
+
+<script>
+async function load() {
+  const res = await fetch('/api/attempts');
+  if (res.status === 401) { window.location.href = '/login'; return; }
+  if (res.status === 403) { window.location.href = '/'; return; }
+  const rows = await res.json();
+  document.getElementById('rows').innerHTML = rows.map(r => `
+    <tr>
+      <td>${r.username}</td>
+      <td>${r.task_id}</td>
+      <td class="${r.passed ? 'pass' : 'fail'}">${r.passed ? '✅ решено' : '❌ не решено'}</td>
+      <td>${r.created_at ? new Date(r.created_at).toLocaleString('ru-RU') : ''}</td>
+    </tr>
+  `).join('');
+}
+load();
+</script>
+</body>
+</html>
