@@ -5,6 +5,7 @@ services:
     environment:
       - EXECUTOR_URL=${EXECUTOR_URL}
       - DATABASE_URL=${DATABASE_URL}
+      - SESSION_SECRET=${SESSION_SECRET}
     expose:
       - "8000"
 
