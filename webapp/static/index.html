@@ -42,11 +42,15 @@
 
   <main class="stack stack-5">
     <section class="card card-pad stack stack-4">
-      <div class="stack stack-2">
-        <span class="panel-title">Задание</span>
-        <h2 id="task-title"></h2>
+      <div class="row between">
+        <div class="stack stack-2">
+          <span class="panel-title">Задание</span>
+          <h2 id="task-title"></h2>
+        </div>
+        <button id="solution-btn" class="btn btn-sm btn-ghost" style="display: none">Показать эталон</button>
       </div>
       <div class="task-desc muted" id="description"></div>
+      <pre class="block" id="solution-code" style="display: none"></pre>
     </section>
 
     <section class="stack stack-3">
@@ -85,6 +89,8 @@ const submitBtn = document.getElementById('submit-btn');
 const summary = document.getElementById('summary');
 const results = document.getElementById('results');
 const resultsSection = document.getElementById('results-section');
+const solutionBtn = document.getElementById('solution-btn');
+const solutionCode = document.getElementById('solution-code');
 
 let tasks = [];
 let currentTaskId = null;
@@ -112,6 +118,7 @@ async function loadMe() {
   document.getElementById('avatar').textContent = (data.username || '?').slice(0, 2).toUpperCase();
   if (data.role === 'tutor') {
     document.getElementById('tutor-link').style.display = 'inline-flex';
+    solutionBtn.style.display = 'inline-flex';
   }
 }
 
@@ -154,7 +161,33 @@ function showDescription() {
   description.innerHTML = task
     ? `<p>${escapeHtml(task.description)}</p><p><strong style="color: var(--c-text)">Пример:</strong> ${escapeHtml(task.example)}</p>`
     : '';
+  solutionCode.style.display = 'none';
+  solutionCode.textContent = '';
+  solutionBtn.textContent = 'Показать эталон';
 }
+
+solutionBtn.addEventListener('click', async () => {
+  if (currentTaskId === null) return;
+  const isHidden = solutionCode.style.display === 'none';
+  if (!isHidden) {
+    solutionCode.style.display = 'none';
+    solutionBtn.textContent = 'Показать эталон';
+    return;
+  }
+  if (!solutionCode.textContent) {
+    solutionBtn.disabled = true;
+    try {
+      const res = await fetch(`/api/solution/${currentTaskId}`);
+      if (redirectToLoginIfUnauthorized(res)) return;
+      const data = await res.json();
+      solutionCode.textContent = data.error || data.source;
+    } finally {
+      solutionBtn.disabled = false;
+    }
+  }
+  solutionCode.style.display = 'block';
+  solutionBtn.textContent = 'Скрыть эталон';
+});
 
 submitBtn.addEventListener('click', async () => {
   if (currentTaskId === null) return;

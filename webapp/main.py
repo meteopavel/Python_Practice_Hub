@@ -2,18 +2,19 @@
 """FastAPI-приложение веб-грейдера. Оболочка: отдаёт список заданий,
 логин/сессию и принимает решение ученика. Вся логика проверки —
 в grading.py/sandbox.py, вся модель данных — в models.py."""
+import inspect
 import os
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, Form, Request
-from fastapi.responses import FileResponse, RedirectResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from starlette.middleware.sessions import SessionMiddleware
 
 from auth import authenticate, current_user_id, current_user_role, forbidden, unauthorized
-from bot_bridge import TASKS
+from bot_bridge import TASKS, get_solver
 from db import Base, SessionLocal, engine, get_db
 from grading import grade
 from models import ROLE_TUTOR, Attempt, User
@@ -86,6 +87,18 @@ def list_tasks(request: Request):
         {"id": task_id, "description": TASKS[task_id]["description"], "example": TASKS[task_id]["example"]}
         for task_id in sorted(TEST_CASES)
     ]
+
+
+@app.get("/api/solution/{task_id}")
+def get_solution(task_id: int, request: Request):
+    if current_user_id(request) is None:
+        return unauthorized()
+    if current_user_role(request) != ROLE_TUTOR:
+        return forbidden()
+    oracle = get_solver(task_id)
+    if oracle is None:
+        return JSONResponse(status_code=404, content={"error": f"Эталон для задания {task_id} не найден"})
+    return {"task_id": task_id, "source": inspect.getsource(oracle)}
 
 
 @app.get("/api/me")
