@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Дизайн-система — Информатика ОГЭ/ЕГЭ</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .ds { padding-block: var(--space-6); }
+    .ds section { margin-bottom: var(--space-8); }
+    .ds h2 { margin-bottom: var(--space-2); }
+    .ds .lead { color: var(--c-text-muted); margin-bottom: var(--space-5); max-width: 60ch; }
+    .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--space-3); }
+    .sw { border: 1px solid var(--c-border); border-radius: var(--radius-md); overflow: hidden; }
+    .sw .chip-color { height: 56px; }
+    .sw .sw-meta { padding: var(--space-2) var(--space-3); font-size: var(--fs-sm); }
+    .sw .sw-meta b { display: block; }
+    .sw .sw-meta code { font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--c-text-muted); }
+    .ratio { font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--c-pass); }
+    .type-row { display: flex; align-items: baseline; gap: var(--space-4); padding: var(--space-3) 0; border-bottom: 1px solid var(--c-border); }
+    .type-row .tk { font-family: var(--font-mono); font-size: var(--fs-sm); color: var(--c-text-muted); width: 130px; flex-shrink: 0; }
+    .space-demo { display: flex; align-items: flex-end; gap: var(--space-3); flex-wrap: wrap; }
+    .space-demo .bar { background: var(--c-primary-soft); border: 1px solid color-mix(in srgb, var(--c-primary) 30%, transparent); border-radius: var(--radius-sm); }
+    .space-demo .cap { font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--c-text-muted); text-align: center; margin-top: 4px; }
+    .demo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--space-5); }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand"><span class="brand-mark">&lt;/&gt;</span> Дизайн-система</div>
+    <div class="header-spacer"></div>
+    <span class="muted">Python Practice Hub · v1</span>
+  </header>
+
+  <div class="container ds">
+    <section>
+      <h1>Дизайн-система</h1>
+      <p class="lead" style="margin-top:var(--space-3)">
+        Спокойный, «серьёзный edtech». Холодные нейтрали + один синий акцент.
+        Всё построено на CSS-переменных из <code class="inline">styles.css</code>.
+        Тёмная тема включается автоматически через <code class="inline">prefers-color-scheme</code> —
+        переключите тему ОС, чтобы проверить эту же страницу.
+      </p>
+    </section>
+
+    <!-- ПАЛИТРА -->
+    <section>
+      <h2>Палитра</h2>
+      <p class="lead">Контраст проверен по WCAG 2.1 на светлой теме. Основной текст и акцент проходят AA (≥4.5:1), крупные элементы — AAA.</p>
+
+      <h4 style="margin-bottom:var(--space-3)">Нейтрали и текст</h4>
+      <div class="swatches" style="margin-bottom:var(--space-5)">
+        <div class="sw"><div class="chip-color" style="background:var(--c-bg)"></div><div class="sw-meta"><b>Фон</b><code>--c-bg</code></div></div>
+        <div class="sw"><div class="chip-color" style="background:var(--c-surface)"></div><div class="sw-meta"><b>Поверхность</b><code>--c-surface</code></div></div>
+        <div class="sw"><div class="chip-color" style="background:var(--c-border-strong)"></div><div class="sw-meta"><b>Граница</b><code>--c-border-strong</code></div></div>
+        <div class="sw"><div class="chip-color" style="background:var(--c-text)"></div><div class="sw-meta"><b>Текст</b><code>--c-text</code> · <span class="ratio">15:1</span></div></div>
+        <div class="sw"><div class="chip-color" style="background:var(--c-text-muted)"></div><div class="sw-meta"><b>Текст 2</b><code>--c-text-muted</code> · <span class="ratio">5.9:1</span></div></div>
+      </div>
+
+      <h4 style="margin-bottom:var(--space-3)">Акцент и семантика</h4>
+      <div class="swatches">
+        <div class="sw"><div class="chip-color" style="background:var(--c-primary)"></div><div class="sw-meta"><b>Акцент</b><code>--c-primary</code> · <span class="ratio">бел. 5.6:1</span></div></div>
+        <div class="sw"><div class="chip-color" style="background:var(--c-pass-solid)"></div><div class="sw-meta"><b>Pass</b><code>--c-pass-solid</code></div></div>
+        <div class="sw"><div class="chip-color" style="background:var(--c-fail-solid)"></div><div class="sw-meta"><b>Fail</b><code>--c-fail-solid</code></div></div>
+        <div class="sw"><div class="chip-color" style="background:var(--c-warn)"></div><div class="sw-meta"><b>Warn</b><code>--c-warn</code></div></div>
+        <div class="sw"><div class="chip-color" style="background:var(--c-code-bg)"></div><div class="sw-meta"><b>Код</b><code>--c-code-bg</code></div></div>
+      </div>
+    </section>
+
+    <!-- ТИПОГРАФИКА -->
+    <section>
+      <h2>Типографика</h2>
+      <p class="lead">Системный шрифт (<code class="inline">system-ui</code>) для интерфейса — быстрый, знакомый, без внешних зависимостей. Моноширинный — для кода и чисел.</p>
+      <div class="card card-pad">
+        <div class="type-row"><span class="tk">--fs-3xl / bold</span><span style="font-size:var(--fs-3xl);font-weight:700;letter-spacing:-.01em">Наибольший делитель</span></div>
+        <div class="type-row"><span class="tk">--fs-2xl / 600</span><h2 style="margin:0">Успеваемость учеников</h2></div>
+        <div class="type-row"><span class="tk">--fs-xl / 600</span><h3 style="margin:0">Заголовок задания</h3></div>
+        <div class="type-row"><span class="tk">--fs-md / 400</span><span>Базовый текст интерфейса — 15px, высота строки 1.55.</span></div>
+        <div class="type-row"><span class="tk">--fs-sm / muted</span><span class="muted">Вторичная подпись, мета-информация.</span></div>
+        <div class="type-row" style="border:0"><span class="tk">--font-mono</span><span class="mono">n = int(input())  # 12 → 6</span></div>
+      </div>
+    </section>
+
+    <!-- ОТСТУПЫ -->
+    <section>
+      <h2>Отступы и сетка</h2>
+      <p class="lead">Шаг 4px. Контейнер — максимум 1120px, боковые поля 24px.</p>
+      <div class="space-demo">
+        <div><div class="bar" style="width:4px;height:32px"></div><div class="cap">4</div></div>
+        <div><div class="bar" style="width:8px;height:32px"></div><div class="cap">8</div></div>
+        <div><div class="bar" style="width:12px;height:32px"></div><div class="cap">12</div></div>
+        <div><div class="bar" style="width:16px;height:32px"></div><div class="cap">16</div></div>
+        <div><div class="bar" style="width:24px;height:32px"></div><div class="cap">24</div></div>
+        <div><div class="bar" style="width:32px;height:32px"></div><div class="cap">32</div></div>
+        <div><div class="bar" style="width:48px;height:32px"></div><div class="cap">48</div></div>
+        <div><div class="bar" style="width:64px;height:32px"></div><div class="cap">64</div></div>
+      </div>
+    </section>
+
+    <!-- КОМПОНЕНТЫ -->
+    <section>
+      <h2>Компоненты</h2>
+      <div class="demo-grid">
+        <!-- Кнопки -->
+        <div class="card card-pad stack stack-3">
+          <span class="panel-title">Кнопки</span>
+          <div class="row wrap"><button class="btn btn-primary">Проверить</button><button class="btn">Сбросить</button><button class="btn btn-ghost">Отмена</button></div>
+          <div class="row wrap"><button class="btn btn-primary btn-sm">Малая</button><button class="btn btn-lg">Большая</button><button class="btn" disabled>Недоступна</button></div>
+        </div>
+
+        <!-- Поля -->
+        <div class="card card-pad stack stack-3">
+          <span class="panel-title">Поля ввода</span>
+          <div class="field"><label class="label">Логин</label><input class="input" placeholder="ivan.petrov" /></div>
+          <div class="field"><label class="label">Задание</label><select class="select"><option>Наибольший делитель</option></select></div>
+        </div>
+
+        <!-- Бейджи -->
+        <div class="card card-pad stack stack-3">
+          <span class="panel-title">Индикаторы</span>
+          <div class="row wrap"><span class="badge badge-pass">Пройден</span><span class="badge badge-fail">Не пройден</span><span class="badge badge-warn">Выполняется</span><span class="badge badge-neutral">Не начато</span></div>
+          <div class="result-summary is-fail"><span class="count">3 / 4</span><span>тестов пройдено</span></div>
+        </div>
+
+        <!-- Карточка задания -->
+        <div class="card card-pad stack stack-3">
+          <span class="panel-title">Карточка задания</span>
+          <div class="task-list">
+            <button class="task-item is-active"><span class="task-item-num">3</span><span class="task-item-body"><span class="task-item-title">Наибольший делитель</span><span class="task-item-meta">Средний · ЕГЭ №15</span></span><span class="task-item-status"><span class="dot dot-fail"></span></span></button>
+            <button class="task-item"><span class="task-item-num">1</span><span class="task-item-body"><span class="task-item-title">Сумма двух чисел</span><span class="task-item-meta">Базовый</span></span><span class="task-item-status"><span class="dot dot-pass"></span></span></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Блок кода + тест -->
+      <div class="demo-grid" style="margin-top:var(--space-5)">
+        <div class="stack stack-3">
+          <span class="panel-title">Редактор кода</span>
+          <div class="code-editor">
+            <div class="code-editor-bar"><span>main.py</span><span style="margin-left:auto">Python 3.11</span></div>
+            <textarea class="code-textarea" spellcheck="false" style="min-height:150px">n = int(input())
+print(n // 2)</textarea>
+          </div>
+        </div>
+        <div class="stack stack-3">
+          <span class="panel-title">Тест-кейс</span>
+          <div class="test-case is-fail">
+            <div class="test-case-head"><span class="test-case-name">Тест 3</span><span class="badge badge-fail">Не пройден</span></div>
+            <dl class="test-io"><dt>Вход</dt><dd>17</dd><dt>Ожидалось</dt><dd>1</dd><dt>Получено</dt><dd class="diff-got">17</dd></dl>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Реальные экраны</h2>
+      <div class="row wrap">
+        <a class="btn" href="/login">Страница входа →</a>
+        <a class="btn" href="/">Экран ученика →</a>
+        <a class="btn" href="/tutor">Экран репетитора →</a>
+      </div>
+    </section>
+  </div>
+</body>
+</html>

@@ -2,41 +2,126 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Успехи учеников — Python Practice Hub</title>
+<link rel="stylesheet" href="/static/styles.css">
 <style>
-  body { font-family: system-ui, sans-serif; max-width: 700px; margin: 40px auto; padding: 0 16px; }
-  table { width: 100%; border-collapse: collapse; margin-top: 16px; }
-  th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid #ddd; }
-  .pass { color: #1a7f37; }
-  .fail { color: #b00020; }
-  a { color: inherit; }
+  .tutor-main { padding-block: var(--space-5); }
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-4);
+    margin-bottom: var(--space-5);
+  }
+  @media (max-width: 720px) { .stat-grid { grid-template-columns: 1fr; } }
+  .stat .stat-num { font-size: var(--fs-2xl); font-weight: var(--fw-bold); letter-spacing: -0.02em; }
+  .stat .stat-label { font-size: var(--fs-sm); color: var(--c-text-muted); }
+  .toolbar { display: flex; gap: var(--space-3); align-items: center; margin-bottom: var(--space-4); flex-wrap: wrap; }
+  .toolbar .input { max-width: 260px; }
 </style>
 </head>
 <body>
-<p><a href="/">← к проверке кода</a></p>
-<h1>Успехи учеников</h1>
-<table>
-  <thead>
-    <tr><th>Ученик</th><th>Задание</th><th>Результат</th><th>Когда</th></tr>
-  </thead>
-  <tbody id="rows"></tbody>
-</table>
+<header class="app-header">
+  <div class="brand"><span class="brand-mark">&lt;/&gt;</span> Python Practice Hub</div>
+  <span class="chip" style="background: var(--c-primary-soft); color: var(--c-primary)">Репетитор</span>
+  <div class="header-spacer"></div>
+  <a class="btn btn-sm btn-ghost" href="/">← к проверке кода</a>
+</header>
+
+<div class="container tutor-main">
+  <div class="stack stack-2" style="margin-bottom: var(--space-5)">
+    <h1 style="font-size: var(--fs-2xl)">Успехи учеников</h1>
+    <p class="muted">Последние попытки решения</p>
+  </div>
+
+  <div class="stat-grid">
+    <div class="card card-pad stat"><div class="stat-num" id="stat-students">—</div><div class="stat-label">учеников</div></div>
+    <div class="card card-pad stat"><div class="stat-num" id="stat-attempts">—</div><div class="stat-label">попыток</div></div>
+    <div class="card card-pad stat"><div class="stat-num" id="stat-passrate" style="color: var(--c-pass)">—</div><div class="stat-label">решено верно</div></div>
+  </div>
+
+  <div class="toolbar">
+    <input class="input" type="search" id="filter-student" placeholder="Поиск по ученику…">
+    <select class="select" id="filter-task" style="max-width: 200px">
+      <option value="">Все задания</option>
+    </select>
+    <select class="select" id="filter-result" style="max-width: 180px">
+      <option value="">Все результаты</option>
+      <option value="pass">Пройдено</option>
+      <option value="fail">Ошибки</option>
+    </select>
+  </div>
+
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr><th>Ученик</th><th>Задание</th><th>Результат</th><th class="col-right">Когда</th></tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+</div>
 
 <script>
+let attempts = [];
+
+function initials(name) {
+  return (name || '?').slice(0, 2).toUpperCase();
+}
+
 async function load() {
   const res = await fetch('/api/attempts');
   if (res.status === 401) { window.location.href = '/login'; return; }
   if (res.status === 403) { window.location.href = '/'; return; }
-  const rows = await res.json();
-  document.getElementById('rows').innerHTML = rows.map(r => `
+  attempts = await res.json();
+  renderStats();
+  renderTaskFilter();
+  renderRows();
+}
+
+function renderStats() {
+  const students = new Set(attempts.map(a => a.username));
+  const passed = attempts.filter(a => a.passed).length;
+  document.getElementById('stat-students').textContent = students.size;
+  document.getElementById('stat-attempts').textContent = attempts.length;
+  document.getElementById('stat-passrate').textContent =
+    attempts.length ? Math.round((passed / attempts.length) * 100) + '%' : '—';
+}
+
+function renderTaskFilter() {
+  const taskIds = [...new Set(attempts.map(a => a.task_id))].sort((a, b) => a - b);
+  const select = document.getElementById('filter-task');
+  select.innerHTML = '<option value="">Все задания</option>' +
+    taskIds.map(id => `<option value="${id}">Задание ${id}</option>`).join('');
+}
+
+function renderRows() {
+  const studentFilter = document.getElementById('filter-student').value.trim().toLowerCase();
+  const taskFilter = document.getElementById('filter-task').value;
+  const resultFilter = document.getElementById('filter-result').value;
+
+  const filtered = attempts.filter(a => {
+    if (studentFilter && !a.username.toLowerCase().includes(studentFilter)) return false;
+    if (taskFilter && String(a.task_id) !== taskFilter) return false;
+    if (resultFilter === 'pass' && !a.passed) return false;
+    if (resultFilter === 'fail' && a.passed) return false;
+    return true;
+  });
+
+  document.getElementById('rows').innerHTML = filtered.map(r => `
     <tr>
-      <td>${r.username}</td>
-      <td>${r.task_id}</td>
-      <td class="${r.passed ? 'pass' : 'fail'}">${r.passed ? '✅ решено' : '❌ не решено'}</td>
-      <td>${r.created_at ? new Date(r.created_at).toLocaleString('ru-RU') : ''}</td>
+      <td><span class="avatar">${initials(r.username)}</span>${r.username}</td>
+      <td>Задание ${r.task_id}</td>
+      <td><span class="badge ${r.passed ? 'badge-pass' : 'badge-fail'}">${r.passed ? 'Пройдено' : 'Ошибки'}</span></td>
+      <td class="col-right num muted">${r.created_at ? new Date(r.created_at).toLocaleString('ru-RU') : ''}</td>
     </tr>
   `).join('');
 }
+
+document.getElementById('filter-student').addEventListener('input', renderRows);
+document.getElementById('filter-task').addEventListener('change', renderRows);
+document.getElementById('filter-result').addEventListener('change', renderRows);
+
 load();
 </script>
 </body>

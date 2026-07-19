@@ -2,54 +2,93 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Python Practice Hub — проверка кода</title>
+<link rel="stylesheet" href="/static/styles.css">
 <style>
-  body { font-family: system-ui, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 16px; }
-  select, textarea, button { font-family: inherit; font-size: 14px; }
-  textarea { width: 100%; height: 220px; box-sizing: border-box; padding: 8px; font-family: Menlo, monospace; }
-  #description { white-space: pre-wrap; background: #f5f5f5; padding: 12px; border-radius: 6px; margin: 12px 0; }
-  button { padding: 8px 16px; margin-top: 12px; cursor: pointer; }
-  button:disabled { opacity: 0.6; cursor: default; }
-  .test { padding: 8px 12px; margin: 6px 0; border-radius: 6px; }
-  .test.pass { background: #e6f4ea; }
-  .test.fail { background: #fce8e6; }
-  #summary { font-weight: bold; margin-top: 16px; }
-  pre { white-space: pre-wrap; word-break: break-word; }
+  .student-layout {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: var(--space-5);
+    align-items: start;
+    padding-block: var(--space-5);
+  }
+  .task-sidebar { position: sticky; top: 76px; }
+  @media (max-width: 900px) {
+    .student-layout { grid-template-columns: 1fr; }
+    .task-sidebar { position: static; }
+  }
+  .task-desc p { margin: 0 0 var(--space-3); white-space: pre-wrap; }
+  .task-desc p:last-child { margin-bottom: 0; }
 </style>
 </head>
 <body>
-<div style="display: flex; justify-content: space-between; align-items: center;">
-  <h1>Проверка кода</h1>
-  <div>
-    <span id="username"></span>
-    <a id="tutor-link" href="/tutor" style="display: none; margin-right: 8px;">Успехи учеников</a>
-    <form method="post" action="/logout" style="display: inline;">
-      <button type="submit">Выйти</button>
-    </form>
-  </div>
-</div>
-<label for="task-select">Задание:</label>
-<select id="task-select"></select>
-<div id="description"></div>
+<header class="app-header">
+  <div class="brand"><span class="brand-mark">&lt;/&gt;</span> Python Practice Hub</div>
+  <div class="header-spacer"></div>
+  <a id="tutor-link" class="btn btn-sm" href="/tutor" style="display: none;">Успехи учеников</a>
+  <span class="muted" id="username"></span>
+  <span class="avatar" id="avatar"></span>
+  <form method="post" action="/logout" style="display: inline; margin: 0;">
+    <button class="btn btn-sm btn-ghost" type="submit">Выйти</button>
+  </form>
+</header>
 
-<p>Напиши решение в виде функции <code>solve(data)</code>:</p>
-<textarea id="code">def solve(data):
+<div class="container student-layout">
+  <aside class="task-sidebar card card-pad stack stack-4">
+    <span class="panel-title">Задания</span>
+    <nav class="task-list" id="task-list"></nav>
+  </aside>
+
+  <main class="stack stack-5">
+    <section class="card card-pad stack stack-4">
+      <div class="stack stack-2">
+        <span class="panel-title">Задание</span>
+        <h2 id="task-title"></h2>
+      </div>
+      <div class="task-desc muted" id="description"></div>
+    </section>
+
+    <section class="stack stack-3">
+      <div class="row between">
+        <span class="panel-title">Ваше решение · Python 3</span>
+      </div>
+      <p class="muted" style="margin: 0">Напишите решение в виде функции <code class="inline">solve(data)</code>:</p>
+      <div class="code-editor">
+        <div class="code-editor-bar">
+          <span>solution.py</span>
+        </div>
+        <textarea class="code-textarea" id="code" spellcheck="false">def solve(data):
     pass
 </textarea>
-<button id="submit-btn">Проверить</button>
+      </div>
+      <div class="row between wrap">
+        <span class="muted" style="font-size: var(--fs-sm)">Код выполняется на сервере в изолированной среде.</span>
+        <button class="btn btn-primary" id="submit-btn">Проверить</button>
+      </div>
+    </section>
 
-<div id="summary"></div>
-<div id="results"></div>
+    <section class="stack stack-4" id="results-section" style="display: none">
+      <span class="panel-title">Результаты проверки</span>
+      <div id="summary"></div>
+      <div class="test-list" id="results"></div>
+    </section>
+  </main>
+</div>
 
 <script>
-const taskSelect = document.getElementById('task-select');
+const taskList = document.getElementById('task-list');
 const description = document.getElementById('description');
+const taskTitle = document.getElementById('task-title');
 const codeArea = document.getElementById('code');
 const submitBtn = document.getElementById('submit-btn');
 const summary = document.getElementById('summary');
 const results = document.getElementById('results');
+const resultsSection = document.getElementById('results-section');
 
 let tasks = [];
+let currentTaskId = null;
+const taskStatus = {}; // client-side only, resets on reload: id -> 'pass' | 'fail'
 
 function escapeHtml(value) {
   const div = document.createElement('div');
@@ -70,8 +109,9 @@ async function loadMe() {
   if (redirectToLoginIfUnauthorized(res)) return;
   const data = await res.json();
   document.getElementById('username').textContent = data.username || '';
+  document.getElementById('avatar').textContent = (data.username || '?').slice(0, 2).toUpperCase();
   if (data.role === 'tutor') {
-    document.getElementById('tutor-link').style.display = 'inline';
+    document.getElementById('tutor-link').style.display = 'inline-flex';
   }
 }
 
@@ -79,33 +119,61 @@ async function loadTasks() {
   const res = await fetch('/api/tasks');
   if (redirectToLoginIfUnauthorized(res)) return;
   tasks = await res.json();
-  taskSelect.innerHTML = tasks.map(t => `<option value="${t.id}">Задание ${t.id}</option>`).join('');
+  currentTaskId = tasks.length ? tasks[0].id : null;
+  renderTaskList();
   showDescription();
 }
 
-function showDescription() {
-  const task = tasks.find(t => t.id === Number(taskSelect.value));
-  description.textContent = task ? `${task.description}\nПример: ${task.example}` : '';
+function renderTaskList() {
+  taskList.innerHTML = tasks.map(t => {
+    const status = taskStatus[t.id];
+    const dotClass = status === 'pass' ? 'dot-pass' : status === 'fail' ? 'dot-fail' : 'dot-none';
+    const activeClass = t.id === currentTaskId ? ' is-active' : '';
+    const preview = t.description.length > 42 ? t.description.slice(0, 42) + '…' : t.description;
+    return `<button class="task-item${activeClass}" data-id="${t.id}">
+      <span class="task-item-num">${t.id}</span>
+      <span class="task-item-body">
+        <span class="task-item-title">${escapeHtml(preview)}</span>
+      </span>
+      <span class="task-item-status"><span class="dot ${dotClass}"></span></span>
+    </button>`;
+  }).join('');
+  taskList.querySelectorAll('.task-item').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentTaskId = Number(btn.dataset.id);
+      renderTaskList();
+      showDescription();
+      resultsSection.style.display = 'none';
+    });
+  });
 }
 
-taskSelect.addEventListener('change', showDescription);
+function showDescription() {
+  const task = tasks.find(t => t.id === currentTaskId);
+  taskTitle.textContent = task ? `Задание ${task.id}` : '';
+  description.innerHTML = task
+    ? `<p>${escapeHtml(task.description)}</p><p><strong style="color: var(--c-text)">Пример:</strong> ${escapeHtml(task.example)}</p>`
+    : '';
+}
 
 submitBtn.addEventListener('click', async () => {
+  if (currentTaskId === null) return;
   submitBtn.disabled = true;
   submitBtn.textContent = 'Проверяю...';
-  summary.textContent = '';
+  summary.innerHTML = '';
   results.innerHTML = '';
   try {
     const res = await fetch('/api/submit', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({task_id: Number(taskSelect.value), code: codeArea.value}),
+      body: JSON.stringify({task_id: currentTaskId, code: codeArea.value}),
     });
     if (redirectToLoginIfUnauthorized(res)) return;
     const data = await res.json();
     render(data);
   } catch (e) {
-    summary.textContent = 'Ошибка запроса: ' + e;
+    resultsSection.style.display = 'block';
+    summary.innerHTML = `<div class="result-summary is-fail"><span>Ошибка запроса: ${escapeHtml(String(e))}</span></div>`;
   } finally {
     submitBtn.disabled = false;
     submitBtn.textContent = 'Проверить';
@@ -113,27 +181,46 @@ submitBtn.addEventListener('click', async () => {
 });
 
 function render(data) {
+  resultsSection.style.display = 'block';
+
   if (data.error) {
-    summary.textContent = data.error;
+    summary.innerHTML = `<div class="result-summary is-fail"><span>${escapeHtml(data.error)}</span></div>`;
+    results.innerHTML = '';
     return;
   }
-  summary.textContent = data.all_passed
-    ? `✅ Все тесты пройдены (${data.passed}/${data.total})`
-    : `❌ Пройдено ${data.passed} из ${data.total}`;
+
+  taskStatus[currentTaskId] = data.all_passed ? 'pass' : 'fail';
+  renderTaskList();
+
+  summary.innerHTML = `<div class="result-summary ${data.all_passed ? 'is-pass' : 'is-fail'}">
+    <span class="count">${data.passed} / ${data.total}</span>
+    <span>${data.all_passed ? 'Все тесты пройдены' : 'Есть ошибки'}</span>
+  </div>`;
+
   results.innerHTML = data.results.map((r, i) => {
     const input = escapeHtml(JSON.stringify(r.input));
     if (!r.passed && r.error) {
-      return `<div class="test fail">
-        <div>Тест ${i + 1}: ❌</div>
-        <div>Вход: <code>${input}</code></div>
-        <div>Ошибка: <pre>${escapeHtml(r.error)}</pre></div>
+      return `<div class="test-case is-fail">
+        <div class="test-case-head">
+          <span class="test-case-name">Тест ${i + 1}</span>
+          <span class="badge badge-fail">Ошибка</span>
+        </div>
+        <dl class="test-io">
+          <dt>Вход</dt><dd>${input}</dd>
+          <dt>Ошибка</dt><dd class="diff-got">${escapeHtml(r.error)}</dd>
+        </dl>
       </div>`;
     }
-    return `<div class="test ${r.passed ? 'pass' : 'fail'}">
-      <div>Тест ${i + 1}: ${r.passed ? '✅' : '❌'}</div>
-      <div>Вход: <code>${input}</code></div>
-      <div>Ожидалось: <code>${escapeHtml(JSON.stringify(r.expected))}</code></div>
-      <div>Получено: <code>${escapeHtml(JSON.stringify(r.actual))}</code></div>
+    return `<div class="test-case ${r.passed ? 'is-pass' : 'is-fail'}">
+      <div class="test-case-head">
+        <span class="test-case-name">Тест ${i + 1}</span>
+        <span class="badge ${r.passed ? 'badge-pass' : 'badge-fail'}">${r.passed ? 'Пройден' : 'Не пройден'}</span>
+      </div>
+      <dl class="test-io">
+        <dt>Вход</dt><dd>${input}</dd>
+        <dt>Ожидалось</dt><dd>${escapeHtml(JSON.stringify(r.expected))}</dd>
+        <dt>Получено</dt><dd class="${r.passed ? '' : 'diff-got'}">${escapeHtml(JSON.stringify(r.actual))}</dd>
+      </dl>
     </div>`;
   }).join('');
 }

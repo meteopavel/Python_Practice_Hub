@@ -2,27 +2,54 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Вход — Python Practice Hub</title>
+<link rel="stylesheet" href="/static/styles.css">
 <style>
-  body { font-family: system-ui, sans-serif; max-width: 360px; margin: 80px auto; padding: 0 16px; }
-  label { display: block; margin-top: 12px; font-size: 14px; }
-  input { width: 100%; box-sizing: border-box; padding: 8px; font-size: 14px; margin-top: 4px; }
-  button { width: 100%; padding: 10px; margin-top: 20px; cursor: pointer; }
-  .error { color: #b00020; margin-top: 12px; }
+  .auth-page {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: var(--space-5);
+  }
+  .auth-card { width: 100%; max-width: 400px; }
+  .auth-head { text-align: center; margin-bottom: var(--space-6); }
+  .auth-head .brand-mark { width: 44px; height: 44px; font-size: 20px; margin: 0 auto var(--space-4); }
+  .auth-head h1 { font-size: var(--fs-xl); }
 </style>
 </head>
 <body>
-<h1>Вход</h1>
-<form method="post" action="/login">
-  <label>Логин
-    <input type="text" name="username" autocomplete="username" required autofocus>
-  </label>
-  <label>Пароль
-    <input type="password" name="password" autocomplete="current-password" required>
-  </label>
-  <button type="submit">Войти</button>
-</form>
-<div class="error" id="error" style="display: none;">Неверный логин или пароль</div>
+<main class="auth-page">
+  <div class="auth-card">
+    <div class="auth-head">
+      <div class="brand-mark">&lt;/&gt;</div>
+      <h1>Вход в платформу</h1>
+      <p class="muted">Python Practice Hub · подготовка к ОГЭ и ЕГЭ</p>
+    </div>
+
+    <form class="card card-pad stack stack-4" method="post" action="/login">
+      <div class="field">
+        <label class="label" for="username">Логин</label>
+        <input class="input" id="username" name="username" type="text" autocomplete="username" required autofocus>
+      </div>
+
+      <div class="field">
+        <label class="label" for="password">Пароль</label>
+        <input class="input" id="password" name="password" type="password" autocomplete="current-password" required>
+      </div>
+
+      <button class="btn btn-primary btn-lg btn-block" type="submit">Войти</button>
+
+      <p class="field-error" id="error" style="display: none; text-align: center; margin: 0">
+        Неверный логин или пароль
+      </p>
+
+      <p class="field-hint" style="text-align: center; margin: 0">
+        Нет доступа? Обратитесь к своему репетитору.
+      </p>
+    </form>
+  </div>
+</main>
 <script>
   if (new URLSearchParams(window.location.search).get('error')) {
     document.getElementById('error').style.display = 'block';
