@@ -395,7 +395,7 @@ a:hover { color: var(--c-primary-hover); text-decoration: underline; }
 }
 .task-item.is-active .task-item-num { color: var(--c-primary); background: var(--c-surface); }
 .task-item-body { min-width: 0; flex: 1; }
-.task-item-title { font-weight: var(--fw-medium); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.task-item-title { display: block; font-weight: var(--fw-medium); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .task-item-meta  { font-size: var(--fs-sm); color: var(--c-text-muted); }
 .task-item-status { flex-shrink: 0; }
 .task-item-status .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
