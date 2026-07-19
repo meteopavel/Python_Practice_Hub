@@ -1,0 +1,156 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-19T09:21:10.059519+00:00",
+  "generator": "tools/extract_api_map.py",
+  "target": "executor",
+  "scanned_python_files": 2,
+  "files_count": 2,
+  "skipped_files_count": 0,
+  "skipped_files": [],
+  "stats": {
+    "modules": 2,
+    "classes": 1,
+    "dataclasses": 0,
+    "functions": 4,
+    "methods": 0,
+    "constants": 5
+  },
+  "modules": [
+    {
+      "path": "executor/main.py",
+      "module_docstring": "Исполнитель — работает только внутри тоннеля (10.0.0.1 на роутере),\nнаружу не смотрит. Единственная задача: безопасно прогнать код ученика\nи вернуть результат. Ничего не знает про задания/эталоны — это забота\nфронта (webapp/), который живёт на Frankfurt.",
+      "module_summary": "Исполнитель — работает только внутри тоннеля (10.0.0.1 на роутере),",
+      "classes": [
+        {
+          "name": "RunRequest",
+          "signature": "RunRequest(BaseModel)",
+          "docstring": null,
+          "summary": null,
+          "kind": "class",
+          "bases": [
+            "BaseModel"
+          ],
+          "decorators": [],
+          "fields": [
+            {
+              "name": "code",
+              "annotation": "str",
+              "value_repr": null,
+              "lineno": 15
+            },
+            {
+              "name": "test_input",
+              "annotation": "object",
+              "value_repr": null,
+              "lineno": 16
+            }
+          ],
+          "methods": [],
+          "lineno": 14,
+          "end_lineno": 16
+        }
+      ],
+      "functions": [
+        {
+          "name": "run",
+          "signature": "run(payload: RunRequest)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [
+            "app.post('/run')"
+          ],
+          "lineno": 20,
+          "end_lineno": 21
+        },
+        {
+          "name": "health",
+          "signature": "health()",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [
+            "app.get('/health')"
+          ],
+          "lineno": 25,
+          "end_lineno": 26
+        }
+      ],
+      "constants": [],
+      "stats": {
+        "classes": 1,
+        "dataclasses": 0,
+        "functions": 2,
+        "methods": 0,
+        "constants": 0
+      }
+    },
+    {
+      "path": "executor/sandbox.py",
+      "module_docstring": "Исполнение кода ученика в изолированном процессе.\n\nЭто ядро проверки: код ученика никогда не выполняется в процессе веб-сервера.\nОн пишется во временный файл, оборачивается в харнесс, который читает вход из\nstdin и печатает результат в JSON, и запускается отдельным интерпретатором\npython с ограничением по времени, по памяти и с урезанным окружением (чтобы\nкод ученика не мог прочитать переменные окружения сервера, например токены).\n\nЧто сознательно НЕ сделано на этом шаге (осознанный пробел под MVP,\nне притворяемся, что его нет): нет сетевой/файловой изоляции (контейнер),\nкод ученика технически может пойти в сеть или потрогать диск. Это приемлемо,\nпока грейдер гоняется локально с одним учеником; для облачного деплоя это\nдолжно быть обёрнуто в Docker (--network none, read-only rootfs) — тот шаг\nописан в плане платформы и пока не реализован специально, чтобы не\nвайбкодить ядро вслепую.",
+      "module_summary": "Исполнение кода ученика в изолированном процессе.",
+      "classes": [],
+      "functions": [
+        {
+          "name": "_limit_resources",
+          "signature": "_limit_resources()",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 50,
+          "end_lineno": 60
+        },
+        {
+          "name": "run_student_code",
+          "signature": "run_student_code(code: str, test_input) -> dict",
+          "docstring": "Ученик обязан определить функцию solve(data). Возвращает\n{\"ok\": True, \"value\": ...} либо {\"ok\": False, \"error\": \"...\"}.",
+          "summary": "Ученик обязан определить функцию solve(data). Возвращает",
+          "kind": "function",
+          "decorators": [],
+          "lineno": 63,
+          "end_lineno": 98
+        }
+      ],
+      "constants": [
+        {
+          "name": "TIMEOUT_SECONDS",
+          "annotation": null,
+          "value_repr": "5",
+          "lineno": 24
+        },
+        {
+          "name": "CPU_LIMIT_SECONDS",
+          "annotation": null,
+          "value_repr": "5",
+          "lineno": 25
+        },
+        {
+          "name": "MEMORY_LIMIT_BYTES",
+          "annotation": null,
+          "value_repr": "256 * 1024 * 1024",
+          "lineno": 26
+        },
+        {
+          "name": "RESULT_MARKER",
+          "annotation": null,
+          "value_repr": "'###RESULT###'",
+          "lineno": 28
+        },
+        {
+          "name": "HARNESS_TEMPLATE",
+          "annotation": null,
+          "value_repr": "'\\nimport copy\\nimport json\\nimport sys\\n\\n{student_code}\\n\\ndef _main():\\n    data = json.loads(sys.stdin.read())\\n    try:\\n        value = solve(copy.deepcopy(data))\\n        print({marker!r} + json.dumps({{\"ok\": True, \"value\": value}}, ensure_ascii=False, default=str))\\n    except Exception as exc:\\n        print({marker!r} + json.dumps({{\"ok\": False, \"error\": f\"{{type(exc).__name__}}: {{exc}}\"}}, ensure_ascii=False))\\n\\nif __name__ == \"__main__\":\\n    _main()\\n'",
+          "lineno": 30
+        }
+      ],
+      "stats": {
+        "classes": 0,
+        "dataclasses": 0,
+        "functions": 2,
+        "methods": 0,
+        "constants": 5
+      }
+    }
+  ]
+}

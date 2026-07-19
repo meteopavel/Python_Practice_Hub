@@ -1,0 +1,983 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-19T09:21:09.822916+00:00",
+  "generator": "tools/extract_api_map.py",
+  "target": "bot",
+  "scanned_python_files": 6,
+  "files_count": 5,
+  "skipped_files_count": 1,
+  "skipped_files": [
+    "bot/export_tasks_to_json.py"
+  ],
+  "stats": {
+    "modules": 5,
+    "classes": 0,
+    "dataclasses": 0,
+    "functions": 85,
+    "methods": 0,
+    "constants": 5
+  },
+  "modules": [
+    {
+      "path": "bot/bot.py",
+      "module_docstring": null,
+      "module_summary": null,
+      "classes": [],
+      "functions": [
+        {
+          "name": "extract_literals",
+          "signature": "extract_literals(text)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 21,
+          "end_lineno": 36
+        },
+        {
+          "name": "handle_message",
+          "signature": "handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE)",
+          "docstring": null,
+          "summary": null,
+          "kind": "async_function",
+          "decorators": [],
+          "lineno": 39,
+          "end_lineno": 51
+        },
+        {
+          "name": "start",
+          "signature": "start(update: Update, context: ContextTypes.DEFAULT_TYPE)",
+          "docstring": null,
+          "summary": null,
+          "kind": "async_function",
+          "decorators": [],
+          "lineno": 54,
+          "end_lineno": 56
+        }
+      ],
+      "constants": [
+        {
+          "name": "TOKEN",
+          "annotation": null,
+          "value_repr": "os.getenv('TOKEN')",
+          "lineno": 18
+        }
+      ],
+      "stats": {
+        "classes": 0,
+        "dataclasses": 0,
+        "functions": 3,
+        "methods": 0,
+        "constants": 1
+      }
+    },
+    {
+      "path": "bot/constants.py",
+      "module_docstring": null,
+      "module_summary": null,
+      "classes": [],
+      "functions": [],
+      "constants": [
+        {
+          "name": "INPUT_HINTS",
+          "annotation": null,
+          "value_repr": "{'number': 'Введите число в формате:', 'word': 'Введите слово в формате:', 'list_of_numbers': 'Введите числа в формате:', 'lists': 'Введите списки в формате:', 'list_and_number': 'Введите список и число в формате:', 'list_of_words': 'Введите слова в формате:', 'words_and_numbers': 'Введите слова и числа в формате:'}",
+          "lineno": 1
+        },
+        {
+          "name": "TASKS",
+          "annotation": null,
+          "value_repr": "{1: {'description': 'Удалить дубликаты из списка, сохранив порядок.', 'example': '[3, 2, 2, 1, 5, 3] → [3, 2, 1, 5]', 'type': 'list_of_numbers'}, 2: {'description': 'Найти сумму всех чётных чисел в списке.', 'example': '[1, 2, 3, 4, 5, 6] → 12', 'type': 'list_of_numbers'}, 3: {'description': 'Развернуть список (в порядке обратном исходному).', 'example': '[1, 2, 3, 4, 5] → [5, 4, 3, 2, 1]', 'type': 'list_of_numbers'}, 4: {'description': 'Найти максимальный элемент в списке, не используя max()', 'example': '[10, 3, 5, 6, 9, 8] → 10', 'type': 'list_of_numbers'}, 5: {'description': 'Объединить два списка в один, удалив повторяющиеся элементы.', 'example': '[1, 2, 3] [3, 4, 5] → [1, 2, 3, 4, 5]', 'type': 'lists'}, 6: {'description': 'Проверить, отсортирован ли список по возрастанию.', 'example': '\\n[1, 2, 3] → ✅ Список сортирован\\n[3, 2, 1] → ❌ Список не сортирован', 'type': 'list_of_numbers'}, 7: {'description': 'Вставить число в список на позицию, равную его значению.', 'example': '[10, 20, 30]; 2 → [10, 20, 2, 30]', 'type': 'list_and_number'}, 8: {'description': 'Удалить первое вхождение минимального элемента из списка.', 'example': '[5, 3, 2, 8, 2, 10] → [5, 3, 8, 2, 10]', 'type': 'list_of_numbers'}, 9: {'description': 'Сложить стоящие по соседству числа.', 'example': '[1, 2, 3, 4] → [2, 4, 6, 3];\\nобъяснение: [2, 1+3=4, 2+4=6, 3]', 'type': 'list_of_numbers'}, 10: {'description': 'Переместить нули в конец списка.', 'example': '[0, 1, 0, 3, 12] → [1, 3, 12, 0, 0]', 'type': 'list_of_numbers'}, 11: {'description': 'Объединить списки в кортеж.', 'example': \"['Alice', 'Bob', 'Charlie'] [25, 30, 28] → [(Alice, 25), (Bob, 30), (Charlie, 28)]\", 'type': 'words_and_numbers'}, 12: {'description': 'Найти элемент списка, который встречается чаще всего.', 'example': \"['apple', 'banana', 'apple', 'orange', 'banana', 'apple'] → apple\", 'type': 'list_of_words'}, 13: {'description': 'Разбить список на подсписки заданной длины.', 'example': '[1, 2, 3, 4, 5, 6, 7]; 3 → [[1, 2, 3], [4, 5, 6], [7]]', 'type': 'list_and_number'}, 14: {'description': 'Проверить наличие дубликатов.', 'example': '[1, 2, 3, 2] → ✅ Повторы есть; ❌ Повторов нету', 'type': 'list_of_numbers'}, 15: {'description': 'Найти среднее арифметическое.', 'example': '[1, 2, 3, 4, 5] → 3.0', 'type': 'list_of_numbers'}, 16: {'description': 'Удалить минимальный элемент.', 'example': '[5, 2, 8, 2, 1] → [5, 2, 8, 2]', 'type': 'list_of_numbers'}, 17: {'description': 'Сдвинуть элементы вправо.', 'example': '[1, 2, 3, 4, 5]; 6 → [4, 5, 1, 2, 3]', 'type': 'list_and_number'}, 18: {'description': 'Посчитать уникальные элементы .', 'example': '[1, 2, 2, 3, 4, 4, 4, 5] → 5', 'type': 'list_of_numbers'}, 19: {'description': 'Проверить на палиндром .', 'example': \"['radar'] → ✅ Слово палиндром; ❌ Слово не палиндром\", 'type': 'list_of_words'}, 20: {'description': 'Найти пару с заданной суммой.', 'example': '[1, 2, 3, 4, 5]; 5 → [(1, 4), (2, 3)]', 'type': 'list_and_number'}, 21: {'description': 'Сгруппировать по длине строки.', 'example': \"['apple', 'bat', 'car', 'ant', 'orange'] → {5: ['apple'], 3: ['bat', 'car', 'ant'], 6: ['orange']}\", 'type': 'list_of_words'}, 22: {'description': 'Объединить списки без повторений и сортировкой.', 'example': '[3, 2, 1] [2, 4, 5] [5, 6, 3] → [1, 2, 3, 4, 5, 6]', 'type': 'list_of_numbers'}, 23: {'description': 'Найти самый длинный подряд идущий подсписок.', 'example': '[1, 1, 2, 2, 2, 3, 3, 1, 1, 1, 1] → [1, 1, 1, 1]', 'type': 'lists'}, 24: {'description': 'Найти элемент, встречающийся ровно один раз.', 'example': '[4, 3, 2, 4, 1, 3, 2] → 1', 'type': 'lists'}, 25: {'description': 'Найти все элементы в порядке возрастания частоты.', 'example': \"['a', 'b', 'c', 'a', 'b', 'a'] → ['c', 'b', 'b', 'a', 'a', 'a']\", 'type': 'list_of_words'}, 26: {'description': 'Проверить, является ли список \"пилообразным\".', 'example': '[1, 3, 2, 4, 1] → ✅ Список пилообразный; ❌ Список не пилообразный', 'type': 'lists'}, 27: {'description': 'Разделить на чётные и нечётные.', 'example': '[1, 2, 3, 4, 5, 6] → [2, 4, 6, 1, 3, 5]', 'type': 'lists'}, 28: {'description': 'Найти ближайшее число.', 'example': '[10, 3, 8, 15]; 7 → 8', 'type': 'list_and_number'}, 29: {'description': 'Найти все пары с разностью.', 'example': '[1, 3, 5, 7]; 2 → [(1, 3), (3, 5), (5, 7)]', 'type': 'list_and_number'}, 30: {'description': 'Сгруппировать по первому символу.', 'example': \"['apple', 'ant', 'banana', 'bee', 'cat'] → {'a': ['apple', 'ant'], 'b': ['banana', 'bee'], 'c': ['cat']}\", 'type': 'list_of_words'}, 31: {'description': 'Найти все чётные числа в списке.', 'example': '[1, 2, 3, 4, 5, 6] → [2, 4, 6]', 'type': 'list_of_numbers'}, 32: {'description': 'Проверить, все ли элементы списка положительные.', 'example': '[1, 2, 3] → ✅ Все положительные\\n[-1, 2, 3] → ❌ Есть отрицательные', 'type': 'list_of_numbers'}, 33: {'description': 'Найти самое длинное слово в списке.', 'example': \"['cat', 'elephant', 'dog'] → elephant\", 'type': 'list_of_words'}, 34: {'description': 'Создать список квадратов чисел.', 'example': '[1, 2, 3, 4] → [1, 4, 9, 16]', 'type': 'list_of_numbers'}, 35: {'description': 'Объединить два списка в один, чередуя элементы.', 'example': '[1, 2, 3] [10, 20] → [1, 10, 2, 20, 3]', 'type': 'lists'}, 36: {'description': 'Найти все гласные буквы в слове.', 'example': \"'hello' → ['e', 'o']\", 'type': 'word'}, 37: {'description': 'Проверить, является ли число простым.', 'example': '7 → ✅ Простое число\\n8 → ❌ Не простое число', 'type': 'number'}, 38: {'description': 'Отсортировать слова по алфавиту.', 'example': \"['banana', 'apple', 'cherry'] → ['apple', 'banana', 'cherry']\", 'type': 'list_of_words'}, 39: {'description': 'Найти сумму всех элементов вложенных списков.', 'example': '[1, [2, 3], [4, [5]]] → 15', 'type': 'lists'}, 40: {'description': 'Удалить все отрицательные числа из списка.', 'example': '[-1, 2, -3, 4, 0] → [2, 4, 0]', 'type': 'list_of_numbers'}, 41: {'description': 'Найти все согласные буквы в слове.', 'example': \"['hello'] → ['h', 'l', 'l']\", 'type': 'list_of_words'}, 42: {'description': 'Проверить, является ли строка анаграммой другой строки.', 'example': \"['listen', 'silent'] → ✅ Анаграммы\\n['hello', 'world'] → ❌ Не анаграммы\", 'type': 'lists'}, 43: {'description': 'Найти факториал числа.', 'example': '[5] → 120', 'type': 'list_of_numbers'}, 44: {'description': 'Заменить все гласные в слове на символ \"*\".', 'example': \"['programming'] → pr*gr*mm*ng\", 'type': 'list_of_words'}, 45: {'description': 'Найти НОД (наибольший общий делитель) двух чисел.', 'example': '[48, 18] → 6', 'type': 'lists'}, 46: {'description': 'Проверить, состоит ли строка только из цифр.', 'example': \"['12345'] → ✅ Только цифры\\n['abc123'] → ❌ Содержит нецифровые символы\", 'type': 'list_of_words'}, 47: {'description': 'Найти наименьшее общее кратное (НОК) двух чисел.', 'example': '[12, 18] → 36', 'type': 'lists'}, 48: {'description': 'Подсчитать количество слов в строке.', 'example': \"['Hello world from Python'] → 4\", 'type': 'list_of_words'}, 49: {'description': 'Удалить все дубликаты из вложенного списка, сохранив порядок.', 'example': '[1, [2, 2], [3, [1, 1]]] → [1, [2], [3, [1]]]', 'type': 'lists'}, 50: {'description': 'Проверить, является ли список симметричным (зеркальным).', 'example': '[1, 2, 3, 2, 1] → ✅ Симметричный\\n[1, 2, 3, 4] → ❌ Не симметричный', 'type': 'list_of_numbers'}, 51: {'description': 'Проверить, все ли слова в списке начинаются с заглавной буквы.', 'example': \"['Apple', 'Banana', 'Cherry'] → ✅ Все с заглавной\\n['apple', 'Banana'] → ❌ Не все с заглавной\", 'type': 'list_of_words'}, 52: {'description': 'Найти произведение всех положительных чисел в списке.', 'example': '[2, -3, 4, 0, 5] → 40', 'type': 'list_of_numbers'}, 53: {'description': 'Объединить два списка в один, чередуя элементы до конца самого длинного.', 'example': '[1, 2] [10, 20, 30, 40] → [1, 10, 2, 20, 30, 40]', 'type': 'lists'}, 54: {'description': 'Заменить каждое число в списке на его абсолютное значение.', 'example': '[-1, 2, -3, 4] → [1, 2, 3, 4]', 'type': 'list_of_numbers'}, 55: {'description': 'Проверить, является ли список строго возрастающим (без равных элементов).', 'example': '[1, 2, 3, 4, 6] → ✅ Строго возрастает\\n[1, 2, 2, 3] → ❌ Не строго возрастает', 'type': 'list_of_numbers'}, 56: {'description': 'Найти второй по величине элемент в списке.', 'example': '[10, 5, 8, 12, 3] → 10', 'type': 'list_of_numbers'}, 57: {'description': 'Подсчитать, сколько раз каждый элемент встречается в списке.', 'example': '[1, 2, 2, 3, 1, 1] → {1: 3, 2: 2, 3: 1}', 'type': 'list_of_numbers'}, 58: {'description': 'Поменять местами минимальный и максимальный элементы списка.', 'example': '[4, 1, 7, 3] → [4, 7, 1, 3]', 'type': 'list_of_numbers'}, 59: {'description': 'Удалить из списка все элементы, которые встречаются более одного раза.', 'example': '[1, 2, 2, 3, 4, 4, 5] → [1, 3, 5]', 'type': 'list_of_numbers'}, 60: {'description': 'Найти общие элементы двух списков без повторений.', 'example': '[1, 2, 3, 4] [3, 4, 4, 5, 6] → [3, 4]', 'type': 'lists'}, 61: {'description': 'Разделить список на элементы с чётным и нечётным индексом.', 'example': '[10, 20, 30, 40, 50] → [[10, 30, 50], [20, 40]]', 'type': 'list_of_numbers'}, 62: {'description': 'Найти первый элемент, который повторяется.', 'example': '[3, 1, 4, 2, 1, 5, 3] → 3', 'type': 'list_of_numbers'}, 63: {'description': 'Заменить каждый элемент списка на разницу с предыдущим.', 'example': '[10, 13, 15, 20] → [10, 3, 2, 5]', 'type': 'list_of_numbers'}, 64: {'description': 'Проверить, можно ли из слова составить другое слово, используя его буквы.', 'example': \"['listen', 'silent'] → ✅ Можно\\n['cat', 'cast'] → ❌ Нельзя\", 'type': 'lists'}, 65: {'description': 'Найти количество гласных в каждом слове списка.', 'example': \"['apple', 'sky', 'orange'] → [2, 0, 3]\", 'type': 'list_of_words'}, 66: {'description': 'Удалить из строки все пробелы и знаки препинания.', 'example': \"['Hello, world!'] → Helloworld\", 'type': 'list_of_words'}, 67: {'description': 'Найти все числа, которые делятся на заданное число без остатка.', 'example': '[3, 5, 10, 12, 15]; 5 → [5, 10, 15]', 'type': 'list_and_number'}, 68: {'description': 'Преобразовать список чисел в строку через запятую.', 'example': '[1, 2, 3, 4] → \"1,2,3,4\"', 'type': 'list_of_numbers'}, 69: {'description': 'Разбить слово на пары соседних букв.', 'example': \"['python'] → ['py', 'th', 'on']\", 'type': 'list_of_words'}, 70: {'description': 'Найти сумму цифр каждого числа в списке.', 'example': '[12, 305, 47] → [3, 8, 11]', 'type': 'list_of_numbers'}, 71: {'description': 'Проверить, чередуются ли чётные и нечётные числа в списке.', 'example': '[2, 3, 4, 5, 6] → ✅ Чередуются\\n[2, 4, 5, 7] → ❌ Не чередуются', 'type': 'list_of_numbers'}, 72: {'description': 'Найти индекс последнего вхождения заданного элемента.', 'example': '[1, 2, 3, 2, 4]; 2 → 3', 'type': 'list_and_number'}, 73: {'description': 'Сделать список циклическим: последний элемент поставить в начало.', 'example': '[1, 2, 3, 4] → [4, 1, 2, 3]', 'type': 'list_of_numbers'}, 74: {'description': 'Удвоить все элементы списка, которые меньше заданного числа.', 'example': '[1, 5, 2, 8, 3]; 4 → [2, 5, 4, 8, 6]', 'type': 'list_and_number'}, 75: {'description': 'Найти самую короткую строку в списке.', 'example': \"['elephant', 'cat', 'dog', 'a'] → a\", 'type': 'list_of_words'}, 76: {'description': 'Проверить, есть ли в слове хотя бы одна повторяющаяся буква.', 'example': \"['letter'] → ✅ Есть\\n['dog'] → ❌ Нет\", 'type': 'list_of_words'}, 77: {'description': 'Заменить повторяющиеся элементы списка на строку \"dup\", начиная со второго появления.', 'example': \"[1, 2, 1, 3, 2, 2] → [1, 2, 'dup', 3, 'dup', 'dup']\", 'type': 'list_of_numbers'}, 78: {'description': 'Найти все слова, длина которых больше среднего.', 'example': \"['hi', 'python', 'cat', 'elephant'] → ['python', 'elephant']\", 'type': 'list_of_words'}, 79: {'description': 'Сжать список: заменить подряд идущие одинаковые элементы на пары (элемент, количество).', 'example': '[1, 1, 1, 2, 2, 3] → [(1, 3), (2, 2), (3, 1)]', 'type': 'list_of_numbers'}, 80: {'description': 'Восстановить список из пар (элемент, количество).', 'example': '[(1, 3), (2, 2), (3, 1)] → [1, 1, 1, 2, 2, 3]', 'type': 'lists'}}",
+          "lineno": 11
+        }
+      ],
+      "stats": {
+        "classes": 0,
+        "dataclasses": 0,
+        "functions": 0,
+        "methods": 0,
+        "constants": 2
+      }
+    },
+    {
+      "path": "bot/load_tasks_from_json.py",
+      "module_docstring": null,
+      "module_summary": null,
+      "classes": [],
+      "functions": [],
+      "constants": [
+        {
+          "name": "INPUT_HINTS",
+          "annotation": null,
+          "value_repr": "data['input_hints']",
+          "lineno": 7
+        },
+        {
+          "name": "TASKS",
+          "annotation": null,
+          "value_repr": "{}",
+          "lineno": 9
+        }
+      ],
+      "stats": {
+        "classes": 0,
+        "dataclasses": 0,
+        "functions": 0,
+        "methods": 0,
+        "constants": 2
+      }
+    },
+    {
+      "path": "bot/solvers.py",
+      "module_docstring": null,
+      "module_summary": null,
+      "classes": [],
+      "functions": [
+        {
+          "name": "get_solver",
+          "signature": "get_solver(task_num)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 4,
+          "end_lineno": 6
+        },
+        {
+          "name": "solve_task_1",
+          "signature": "solve_task_1(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 9,
+          "end_lineno": 14
+        },
+        {
+          "name": "solve_task_2",
+          "signature": "solve_task_2(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 17,
+          "end_lineno": 22
+        },
+        {
+          "name": "solve_task_3",
+          "signature": "solve_task_3(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 25,
+          "end_lineno": 29
+        },
+        {
+          "name": "solve_task_4",
+          "signature": "solve_task_4(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 32,
+          "end_lineno": 37
+        },
+        {
+          "name": "solve_task_5",
+          "signature": "solve_task_5(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 40,
+          "end_lineno": 47
+        },
+        {
+          "name": "solve_task_6",
+          "signature": "solve_task_6(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 50,
+          "end_lineno": 54
+        },
+        {
+          "name": "solve_task_7",
+          "signature": "solve_task_7(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 57,
+          "end_lineno": 60
+        },
+        {
+          "name": "solve_task_8",
+          "signature": "solve_task_8(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 63,
+          "end_lineno": 66
+        },
+        {
+          "name": "solve_task_9",
+          "signature": "solve_task_9(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 69,
+          "end_lineno": 78
+        },
+        {
+          "name": "solve_task_10",
+          "signature": "solve_task_10(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 81,
+          "end_lineno": 89
+        },
+        {
+          "name": "solve_task_11",
+          "signature": "solve_task_11(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 92,
+          "end_lineno": 96
+        },
+        {
+          "name": "solve_task_12",
+          "signature": "solve_task_12(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 99,
+          "end_lineno": 104
+        },
+        {
+          "name": "solve_task_13",
+          "signature": "solve_task_13(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 107,
+          "end_lineno": 111
+        },
+        {
+          "name": "solve_task_14",
+          "signature": "solve_task_14(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 114,
+          "end_lineno": 118
+        },
+        {
+          "name": "solve_task_15",
+          "signature": "solve_task_15(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 121,
+          "end_lineno": 122
+        },
+        {
+          "name": "solve_task_16",
+          "signature": "solve_task_16(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 125,
+          "end_lineno": 132
+        },
+        {
+          "name": "solve_task_17",
+          "signature": "solve_task_17(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 135,
+          "end_lineno": 138
+        },
+        {
+          "name": "solve_task_18",
+          "signature": "solve_task_18(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 141,
+          "end_lineno": 142
+        },
+        {
+          "name": "solve_task_19",
+          "signature": "solve_task_19(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 145,
+          "end_lineno": 149
+        },
+        {
+          "name": "solve_task_20",
+          "signature": "solve_task_20(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 152,
+          "end_lineno": 158
+        },
+        {
+          "name": "solve_task_21",
+          "signature": "solve_task_21(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 161,
+          "end_lineno": 168
+        },
+        {
+          "name": "solve_task_22",
+          "signature": "solve_task_22(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 171,
+          "end_lineno": 176
+        },
+        {
+          "name": "solve_task_23",
+          "signature": "solve_task_23(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 179,
+          "end_lineno": 195
+        },
+        {
+          "name": "solve_task_24",
+          "signature": "solve_task_24(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 198,
+          "end_lineno": 204
+        },
+        {
+          "name": "solve_task_25",
+          "signature": "solve_task_25(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 207,
+          "end_lineno": 212
+        },
+        {
+          "name": "solve_task_26",
+          "signature": "solve_task_26(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 215,
+          "end_lineno": 222
+        },
+        {
+          "name": "solve_task_27",
+          "signature": "solve_task_27(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 225,
+          "end_lineno": 228
+        },
+        {
+          "name": "solve_task_28",
+          "signature": "solve_task_28(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 231,
+          "end_lineno": 232
+        },
+        {
+          "name": "solve_task_29",
+          "signature": "solve_task_29(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 235,
+          "end_lineno": 241
+        },
+        {
+          "name": "solve_task_30",
+          "signature": "solve_task_30(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 244,
+          "end_lineno": 251
+        },
+        {
+          "name": "solve_task_31",
+          "signature": "solve_task_31(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 254,
+          "end_lineno": 259
+        },
+        {
+          "name": "solve_task_32",
+          "signature": "solve_task_32(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 262,
+          "end_lineno": 266
+        },
+        {
+          "name": "solve_task_33",
+          "signature": "solve_task_33(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 269,
+          "end_lineno": 278
+        },
+        {
+          "name": "solve_task_34",
+          "signature": "solve_task_34(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 281,
+          "end_lineno": 284
+        },
+        {
+          "name": "solve_task_35",
+          "signature": "solve_task_35(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 287,
+          "end_lineno": 295
+        },
+        {
+          "name": "solve_task_36",
+          "signature": "solve_task_36(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 298,
+          "end_lineno": 304
+        },
+        {
+          "name": "solve_task_37",
+          "signature": "solve_task_37(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 307,
+          "end_lineno": 311
+        },
+        {
+          "name": "solve_task_38",
+          "signature": "solve_task_38(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 314,
+          "end_lineno": 317
+        },
+        {
+          "name": "solve_task_39",
+          "signature": "solve_task_39(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 320,
+          "end_lineno": 329
+        },
+        {
+          "name": "solve_task_40",
+          "signature": "solve_task_40(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 332,
+          "end_lineno": 337
+        },
+        {
+          "name": "solve_task_41",
+          "signature": "solve_task_41(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 340,
+          "end_lineno": 343
+        },
+        {
+          "name": "solve_task_42",
+          "signature": "solve_task_42(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 346,
+          "end_lineno": 348
+        },
+        {
+          "name": "solve_task_43",
+          "signature": "solve_task_43(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 351,
+          "end_lineno": 355
+        },
+        {
+          "name": "solve_task_44",
+          "signature": "solve_task_44(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 358,
+          "end_lineno": 363
+        },
+        {
+          "name": "solve_task_45",
+          "signature": "solve_task_45(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 366,
+          "end_lineno": 372
+        },
+        {
+          "name": "solve_task_46",
+          "signature": "solve_task_46(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 375,
+          "end_lineno": 378
+        },
+        {
+          "name": "solve_task_47",
+          "signature": "solve_task_47(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 381,
+          "end_lineno": 388
+        },
+        {
+          "name": "solve_task_48",
+          "signature": "solve_task_48(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 391,
+          "end_lineno": 393
+        },
+        {
+          "name": "solve_task_49",
+          "signature": "solve_task_49(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 396,
+          "end_lineno": 409
+        },
+        {
+          "name": "solve_task_50",
+          "signature": "solve_task_50(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 412,
+          "end_lineno": 413
+        },
+        {
+          "name": "solve_task_51",
+          "signature": "solve_task_51(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 416,
+          "end_lineno": 420
+        },
+        {
+          "name": "solve_task_52",
+          "signature": "solve_task_52(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 423,
+          "end_lineno": 428
+        },
+        {
+          "name": "solve_task_53",
+          "signature": "solve_task_53(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 431,
+          "end_lineno": 442
+        },
+        {
+          "name": "solve_task_54",
+          "signature": "solve_task_54(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 445,
+          "end_lineno": 449
+        },
+        {
+          "name": "solve_task_55",
+          "signature": "solve_task_55(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 452,
+          "end_lineno": 456
+        },
+        {
+          "name": "solve_task_56",
+          "signature": "solve_task_56(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 459,
+          "end_lineno": 461
+        },
+        {
+          "name": "solve_task_57",
+          "signature": "solve_task_57(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 464,
+          "end_lineno": 471
+        },
+        {
+          "name": "solve_task_58",
+          "signature": "solve_task_58(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 474,
+          "end_lineno": 485
+        },
+        {
+          "name": "solve_task_59",
+          "signature": "solve_task_59(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 488,
+          "end_lineno": 489
+        },
+        {
+          "name": "solve_task_60",
+          "signature": "solve_task_60(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 492,
+          "end_lineno": 497
+        },
+        {
+          "name": "solve_task_61",
+          "signature": "solve_task_61(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 500,
+          "end_lineno": 504
+        },
+        {
+          "name": "solve_task_62",
+          "signature": "solve_task_62(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 507,
+          "end_lineno": 511
+        },
+        {
+          "name": "solve_task_63",
+          "signature": "solve_task_63(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 514,
+          "end_lineno": 521
+        },
+        {
+          "name": "solve_task_64",
+          "signature": "solve_task_64(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 524,
+          "end_lineno": 531
+        },
+        {
+          "name": "solve_task_65",
+          "signature": "solve_task_65(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 534,
+          "end_lineno": 543
+        },
+        {
+          "name": "solve_task_66",
+          "signature": "solve_task_66(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 546,
+          "end_lineno": 548
+        },
+        {
+          "name": "solve_task_67",
+          "signature": "solve_task_67(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 551,
+          "end_lineno": 552
+        },
+        {
+          "name": "solve_task_68",
+          "signature": "solve_task_68(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 555,
+          "end_lineno": 556
+        },
+        {
+          "name": "solve_task_69",
+          "signature": "solve_task_69(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 559,
+          "end_lineno": 561
+        },
+        {
+          "name": "solve_task_70",
+          "signature": "solve_task_70(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 564,
+          "end_lineno": 571
+        },
+        {
+          "name": "solve_task_71",
+          "signature": "solve_task_71(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 574,
+          "end_lineno": 581
+        },
+        {
+          "name": "solve_task_72",
+          "signature": "solve_task_72(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 584,
+          "end_lineno": 585
+        },
+        {
+          "name": "solve_task_73",
+          "signature": "solve_task_73(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 588,
+          "end_lineno": 592
+        },
+        {
+          "name": "solve_task_74",
+          "signature": "solve_task_74(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 595,
+          "end_lineno": 596
+        },
+        {
+          "name": "solve_task_75",
+          "signature": "solve_task_75(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 599,
+          "end_lineno": 604
+        },
+        {
+          "name": "solve_task_76",
+          "signature": "solve_task_76(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 607,
+          "end_lineno": 611
+        },
+        {
+          "name": "solve_task_77",
+          "signature": "solve_task_77(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 614,
+          "end_lineno": 624
+        },
+        {
+          "name": "solve_task_78",
+          "signature": "solve_task_78(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 627,
+          "end_lineno": 633
+        },
+        {
+          "name": "solve_task_79",
+          "signature": "solve_task_79(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 636,
+          "end_lineno": 650
+        },
+        {
+          "name": "solve_task_80",
+          "signature": "solve_task_80(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 653,
+          "end_lineno": 657
+        }
+      ],
+      "constants": [],
+      "stats": {
+        "classes": 0,
+        "dataclasses": 0,
+        "functions": 81,
+        "methods": 0,
+        "constants": 0
+      }
+    },
+    {
+      "path": "bot/tasks_handlers.py",
+      "module_docstring": null,
+      "module_summary": null,
+      "classes": [],
+      "functions": [
+        {
+          "name": "make_task_handler",
+          "signature": "make_task_handler(task_num)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 8,
+          "end_lineno": 22
+        }
+      ],
+      "constants": [],
+      "stats": {
+        "classes": 0,
+        "dataclasses": 0,
+        "functions": 1,
+        "methods": 0,
+        "constants": 0
+      }
+    }
+  ]
+}

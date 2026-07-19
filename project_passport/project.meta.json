@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-19T09:22:21.528041+00:00",
+  "generated_by": "tools/build_project_passport.py + ручная правка",
+  "auto_generated": false,
+  "review_status": "reviewed",
+  "id": "python-practice-hub",
+  "title": "Python Practice Hub — веб-грейдер кода с изолированным исполнением",
+  "tagline": "FastAPI-сервис проверки Python-кода реальным исполнением в изолированном окружении, развёрнутый на двух машинах через WireGuard-тоннель.",
+  "summary": "Изначально Telegram-бот с банком практических Python-заданий (80 упражнений на списки/строки). Развит в веб-платформу: ученик пишет решение в браузере, код реально выполняется отдельным сервисом-исполнителем (не в процессе основного приложения) в контейнере с урезанными правами — read-only файловая система, запрет новых исходящих сетевых соединений на уровне хоста, лимиты памяти и числа процессов — и сравнивается с эталонным решением на нескольких тестовых входах. Публичный фронт и приватный исполнитель развёрнуты на разных физических машинах, соединённых WireGuard-тоннелем; автоматический HTTPS и сквозной деплой одним скриптом на обе машины.",
+  "status": "active",
+  "visibility": "public_code",
+  "role": "solo_developer",
+  "domain": [
+    "edtech",
+    "web",
+    "fastapi",
+    "code-execution",
+    "sandboxing",
+    "devops"
+  ],
+  "stack": [
+    "Python",
+    "FastAPI",
+    "Docker",
+    "python-telegram-bot",
+    "Caddy",
+    "Bash"
+  ],
+  "links": {
+    "repo": "https://github.com/meteopavel/Python_Practice_Hub",
+    "demo": "https://informatika.meteopavel.space",
+    "details": "/projects/python-practice-hub"
+  },
+  "highlights": [
+    "Проверка решений реальным исполнением кода (не сверкой строк): эталонное решение как оракул на нескольких тестовых входах.",
+    "Исполнение недоверенного кода — отдельный сервис в Docker: read-only rootfs, tmpfs под /tmp, cap_drop ALL, no-new-privileges, лимиты памяти/процессов, блокировка новых исходящих соединений правилом в DOCKER-USER на хосте.",
+    "Публичный фронт и приватный исполнитель — разные физические машины, соединены WireGuard-тоннелем; исполнитель недоступен ни из LAN, ни из интернета, только через тоннель.",
+    "Автоматический HTTPS (Caddy) и сквозной деплой на обе машины одним скриптом.",
+    "Исходный банк из 80 практических заданий и Telegram-бот сохранены как отдельный компонент."
+  ],
+  "public_artifacts": [
+    "api_map_json",
+    "api_map_markdown",
+    "project_meta_json",
+    "project_public_json"
+  ],
+  "notes": {
+    "project_root": ".",
+    "source_target": "bot, webapp, executor",
+    "source_targets": [
+      "bot",
+      "webapp",
+      "executor"
+    ],
+    "scanned_python_files": 4
+  }
+}

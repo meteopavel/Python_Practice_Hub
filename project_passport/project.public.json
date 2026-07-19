@@ -1,0 +1,121 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-19T09:24:07.281886+00:00",
+  "generated_by": "tools/build_project_passport.py",
+  "id": "python-practice-hub",
+  "title": "Python Practice Hub — веб-грейдер кода с изолированным исполнением",
+  "tagline": "FastAPI-сервис проверки Python-кода реальным исполнением в изолированном окружении, развёрнутый на двух машинах через WireGuard-тоннель.",
+  "summary": "Изначально Telegram-бот с банком практических Python-заданий (80 упражнений на списки/строки). Развит в веб-платформу: ученик пишет решение в браузере, код реально выполняется отдельным сервисом-исполнителем (не в процессе основного приложения) в контейнере с урезанными правами — read-only файловая система, запрет новых исходящих сетевых соединений на уровне хоста, лимиты памяти и числа процессов — и сравнивается с эталонным решением на нескольких тестовых входах. Публичный фронт и приватный исполнитель развёрнуты на разных физических машинах, соединённых WireGuard-тоннелем; автоматический HTTPS и сквозной деплой одним скриптом на обе машины.",
+  "status": "active",
+  "visibility": "public_code",
+  "role": "solo_developer",
+  "domain": [
+    "edtech",
+    "web",
+    "fastapi",
+    "code-execution",
+    "sandboxing",
+    "devops"
+  ],
+  "stack": [
+    "Python",
+    "FastAPI",
+    "Docker",
+    "python-telegram-bot",
+    "Caddy",
+    "Bash"
+  ],
+  "links": {
+    "repo": "https://github.com/meteopavel/Python_Practice_Hub",
+    "demo": "https://informatika.meteopavel.space",
+    "details": "/projects/python-practice-hub"
+  },
+  "highlights": [
+    "Проверка решений реальным исполнением кода (не сверкой строк): эталонное решение как оракул на нескольких тестовых входах.",
+    "Исполнение недоверенного кода — отдельный сервис в Docker: read-only rootfs, tmpfs под /tmp, cap_drop ALL, no-new-privileges, лимиты памяти/процессов, блокировка новых исходящих соединений правилом в DOCKER-USER на хосте.",
+    "Публичный фронт и приватный исполнитель — разные физические машины, соединены WireGuard-тоннелем; исполнитель недоступен ни из LAN, ни из интернета, только через тоннель.",
+    "Автоматический HTTPS (Caddy) и сквозной деплой на обе машины одним скриптом.",
+    "Исходный банк из 80 практических заданий и Telegram-бот сохранены как отдельный компонент."
+  ],
+  "signals": [
+    "json_artifacts",
+    "env_config"
+  ],
+  "tech_profile": {
+    "python_files": 4,
+    "scanned_python_files": 4,
+    "classes": 2,
+    "dataclasses": 0,
+    "functions": 6,
+    "methods": 0,
+    "constants": 5,
+    "has_cli": false,
+    "has_redmine_integration": false,
+    "has_document_generation": false,
+    "has_llm_workflow": false,
+    "has_api_map": true
+  },
+  "architecture": {
+    "target": "webapp",
+    "layers": [],
+    "key_modules": [
+      {
+        "path": "webapp/main.py",
+        "summary": "FastAPI-приложение веб-грейдера. Оболочка: отдаёт список заданий и",
+        "stats": {
+          "classes": 1,
+          "dataclasses": 0,
+          "functions": 3,
+          "methods": 0,
+          "constants": 1
+        }
+      },
+      {
+        "path": "webapp/grading.py",
+        "summary": "Grading engine: сверяет код ученика с эталонным решением на курированных",
+        "stats": {
+          "classes": 1,
+          "dataclasses": 0,
+          "functions": 3,
+          "methods": 0,
+          "constants": 1
+        }
+      },
+      {
+        "path": "webapp/bot_bridge.py",
+        "summary": "Мост к банку заданий и эталонных решений в bot/ — общий источник",
+        "stats": {
+          "classes": 0,
+          "dataclasses": 0,
+          "functions": 0,
+          "methods": 0,
+          "constants": 2
+        }
+      },
+      {
+        "path": "webapp/test_cases.py",
+        "summary": "Курированные тестовые входы для веб-грейдера.",
+        "stats": {
+          "classes": 0,
+          "dataclasses": 0,
+          "functions": 0,
+          "methods": 0,
+          "constants": 1
+        }
+      }
+    ]
+  },
+  "artifacts": {
+    "api_map_json": "project_passport/api_map__webapp.json",
+    "api_map_markdown": "project_passport/api_map__webapp.md",
+    "project_meta_json": "project_passport/project.meta.json",
+    "project_public_json": "project_passport/project.public.json"
+  },
+  "source": {
+    "api_map_schema_version": "1.0",
+    "api_map_generated_at": "2026-07-19T09:21:09.967844+00:00",
+    "api_map_generator": "tools/extract_api_map.py",
+    "meta_auto_generated": false,
+    "meta_review_status": "reviewed"
+  }
+}

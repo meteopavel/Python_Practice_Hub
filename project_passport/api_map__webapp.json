@@ -1,0 +1,227 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-19T09:21:09.967844+00:00",
+  "generator": "tools/extract_api_map.py",
+  "target": "webapp",
+  "scanned_python_files": 4,
+  "files_count": 4,
+  "skipped_files_count": 0,
+  "skipped_files": [],
+  "stats": {
+    "modules": 4,
+    "classes": 2,
+    "dataclasses": 0,
+    "functions": 6,
+    "methods": 0,
+    "constants": 5
+  },
+  "modules": [
+    {
+      "path": "webapp/bot_bridge.py",
+      "module_docstring": "Мост к банку заданий и эталонных решений в bot/ — общий источник\nдля Telegram-бота и веб-грейдера, чтобы не дублировать содержимое.",
+      "module_summary": "Мост к банку заданий и эталонных решений в bot/ — общий источник",
+      "classes": [],
+      "functions": [],
+      "constants": [
+        {
+          "name": "_BOT_DIR",
+          "annotation": null,
+          "value_repr": "Path(__file__).resolve().parent.parent / 'bot'",
+          "lineno": 8
+        },
+        {
+          "name": "TASKS",
+          "annotation": null,
+          "value_repr": "{int(k): v for (k, v) in _data['tasks'].items()}",
+          "lineno": 17
+        }
+      ],
+      "stats": {
+        "classes": 0,
+        "dataclasses": 0,
+        "functions": 0,
+        "methods": 0,
+        "constants": 2
+      }
+    },
+    {
+      "path": "webapp/grading.py",
+      "module_docstring": "Grading engine: сверяет код ученика с эталонным решением на курированных\nтестовых входах. Это единственное место, где 'правильность' определяется —\nчерез исполнение, а не через доверие к модели.\n\nСам код ученика здесь НЕ выполняется — это ушло в executor/ (отдельный\nсервис на роутере, за тоннелем). Здесь только оркестрация: эталон + запрос\nк исполнителю + сравнение.",
+      "module_summary": "Grading engine: сверяет код ученика с эталонным решением на курированных",
+      "classes": [
+        {
+          "name": "ExecutorUnavailable",
+          "signature": "ExecutorUnavailable(Exception)",
+          "docstring": null,
+          "summary": null,
+          "kind": "class",
+          "bases": [
+            "Exception"
+          ],
+          "decorators": [],
+          "fields": [],
+          "methods": [],
+          "lineno": 21,
+          "end_lineno": 22
+        }
+      ],
+      "functions": [
+        {
+          "name": "_run_student_code",
+          "signature": "_run_student_code(code: str, test_input) -> dict",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 25,
+          "end_lineno": 35
+        },
+        {
+          "name": "_normalize",
+          "signature": "_normalize(value)",
+          "docstring": "Эталон вызывается в процессе напрямую (без сериализации), а решение\nученика приходит через JSON и тем самым теряет типы вроде tuple (JSON\nих не различает от list). Прогоняем эталон через тот же JSON-круглый\nобмен, чтобы сравнение было честным по обе стороны.",
+          "summary": "Эталон вызывается в процессе напрямую (без сериализации), а решение",
+          "kind": "function",
+          "decorators": [],
+          "lineno": 38,
+          "end_lineno": 43
+        },
+        {
+          "name": "grade",
+          "signature": "grade(task_id: int, code: str) -> dict",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 46,
+          "end_lineno": 88
+        }
+      ],
+      "constants": [
+        {
+          "name": "EXECUTOR_URL",
+          "annotation": null,
+          "value_repr": "os.environ.get('EXECUTOR_URL', 'http://127.0.0.1:8010')",
+          "lineno": 18
+        }
+      ],
+      "stats": {
+        "classes": 1,
+        "dataclasses": 0,
+        "functions": 3,
+        "methods": 0,
+        "constants": 1
+      }
+    },
+    {
+      "path": "webapp/main.py",
+      "module_docstring": "FastAPI-приложение веб-грейдера. Оболочка: отдаёт список заданий и\nпринимает решение ученика. Вся логика проверки — в grading.py/sandbox.py.",
+      "module_summary": "FastAPI-приложение веб-грейдера. Оболочка: отдаёт список заданий и",
+      "classes": [
+        {
+          "name": "SubmissionRequest",
+          "signature": "SubmissionRequest(BaseModel)",
+          "docstring": null,
+          "summary": null,
+          "kind": "class",
+          "bases": [
+            "BaseModel"
+          ],
+          "decorators": [],
+          "fields": [
+            {
+              "name": "task_id",
+              "annotation": "int",
+              "value_repr": null,
+              "lineno": 22
+            },
+            {
+              "name": "code",
+              "annotation": "str",
+              "value_repr": null,
+              "lineno": 23
+            }
+          ],
+          "methods": [],
+          "lineno": 21,
+          "end_lineno": 23
+        }
+      ],
+      "functions": [
+        {
+          "name": "index",
+          "signature": "index()",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [
+            "app.get('/')"
+          ],
+          "lineno": 27,
+          "end_lineno": 28
+        },
+        {
+          "name": "list_tasks",
+          "signature": "list_tasks()",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [
+            "app.get('/api/tasks')"
+          ],
+          "lineno": 32,
+          "end_lineno": 36
+        },
+        {
+          "name": "submit",
+          "signature": "submit(payload: SubmissionRequest)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [
+            "app.post('/api/submit')"
+          ],
+          "lineno": 40,
+          "end_lineno": 41
+        }
+      ],
+      "constants": [
+        {
+          "name": "STATIC_DIR",
+          "annotation": null,
+          "value_repr": "Path(__file__).resolve().parent / 'static'",
+          "lineno": 17
+        }
+      ],
+      "stats": {
+        "classes": 1,
+        "dataclasses": 0,
+        "functions": 3,
+        "methods": 0,
+        "constants": 1
+      }
+    },
+    {
+      "path": "webapp/test_cases.py",
+      "module_docstring": "Курированные тестовые входы для веб-грейдера.\n\nКлюч — номер задания (совпадает с TASKS в bot/constants.py), значение —\nсписок входов, на которых код ученика сверяется с эталонным решением\n(solve_task_N из bot/solvers.py). Задание доступно в веб-грейдере тогда\nи только тогда, когда для него здесь заведены тестовые входы — это и есть\nкурируемая база, а не автогенерация вслепую.",
+      "module_summary": "Курированные тестовые входы для веб-грейдера.",
+      "classes": [],
+      "functions": [],
+      "constants": [
+        {
+          "name": "TEST_CASES",
+          "annotation": null,
+          "value_repr": "{79: [[1, 1, 1, 2, 2, 3], [1, 1, 2, 2, 1, 1, 3], [4, 4, 4, 4], [1, 2, 3]], 80: [[(1, 3), (2, 2), (3, 1)], [(5, 1)], [(2, 4), (7, 2), (1, 1)]]}",
+          "lineno": 10
+        }
+      ],
+      "stats": {
+        "classes": 0,
+        "dataclasses": 0,
+        "functions": 0,
+        "methods": 0,
+        "constants": 1
+      }
+    }
+  ]
+}
