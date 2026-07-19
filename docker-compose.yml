@@ -4,6 +4,7 @@ services:
     restart: unless-stopped
     environment:
       - EXECUTOR_URL=${EXECUTOR_URL}
+      - DATABASE_URL=${DATABASE_URL}
     expose:
       - "8000"
 
