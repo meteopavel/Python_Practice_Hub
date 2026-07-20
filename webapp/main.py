@@ -154,6 +154,18 @@ def me(request: Request):
     }
 
 
+@app.get("/api/attempts/mine")
+def my_attempts(request: Request, db: Session = Depends(get_db)):
+    user_id = current_user_id(request)
+    if user_id is None:
+        return unauthorized()
+    rows = db.query(Attempt.task_id, Attempt.passed).filter(Attempt.user_id == user_id).all()
+    passed_by_task = {}
+    for task_id, passed in rows:
+        passed_by_task[task_id] = passed_by_task.get(task_id, False) or passed
+    return {task_id: ("pass" if passed else "fail") for task_id, passed in passed_by_task.items()}
+
+
 @app.get("/api/attempts")
 def list_attempts(request: Request, db: Session = Depends(get_db)):
     if current_user_id(request) is None:

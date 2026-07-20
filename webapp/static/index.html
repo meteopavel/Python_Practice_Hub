@@ -352,7 +352,7 @@ function endCall(notify) {
 
 let tasks = [];
 let currentTaskId = null;
-const taskStatus = {}; // client-side only, resets on reload: id -> 'pass' | 'fail'
+const taskStatus = {}; // id -> 'pass' | 'fail'; seeded from history on load, updated live after each submit
 
 function escapeHtml(value) {
   const div = document.createElement('div');
@@ -387,6 +387,13 @@ async function loadTasks() {
   if (redirectToLoginIfUnauthorized(res)) return;
   tasks = await res.json();
   currentTaskId = tasks.length ? tasks[0].id : null;
+
+  const historyRes = await fetch('/api/attempts/mine');
+  if (historyRes.ok) {
+    const history = await historyRes.json();
+    for (const [taskId, status] of Object.entries(history)) taskStatus[taskId] = status;
+  }
+
   renderTaskList();
   showDescription();
 }
