@@ -233,11 +233,16 @@ async function fetchIceServers() {
 }
 
 // Явно просим у браузера подавление эха/шума и автогейн — без этого
-// поведение по умолчанию отличается между браузерами и версиями.
+// поведение по умолчанию отличается между браузерами и версиями. Микрофон
+// у нас всегда моно, так что просим конкретный формат захвата, а не
+// дефолтный (браузер может занизить sampleRate до подключения обработки).
 const AUDIO_CONSTRAINTS = {
   echoCancellation: true,
   noiseSuppression: true,
   autoGainControl: true,
+  channelCount: 1,
+  sampleRate: 48000,
+  sampleSize: 16,
 };
 
 // Дефолтный битрейт Opus в "голосовом" профиле довольно низкий — поднимаем
@@ -249,6 +254,26 @@ function boostAudioBitrate(peerConnection) {
   if (!params.encodings || !params.encodings.length) params.encodings = [{}];
   params.encodings[0].maxBitrate = 128000;
   sender.setParameters(params).catch(() => {});
+}
+
+// setParameters() выше не всегда доезжает до энкодера так же надёжно, как
+// явные fmtp-параметры в самом SDP — здесь же включаем FEC (восстановление
+// потерянных пакетов без переспроса, слышно как меньше "заикания" на плохой
+// сети) и явно выключаем DTX (экономит трафик на паузах ценой лёгких
+// щелчков/провалов на входе-выходе из тишины — для качества это того не стоит).
+function tuneOpusSdp(sdp) {
+  const rtpmap = sdp.match(/a=rtpmap:(\d+) opus\/48000/);
+  if (!rtpmap) return sdp;
+  const pt = rtpmap[1];
+  const desired = ['minptime=10', 'useinbandfec=1', 'usedtx=0', 'maxaveragebitrate=128000'];
+  const fmtpRe = new RegExp(`a=fmtp:${pt} ([^\r\n]*)`);
+  if (fmtpRe.test(sdp)) {
+    return sdp.replace(fmtpRe, (line, params) => {
+      const kept = params.split(';').filter(p => p && !/^(minptime|useinbandfec|usedtx|maxaveragebitrate)=/.test(p));
+      return `a=fmtp:${pt} ${kept.concat(desired).join(';')}`;
+    });
+  }
+  return sdp.replace(rtpmap[0], `${rtpmap[0]}\r\na=fmtp:${pt} ${desired.join(';')}`);
 }
 
 function setupPeerConnection(iceServers) {
@@ -287,6 +312,7 @@ async function acceptCall() {
     }
     pendingRemoteIce = [];
     const answer = await pc.createAnswer();
+    answer.sdp = tuneOpusSdp(answer.sdp);
     await pc.setLocalDescription(answer);
     sendMessage({type: 'call_answer', sdp: answer});
     callState = 'in-call';
