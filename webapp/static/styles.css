@@ -480,7 +480,9 @@ pre.block {
   gap: var(--space-3); padding: var(--space-2) 0;
   font-size: var(--fs-sm); cursor: pointer;
 }
-.attempt-item pre.block { margin-bottom: var(--space-2); max-height: 320px; }
+.attempt-item .code-editor { margin-bottom: var(--space-2); }
+.attempt-code-mount { min-height: 60px; max-height: 320px; overflow-y: auto; }
+.attempt-code-mount .cm-editor { height: 100%; }
 
 /* --------------------------------------------------------------------------
    11. РЕЗУЛЬТАТЫ ТЕСТОВ

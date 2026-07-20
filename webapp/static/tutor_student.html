@@ -87,12 +87,6 @@
 const studentId = Number(window.location.pathname.split('/').pop());
 document.getElementById('impersonate-form').action = `/tutor/student/${studentId}/impersonate`;
 
-function escapeHtml(value) {
-  const div = document.createElement('div');
-  div.textContent = value === undefined ? '' : String(value);
-  return div.innerHTML;
-}
-
 const mirrorEditor = PracticeHubEditor.create(
   document.getElementById('student-mirror-mount'), '', null, {readOnly: true}
 );
@@ -117,16 +111,24 @@ async function loadAttempts() {
 
   const rows = document.getElementById('attempts-rows');
   document.getElementById('attempts-empty').style.display = data.attempts.length ? 'none' : 'block';
-  rows.innerHTML = data.attempts.map(a => `
+  rows.innerHTML = data.attempts.map((a, i) => `
     <details class="attempt-item">
       <summary class="attempt-row">
         <span>Задание ${a.task_id}</span>
         <span class="badge ${a.passed ? 'badge-pass' : 'badge-fail'}">${a.passed ? 'Пройдено' : 'Ошибки'}</span>
         <span class="muted">${a.created_at ? new Date(a.created_at).toLocaleString('ru-RU') : ''}</span>
       </summary>
-      <pre class="block">${escapeHtml(a.code)}</pre>
+      <div class="code-editor"><div class="attempt-code-mount" data-idx="${i}"></div></div>
     </details>
   `).join('');
+  rows.querySelectorAll('details').forEach((details, i) => {
+    details.addEventListener('toggle', () => {
+      if (!details.open || details.dataset.mounted) return;
+      details.dataset.mounted = '1';
+      const mount = details.querySelector('.attempt-code-mount');
+      PracticeHubEditor.create(mount, data.attempts[i].code, null, {readOnly: true});
+    });
+  });
 }
 
 let ws = null;

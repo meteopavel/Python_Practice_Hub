@@ -14,6 +14,7 @@
     padding-block: var(--space-5);
   }
   .task-sidebar { position: sticky; top: 76px; }
+  .task-list { max-height: 640px; overflow-y: auto; }
   @media (max-width: 900px) {
     .student-layout { grid-template-columns: 1fr; }
     .task-sidebar { position: static; }
@@ -468,15 +469,23 @@ async function loadMyAttemptHistory(taskId) {
   if (!res.ok) { myAttemptsSection.style.display = 'none'; return; }
   const attempts = await res.json();
   myAttemptsSection.style.display = attempts.length ? 'block' : 'none';
-  myAttemptsRows.innerHTML = attempts.map(a => `
+  myAttemptsRows.innerHTML = attempts.map((a, i) => `
     <details class="attempt-item">
       <summary class="attempt-row">
         <span class="badge ${a.passed ? 'badge-pass' : 'badge-fail'}">${a.passed ? 'Пройдено' : 'Ошибки'}</span>
         <span class="muted">${a.created_at ? new Date(a.created_at).toLocaleString('ru-RU') : ''}</span>
       </summary>
-      <pre class="block">${escapeHtml(a.code)}</pre>
+      <div class="code-editor"><div class="attempt-code-mount" data-idx="${i}"></div></div>
     </details>
   `).join('');
+  myAttemptsRows.querySelectorAll('details').forEach((details, i) => {
+    details.addEventListener('toggle', () => {
+      if (!details.open || details.dataset.mounted) return;
+      details.dataset.mounted = '1';
+      const mount = details.querySelector('.attempt-code-mount');
+      PracticeHubEditor.create(mount, attempts[i].code, null, {readOnly: true});
+    }, {once: false});
+  });
 }
 
 function updateSolveVisibility() {
