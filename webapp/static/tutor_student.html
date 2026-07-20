@@ -6,20 +6,20 @@
 <title>Работа с учеником — Python Practice Hub</title>
 <link rel="stylesheet" href="/static/styles.css">
 <style>
-  .session-main { padding-block: var(--space-5); }
+  .session-main { padding-block: var(--space-4); }
   .session-layout {
     display: grid;
-    grid-template-columns: 320px 1fr;
-    gap: var(--space-5);
+    grid-template-columns: 300px 1fr;
+    gap: var(--space-4);
     align-items: start;
   }
   @media (max-width: 900px) {
     .session-layout { grid-template-columns: 1fr; }
   }
-  .attempts-panel { max-height: 640px; overflow-y: auto; }
-  .live-mount { min-height: 220px; }
+  .attempts-panel { max-height: 520px; overflow-y: auto; }
+  .live-mount { min-height: 180px; }
   .live-mount .cm-editor { height: 100%; }
-  .live-mount .cm-scroller { min-height: 220px; }
+  .live-mount .cm-scroller { min-height: 180px; }
 </style>
 </head>
 <body>
@@ -34,12 +34,12 @@
 </header>
 
 <div class="container session-main">
-  <div class="stack stack-2" style="margin-bottom: var(--space-5)">
+  <div class="stack stack-2" style="margin-bottom: var(--space-4)">
     <span class="panel-title">Ученик</span>
     <h1 id="student-title" style="font-size: var(--fs-2xl)">…</h1>
   </div>
 
-  <div class="card card-pad row between wrap" id="call-bar" style="margin-bottom: var(--space-5)">
+  <div class="card card-pad row between wrap" id="call-bar" style="margin-bottom: var(--space-4)">
     <div class="stack stack-2">
       <span class="panel-title">Аудиозвонок</span>
       <span class="muted" id="call-status">не в разговоре</span>
@@ -55,7 +55,7 @@
       <p class="muted" id="attempts-empty" style="display: none">Попыток пока нет.</p>
     </aside>
 
-    <main class="stack stack-5">
+    <main class="stack stack-4">
       <section class="stack stack-3">
         <div class="row between">
           <span class="panel-title">Код ученика сейчас</span>

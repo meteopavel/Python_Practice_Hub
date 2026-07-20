@@ -93,7 +93,7 @@
   --radius-pill: 999px;
 
   /* --- Раскладка */
-  --container: 1120px;
+  --container: 1320px;
   --transition: 140ms ease;
 }
 
@@ -198,7 +198,7 @@ a:hover { color: var(--c-primary-hover); text-decoration: underline; }
   display: flex;
   align-items: center;
   gap: var(--space-4);
-  height: 60px;
+  height: 52px;
   padding-inline: var(--space-5);
   background: color-mix(in srgb, var(--c-surface) 88%, transparent);
   backdrop-filter: saturate(1.4) blur(8px);
@@ -235,7 +235,7 @@ a:hover { color: var(--c-primary-hover); text-decoration: underline; }
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
 }
-.card-pad { padding: var(--space-5); }
+.card-pad { padding: var(--space-4); }
 
 .panel-title {
   font-size: var(--fs-xs);

@@ -8,22 +8,22 @@
 <style>
   .student-layout {
     display: grid;
-    grid-template-columns: 320px 1fr;
-    gap: var(--space-5);
+    grid-template-columns: 300px 1fr;
+    gap: var(--space-4);
     align-items: start;
-    padding-block: var(--space-5);
+    padding-block: var(--space-4);
   }
-  .task-sidebar { position: sticky; top: 76px; }
-  .task-list { max-height: 640px; overflow-y: auto; }
+  .task-sidebar { position: sticky; top: 68px; }
+  .task-list { max-height: 520px; overflow-y: auto; }
   @media (max-width: 900px) {
     .student-layout { grid-template-columns: 1fr; }
     .task-sidebar { position: static; }
   }
   .task-desc p { margin: 0 0 var(--space-3); white-space: pre-wrap; }
   .task-desc p:last-child { margin-bottom: 0; }
-  .code-mount { min-height: 260px; }
+  .code-mount { min-height: 200px; }
   .code-mount .cm-editor { height: 100%; }
-  .code-mount .cm-scroller { min-height: 260px; }
+  .code-mount .cm-scroller { min-height: 200px; }
   .hint-mount { min-height: 140px; }
   .hint-mount .cm-editor { height: 100%; }
   .hint-mount .cm-scroller { min-height: 140px; }
@@ -56,8 +56,8 @@
     <nav class="task-list" id="task-list"></nav>
   </aside>
 
-  <main class="stack stack-5">
-    <section class="card card-pad stack stack-4">
+  <main class="stack stack-4">
+    <section class="card card-pad stack stack-3">
       <div class="row between">
         <div class="stack stack-2">
           <span class="panel-title">Задание</span>
