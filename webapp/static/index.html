@@ -206,6 +206,25 @@ async function fetchIceServers() {
   return data.iceServers;
 }
 
+// Явно просим у браузера подавление эха/шума и автогейн — без этого
+// поведение по умолчанию отличается между браузерами и версиями.
+const AUDIO_CONSTRAINTS = {
+  echoCancellation: true,
+  noiseSuppression: true,
+  autoGainControl: true,
+};
+
+// Дефолтный битрейт Opus в "голосовом" профиле довольно низкий — поднимаем
+// потолок, качество звонка это заметно улучшает.
+function boostAudioBitrate(peerConnection) {
+  const sender = peerConnection.getSenders().find(s => s.track && s.track.kind === 'audio');
+  if (!sender) return;
+  const params = sender.getParameters();
+  if (!params.encodings || !params.encodings.length) params.encodings = [{}];
+  params.encodings[0].maxBitrate = 64000;
+  sender.setParameters(params).catch(() => {});
+}
+
 function setupPeerConnection(iceServers) {
   const conn = new RTCPeerConnection({iceServers});
   conn.onicecandidate = (e) => {
@@ -231,9 +250,10 @@ async function acceptCall() {
   if (!incomingOffer) return;
   try {
     const iceServers = await fetchIceServers();
-    localStream = await navigator.mediaDevices.getUserMedia({audio: true});
+    localStream = await navigator.mediaDevices.getUserMedia({audio: AUDIO_CONSTRAINTS});
     pc = setupPeerConnection(iceServers);
     localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
+    boostAudioBitrate(pc);
     await pc.setRemoteDescription(incomingOffer);
     for (const candidate of pendingRemoteIce) {
       await pc.addIceCandidate(candidate);
