@@ -40,6 +40,15 @@
   </form>
 </header>
 
+<div class="container">
+  <div class="card card-pad row between wrap" id="impersonation-banner" style="display: none; margin-top: var(--space-4); background: var(--c-primary-soft); border-color: var(--c-primary);">
+    <span>Вы смотрите как ученик <strong id="impersonation-username"></strong> — видно ровно то же, что и ему. Отправка кода отключена.</span>
+    <form method="post" action="/impersonate/stop" style="margin: 0;">
+      <button class="btn btn-sm" type="submit">Вернуться к репетитору</button>
+    </form>
+  </div>
+</div>
+
 <div class="container student-layout">
   <aside class="task-sidebar card card-pad stack stack-4">
     <span class="panel-title">Задания</span>
@@ -57,6 +66,11 @@
       </div>
       <div class="task-desc muted" id="description"></div>
       <pre class="block" id="solution-code" style="display: none"></pre>
+    </section>
+
+    <section class="stack stack-3" id="my-attempts-section" style="display: none">
+      <span class="panel-title">Мои попытки</span>
+      <div id="my-attempts-rows"></div>
     </section>
 
     <div class="card card-pad row between wrap" id="call-bar" style="display: none">
@@ -79,7 +93,7 @@
       </div>
     </section>
 
-    <section class="stack stack-3">
+    <section class="stack stack-3" id="solve-section">
       <div class="row between">
         <span class="panel-title">Ваше решение · Python 3</span>
       </div>
@@ -95,6 +109,7 @@
         <button class="btn btn-primary" id="submit-btn">Проверить</button>
       </div>
     </section>
+    <p class="muted" id="solved-note" style="display: none">Задание уже решено ✅ — код можно посмотреть в «Мои попытки» выше.</p>
 
     <section class="stack stack-4" id="results-section" style="display: none">
       <span class="panel-title">Результаты проверки</span>
@@ -129,6 +144,10 @@ const results = document.getElementById('results');
 const resultsSection = document.getElementById('results-section');
 const solutionBtn = document.getElementById('solution-btn');
 const solutionCode = document.getElementById('solution-code');
+const myAttemptsSection = document.getElementById('my-attempts-section');
+const myAttemptsRows = document.getElementById('my-attempts-rows');
+const solveSection = document.getElementById('solve-section');
+const solvedNote = document.getElementById('solved-note');
 
 let ws = null;
 
@@ -368,13 +387,21 @@ function redirectToLoginIfUnauthorized(res) {
   return false;
 }
 
+let impersonating = false;
+
 async function loadMe() {
   const res = await fetch('/api/me');
   if (redirectToLoginIfUnauthorized(res)) return;
   const data = await res.json();
   document.getElementById('username').textContent = data.username || '';
   document.getElementById('avatar').textContent = (data.username || '?').slice(0, 2).toUpperCase();
-  if (data.role === 'tutor') {
+  impersonating = !!data.impersonating;
+  if (impersonating) {
+    document.getElementById('impersonation-banner').style.display = 'flex';
+    document.getElementById('impersonation-username').textContent = data.username || '';
+    submitBtn.disabled = true;
+    submitBtn.title = 'Отправка кода отключена в режиме просмотра «как ученик»';
+  } else if (data.role === 'tutor') {
     document.getElementById('tutor-link').style.display = 'inline-flex';
     solutionBtn.style.display = 'inline-flex';
   } else {
@@ -431,6 +458,31 @@ function showDescription() {
   solutionCode.style.display = 'none';
   solutionCode.textContent = '';
   solutionBtn.textContent = 'Показать эталон';
+  updateSolveVisibility();
+  loadMyAttemptHistory(currentTaskId);
+}
+
+async function loadMyAttemptHistory(taskId) {
+  if (taskId === null) { myAttemptsSection.style.display = 'none'; return; }
+  const res = await fetch(`/api/attempts/mine/${taskId}`);
+  if (!res.ok) { myAttemptsSection.style.display = 'none'; return; }
+  const attempts = await res.json();
+  myAttemptsSection.style.display = attempts.length ? 'block' : 'none';
+  myAttemptsRows.innerHTML = attempts.map(a => `
+    <details class="attempt-item">
+      <summary class="attempt-row">
+        <span class="badge ${a.passed ? 'badge-pass' : 'badge-fail'}">${a.passed ? 'Пройдено' : 'Ошибки'}</span>
+        <span class="muted">${a.created_at ? new Date(a.created_at).toLocaleString('ru-RU') : ''}</span>
+      </summary>
+      <pre class="block">${escapeHtml(a.code)}</pre>
+    </details>
+  `).join('');
+}
+
+function updateSolveVisibility() {
+  const solved = taskStatus[currentTaskId] === 'pass';
+  solveSection.style.display = solved ? 'none' : '';
+  solvedNote.style.display = solved ? 'block' : 'none';
 }
 
 solutionBtn.addEventListener('click', async () => {
@@ -491,6 +543,8 @@ function render(data) {
 
   taskStatus[currentTaskId] = data.all_passed ? 'pass' : 'fail';
   renderTaskList();
+  updateSolveVisibility();
+  loadMyAttemptHistory(currentTaskId);
 
   summary.innerHTML = `<div class="result-summary ${data.all_passed ? 'is-pass' : 'is-fail'}">
     <span class="count">${data.passed} / ${data.total}</span>

@@ -100,6 +100,42 @@ def tutor_student_page(student_id: int, request: Request):
     return FileResponse(STATIC_DIR / "tutor_student.html")
 
 
+@app.post("/tutor/student/{student_id}/impersonate")
+def start_impersonation(student_id: int, request: Request, db: Session = Depends(get_db)):
+    if current_user_id(request) is None:
+        return RedirectResponse(url="/login", status_code=303)
+    if current_user_role(request) != ROLE_TUTOR:
+        return RedirectResponse(url="/", status_code=303)
+    student = db.query(User).filter(User.id == student_id, User.role == ROLE_STUDENT).first()
+    if student is not None:
+        # Эффективная личность только для student-facing данных (см.
+        # effective_identity) — авторизация тьюторских роутов идёт по
+        # реальной роли из сессии и этим флагом не затрагивается.
+        request.session["impersonate_student_id"] = student.id
+    return RedirectResponse(url="/", status_code=303)
+
+
+@app.post("/impersonate/stop")
+def stop_impersonation(request: Request):
+    student_id = request.session.pop("impersonate_student_id", None)
+    if student_id is not None:
+        return RedirectResponse(url=f"/tutor/student/{student_id}", status_code=303)
+    return RedirectResponse(url="/tutor", status_code=303)
+
+
+def effective_identity(request: Request, db: Session):
+    """Для тьютора в режиме "посмотреть как ученик" подменяет личность только
+    для student-facing данных (список заданий/свои попытки) — НЕ для
+    авторизации, та остаётся на реальной роли из сессии."""
+    real_role = current_user_role(request)
+    impersonate_id = request.session.get("impersonate_student_id")
+    if impersonate_id and real_role == ROLE_TUTOR:
+        student = db.query(User).filter(User.id == impersonate_id, User.role == ROLE_STUDENT).first()
+        if student is not None:
+            return student.id, True, request.session.get("username"), student.username
+    return current_user_id(request), False, None, request.session.get("username")
+
+
 @app.get("/api/tasks")
 def list_tasks(request: Request):
     if current_user_id(request) is None:
@@ -144,26 +180,50 @@ def turn_credentials(request: Request):
 
 
 @app.get("/api/me")
-def me(request: Request):
+def me(request: Request, db: Session = Depends(get_db)):
     if current_user_id(request) is None:
         return unauthorized()
+    user_id, impersonating, real_username, username = effective_identity(request, db)
     return {
-        "id": current_user_id(request),
-        "username": request.session.get("username"),
-        "role": request.session.get("role"),
+        "id": user_id,
+        "username": username,
+        "role": ROLE_STUDENT if impersonating else request.session.get("role"),
+        "impersonating": impersonating,
+        "real_username": real_username,
     }
 
 
 @app.get("/api/attempts/mine")
 def my_attempts(request: Request, db: Session = Depends(get_db)):
-    user_id = current_user_id(request)
-    if user_id is None:
+    if current_user_id(request) is None:
         return unauthorized()
+    user_id, _, _, _ = effective_identity(request, db)
     rows = db.query(Attempt.task_id, Attempt.passed).filter(Attempt.user_id == user_id).all()
     passed_by_task = {}
     for task_id, passed in rows:
         passed_by_task[task_id] = passed_by_task.get(task_id, False) or passed
     return {task_id: ("pass" if passed else "fail") for task_id, passed in passed_by_task.items()}
+
+
+@app.get("/api/attempts/mine/{task_id}")
+def my_task_attempts(task_id: int, request: Request, db: Session = Depends(get_db)):
+    if current_user_id(request) is None:
+        return unauthorized()
+    user_id, _, _, _ = effective_identity(request, db)
+    rows = (
+        db.query(Attempt)
+        .filter(Attempt.user_id == user_id, Attempt.task_id == task_id)
+        .order_by(Attempt.created_at.asc())
+        .all()
+    )
+    return [
+        {
+            "passed": a.passed,
+            "code": a.code,
+            "created_at": a.created_at.isoformat() if a.created_at else None,
+        }
+        for a in rows
+    ]
 
 
 @app.get("/api/attempts")
@@ -323,6 +383,8 @@ def submit(payload: SubmissionRequest, request: Request, db: Session = Depends(g
     user_id = current_user_id(request)
     if user_id is None:
         return unauthorized()
+    if request.session.get("impersonate_student_id"):
+        return JSONResponse(status_code=403, content={"error": "Отправка кода недоступна в режиме просмотра «как ученик»"})
 
     result = grade(payload.task_id, payload.code)
 

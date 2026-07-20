@@ -17,14 +17,6 @@
     .session-layout { grid-template-columns: 1fr; }
   }
   .attempts-panel { max-height: 640px; overflow-y: auto; }
-  .attempt-item { border-bottom: 1px solid var(--c-border); }
-  .attempt-item:last-child { border-bottom: 0; }
-  .attempt-row {
-    display: flex; align-items: center; justify-content: space-between;
-    gap: var(--space-3); padding: var(--space-2) 0;
-    font-size: var(--fs-sm); cursor: pointer;
-  }
-  .attempt-item pre.block { margin-bottom: var(--space-2); max-height: 320px; }
   .live-mount { min-height: 220px; }
   .live-mount .cm-editor { height: 100%; }
   .live-mount .cm-scroller { min-height: 220px; }
@@ -35,6 +27,9 @@
   <div class="brand"><span class="brand-mark">&lt;/&gt;</span> Python Practice Hub</div>
   <span class="chip" style="background: var(--c-primary-soft); color: var(--c-primary)">Репетитор</span>
   <div class="header-spacer"></div>
+  <form id="impersonate-form" method="post" style="display: inline; margin: 0;">
+    <button class="btn btn-sm" type="submit">Посмотреть как ученик</button>
+  </form>
   <a class="btn btn-sm btn-ghost" href="/tutor">← к списку учеников</a>
 </header>
 
@@ -90,6 +85,7 @@
 <script src="/static/noise-suppressor.bundle.js"></script>
 <script>
 const studentId = Number(window.location.pathname.split('/').pop());
+document.getElementById('impersonate-form').action = `/tutor/student/${studentId}/impersonate`;
 
 function escapeHtml(value) {
   const div = document.createElement('div');

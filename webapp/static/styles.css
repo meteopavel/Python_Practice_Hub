@@ -473,6 +473,14 @@ pre.block {
   border: 1px solid var(--c-code-border);
   border-radius: var(--radius-md);
 }
+.attempt-item { border-bottom: 1px solid var(--c-border); }
+.attempt-item:last-child { border-bottom: 0; }
+.attempt-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--space-3); padding: var(--space-2) 0;
+  font-size: var(--fs-sm); cursor: pointer;
+}
+.attempt-item pre.block { margin-bottom: var(--space-2); max-height: 320px; }
 
 /* --------------------------------------------------------------------------
    11. РЕЗУЛЬТАТЫ ТЕСТОВ
