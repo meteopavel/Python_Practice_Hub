@@ -3,21 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Успехи учеников — Python Practice Hub</title>
+<title>Ученики — Python Practice Hub</title>
 <link rel="stylesheet" href="/static/styles.css">
 <style>
   .tutor-main { padding-block: var(--space-5); }
-  .stat-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--space-4);
-    margin-bottom: var(--space-5);
-  }
-  @media (max-width: 720px) { .stat-grid { grid-template-columns: 1fr; } }
-  .stat .stat-num { font-size: var(--fs-2xl); font-weight: var(--fw-bold); letter-spacing: -0.02em; }
-  .stat .stat-label { font-size: var(--fs-sm); color: var(--c-text-muted); }
-  .toolbar { display: flex; gap: var(--space-3); align-items: center; margin-bottom: var(--space-4); flex-wrap: wrap; }
-  .toolbar .input { max-width: 260px; }
+  .student-row { cursor: pointer; }
+  .student-row:hover { background: var(--c-surface-2); }
 </style>
 </head>
 <body>
@@ -30,97 +21,47 @@
 
 <div class="container tutor-main">
   <div class="stack stack-2" style="margin-bottom: var(--space-5)">
-    <h1 style="font-size: var(--fs-2xl)">Успехи учеников</h1>
-    <p class="muted">Последние попытки решения</p>
-  </div>
-
-  <div class="stat-grid">
-    <div class="card card-pad stat"><div class="stat-num" id="stat-students">—</div><div class="stat-label">учеников</div></div>
-    <div class="card card-pad stat"><div class="stat-num" id="stat-attempts">—</div><div class="stat-label">попыток</div></div>
-    <div class="card card-pad stat"><div class="stat-num" id="stat-passrate" style="color: var(--c-pass)">—</div><div class="stat-label">решено верно</div></div>
-  </div>
-
-  <div class="toolbar">
-    <input class="input" type="search" id="filter-student" placeholder="Поиск по ученику…">
-    <select class="select" id="filter-task" style="max-width: 200px">
-      <option value="">Все задания</option>
-    </select>
-    <select class="select" id="filter-result" style="max-width: 180px">
-      <option value="">Все результаты</option>
-      <option value="pass">Пройдено</option>
-      <option value="fail">Ошибки</option>
-    </select>
+    <h1 style="font-size: var(--fs-2xl)">Ученики</h1>
+    <p class="muted">Выберите ученика, чтобы посмотреть его попытки и поработать с ним вживую</p>
   </div>
 
   <div class="table-wrap">
     <table class="table">
       <thead>
-        <tr><th>Ученик</th><th>Задание</th><th>Результат</th><th class="col-right">Когда</th></tr>
+        <tr><th>Ученик</th><th>Попыток</th><th class="col-right">Последняя активность</th></tr>
       </thead>
       <tbody id="rows"></tbody>
     </table>
   </div>
+  <p class="muted" id="empty-state" style="display: none; margin-top: var(--space-4)">Пока нет ни одного ученика.</p>
 </div>
 
 <script>
-let attempts = [];
-
 function initials(name) {
   return (name || '?').slice(0, 2).toUpperCase();
 }
 
 async function load() {
-  const res = await fetch('/api/attempts');
+  const res = await fetch('/api/students');
   if (res.status === 401) { window.location.href = '/login'; return; }
   if (res.status === 403) { window.location.href = '/'; return; }
-  attempts = await res.json();
-  renderStats();
-  renderTaskFilter();
-  renderRows();
-}
+  const students = await res.json();
 
-function renderStats() {
-  const students = new Set(attempts.map(a => a.username));
-  const passed = attempts.filter(a => a.passed).length;
-  document.getElementById('stat-students').textContent = students.size;
-  document.getElementById('stat-attempts').textContent = attempts.length;
-  document.getElementById('stat-passrate').textContent =
-    attempts.length ? Math.round((passed / attempts.length) * 100) + '%' : '—';
-}
-
-function renderTaskFilter() {
-  const taskIds = [...new Set(attempts.map(a => a.task_id))].sort((a, b) => a - b);
-  const select = document.getElementById('filter-task');
-  select.innerHTML = '<option value="">Все задания</option>' +
-    taskIds.map(id => `<option value="${id}">Задание ${id}</option>`).join('');
-}
-
-function renderRows() {
-  const studentFilter = document.getElementById('filter-student').value.trim().toLowerCase();
-  const taskFilter = document.getElementById('filter-task').value;
-  const resultFilter = document.getElementById('filter-result').value;
-
-  const filtered = attempts.filter(a => {
-    if (studentFilter && !a.username.toLowerCase().includes(studentFilter)) return false;
-    if (taskFilter && String(a.task_id) !== taskFilter) return false;
-    if (resultFilter === 'pass' && !a.passed) return false;
-    if (resultFilter === 'fail' && a.passed) return false;
-    return true;
-  });
-
-  document.getElementById('rows').innerHTML = filtered.map(r => `
-    <tr>
-      <td><span class="avatar">${initials(r.username)}</span>${r.username}</td>
-      <td>Задание ${r.task_id}</td>
-      <td><span class="badge ${r.passed ? 'badge-pass' : 'badge-fail'}">${r.passed ? 'Пройдено' : 'Ошибки'}</span></td>
-      <td class="col-right num muted">${r.created_at ? new Date(r.created_at).toLocaleString('ru-RU') : ''}</td>
+  document.getElementById('empty-state').style.display = students.length ? 'none' : 'block';
+  document.getElementById('rows').innerHTML = students.map(s => `
+    <tr class="student-row" data-id="${s.id}">
+      <td><span class="avatar">${initials(s.username)}</span>${s.username}</td>
+      <td class="num muted">${s.attempts_count}</td>
+      <td class="col-right num muted">${s.last_attempt_at ? new Date(s.last_attempt_at).toLocaleString('ru-RU') : '—'}</td>
     </tr>
   `).join('');
-}
 
-document.getElementById('filter-student').addEventListener('input', renderRows);
-document.getElementById('filter-task').addEventListener('change', renderRows);
-document.getElementById('filter-result').addEventListener('change', renderRows);
+  document.querySelectorAll('.student-row').forEach(row => {
+    row.addEventListener('click', () => {
+      window.location.href = `/tutor/student/${row.dataset.id}`;
+    });
+  });
+}
 
 load();
 </script>

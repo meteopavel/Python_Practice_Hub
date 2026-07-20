@@ -6,7 +6,7 @@ import inspect
 import os
 from pathlib import Path
 
-from fastapi import Depends, FastAPI, Form, Request
+from fastapi import Depends, FastAPI, Form, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -18,6 +18,7 @@ from bot_bridge import TASKS, get_solver
 from db import Base, SessionLocal, engine, get_db
 from grading import grade
 from models import ROLE_STUDENT, ROLE_TUTOR, Attempt, User
+from realtime import get_room, safe_send
 from test_cases import TEST_CASES
 
 SESSION_SECRET = os.environ.get("SESSION_SECRET")
@@ -79,6 +80,15 @@ def tutor_page(request: Request):
     return FileResponse(STATIC_DIR / "tutor.html")
 
 
+@app.get("/tutor/student/{student_id}")
+def tutor_student_page(student_id: int, request: Request):
+    if current_user_id(request) is None:
+        return RedirectResponse(url="/login", status_code=303)
+    if current_user_role(request) != ROLE_TUTOR:
+        return RedirectResponse(url="/", status_code=303)
+    return FileResponse(STATIC_DIR / "tutor_student.html")
+
+
 @app.get("/api/tasks")
 def list_tasks(request: Request):
     if current_user_id(request) is None:
@@ -105,7 +115,11 @@ def get_solution(task_id: int, request: Request):
 def me(request: Request):
     if current_user_id(request) is None:
         return unauthorized()
-    return {"username": request.session.get("username"), "role": request.session.get("role")}
+    return {
+        "id": current_user_id(request),
+        "username": request.session.get("username"),
+        "role": request.session.get("role"),
+    }
 
 
 @app.get("/api/attempts")
@@ -131,6 +145,113 @@ def list_attempts(request: Request, db: Session = Depends(get_db)):
         }
         for attempt, username in rows
     ]
+
+
+@app.get("/api/students")
+def list_students(request: Request, db: Session = Depends(get_db)):
+    if current_user_id(request) is None:
+        return unauthorized()
+    if current_user_role(request) != ROLE_TUTOR:
+        return forbidden()
+    students = db.query(User).filter(User.role == ROLE_STUDENT).order_by(User.username).all()
+    result = []
+    for student in students:
+        last_attempt = (
+            db.query(Attempt)
+            .filter(Attempt.user_id == student.id)
+            .order_by(Attempt.created_at.desc())
+            .first()
+        )
+        attempts_count = db.query(Attempt).filter(Attempt.user_id == student.id).count()
+        result.append({
+            "id": student.id,
+            "username": student.username,
+            "attempts_count": attempts_count,
+            "last_attempt_at": last_attempt.created_at.isoformat() if last_attempt and last_attempt.created_at else None,
+        })
+    return result
+
+
+@app.get("/api/students/{student_id}/attempts")
+def student_attempts(student_id: int, request: Request, db: Session = Depends(get_db)):
+    if current_user_id(request) is None:
+        return unauthorized()
+    if current_user_role(request) != ROLE_TUTOR:
+        return forbidden()
+    student = db.query(User).filter(User.id == student_id, User.role == ROLE_STUDENT).first()
+    if student is None:
+        return JSONResponse(status_code=404, content={"error": "Ученик не найден"})
+    rows = (
+        db.query(Attempt)
+        .filter(Attempt.user_id == student_id)
+        .order_by(Attempt.created_at.desc())
+        .limit(200)
+        .all()
+    )
+    return {
+        "username": student.username,
+        "attempts": [
+            {
+                "task_id": a.task_id,
+                "passed": a.passed,
+                "code": a.code,
+                "created_at": a.created_at.isoformat() if a.created_at else None,
+            }
+            for a in rows
+        ],
+    }
+
+
+@app.websocket("/ws/session/{student_id}")
+async def session_ws(websocket: WebSocket, student_id: int):
+    """Живая комната одного ученика: сам ученик + один или несколько тьюторов,
+    которые сейчас смотрят его экран. Тьютор пишет — ученик видит подсказку,
+    ученик печатает — тьютор видит код в реальном времени."""
+    user_id = websocket.session.get("user_id")
+    role = websocket.session.get("role")
+    if user_id is None or role not in (ROLE_STUDENT, ROLE_TUTOR):
+        await websocket.close(code=4401)
+        return
+    if role == ROLE_STUDENT and user_id != student_id:
+        await websocket.close(code=4403)
+        return
+
+    await websocket.accept()
+    room = get_room(student_id)
+    is_tutor = role == ROLE_TUTOR
+
+    if is_tutor:
+        room.tutor_sockets.add(websocket)
+        await safe_send(websocket, {"type": "student_code", "code": room.last_student_code})
+        await safe_send(websocket, {"type": "tutor_hint", "code": room.last_tutor_hint})
+        if room.student_ws is not None:
+            await safe_send(room.student_ws, {"type": "tutor_status", "online": True})
+    else:
+        room.student_ws = websocket
+        await safe_send(websocket, {"type": "tutor_status", "online": bool(room.tutor_sockets)})
+        await safe_send(websocket, {"type": "tutor_hint", "code": room.last_tutor_hint})
+
+    try:
+        while True:
+            data = await websocket.receive_json()
+            code = data.get("code", "")
+            if is_tutor:
+                room.last_tutor_hint = code
+                if room.student_ws is not None:
+                    await safe_send(room.student_ws, {"type": "tutor_hint", "code": code})
+            else:
+                room.last_student_code = code
+                for tutor_ws in room.tutor_sockets:
+                    await safe_send(tutor_ws, {"type": "student_code", "code": code})
+    except WebSocketDisconnect:
+        pass
+    finally:
+        if is_tutor:
+            room.tutor_sockets.discard(websocket)
+            if not room.tutor_sockets and room.student_ws is not None:
+                await safe_send(room.student_ws, {"type": "tutor_status", "online": False})
+        elif room.student_ws is websocket:
+            room.student_ws = None
 
 
 @app.post("/api/submit")

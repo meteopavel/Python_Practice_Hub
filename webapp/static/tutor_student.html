@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Работа с учеником — Python Practice Hub</title>
+<link rel="stylesheet" href="/static/styles.css">
+<style>
+  .session-main { padding-block: var(--space-5); }
+  .session-layout {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: var(--space-5);
+    align-items: start;
+  }
+  @media (max-width: 900px) {
+    .session-layout { grid-template-columns: 1fr; }
+  }
+  .attempts-panel { max-height: 640px; overflow-y: auto; }
+  .attempt-row {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: var(--space-3); padding: var(--space-2) 0; border-bottom: 1px solid var(--c-border);
+    font-size: var(--fs-sm);
+  }
+  .attempt-row:last-child { border-bottom: 0; }
+  .live-mount { min-height: 220px; }
+  .live-mount .cm-editor { height: 100%; }
+  .live-mount .cm-scroller { min-height: 220px; }
+</style>
+</head>
+<body>
+<header class="app-header">
+  <div class="brand"><span class="brand-mark">&lt;/&gt;</span> Python Practice Hub</div>
+  <span class="chip" style="background: var(--c-primary-soft); color: var(--c-primary)">Репетитор</span>
+  <div class="header-spacer"></div>
+  <a class="btn btn-sm btn-ghost" href="/tutor">← к списку учеников</a>
+</header>
+
+<div class="container session-main">
+  <div class="stack stack-2" style="margin-bottom: var(--space-5)">
+    <span class="panel-title">Ученик</span>
+    <h1 id="student-title" style="font-size: var(--fs-2xl)">…</h1>
+  </div>
+
+  <div class="session-layout">
+    <aside class="card card-pad stack stack-3 attempts-panel">
+      <span class="panel-title">История попыток</span>
+      <div id="attempts-rows" class="stack stack-2"></div>
+      <p class="muted" id="attempts-empty" style="display: none">Попыток пока нет.</p>
+    </aside>
+
+    <main class="stack stack-5">
+      <section class="stack stack-3">
+        <div class="row between">
+          <span class="panel-title">Код ученика сейчас</span>
+          <span class="faint" style="font-size: var(--fs-sm)" id="student-live-status">ученик не печатает</span>
+        </div>
+        <div class="code-editor">
+          <div class="code-editor-bar"><span>live, read-only</span></div>
+          <div class="live-mount" id="student-mirror-mount"></div>
+        </div>
+      </section>
+
+      <section class="stack stack-3">
+        <div class="row between">
+          <span class="panel-title">Ваша подсказка ученику</span>
+          <span class="faint" style="font-size: var(--fs-sm)">видна ученику, пока вы онлайн</span>
+        </div>
+        <div class="code-editor">
+          <div class="code-editor-bar"><span>hint.py</span></div>
+          <div class="live-mount" id="hint-mount"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<script src="/static/codemirror.bundle.js"></script>
+<script>
+const studentId = Number(window.location.pathname.split('/').pop());
+
+function escapeHtml(value) {
+  const div = document.createElement('div');
+  div.textContent = value === undefined ? '' : String(value);
+  return div.innerHTML;
+}
+
+const mirrorEditor = PracticeHubEditor.create(
+  document.getElementById('student-mirror-mount'), '', null, {readOnly: true}
+);
+
+let hintSendTimer = null;
+const hintEditor = PracticeHubEditor.create(
+  document.getElementById('hint-mount'),
+  '',
+  (code) => {
+    clearTimeout(hintSendTimer);
+    hintSendTimer = setTimeout(() => sendMessage({code}), 300);
+  }
+);
+
+async function loadAttempts() {
+  const res = await fetch(`/api/students/${studentId}/attempts`);
+  if (res.status === 401) { window.location.href = '/login'; return; }
+  if (res.status === 403 || res.status === 404) { window.location.href = '/tutor'; return; }
+  const data = await res.json();
+  document.getElementById('student-title').textContent = data.username;
+  document.title = `${data.username} — Python Practice Hub`;
+
+  const rows = document.getElementById('attempts-rows');
+  document.getElementById('attempts-empty').style.display = data.attempts.length ? 'none' : 'block';
+  rows.innerHTML = data.attempts.map(a => `
+    <div class="attempt-row">
+      <span>Задание ${a.task_id}</span>
+      <span class="badge ${a.passed ? 'badge-pass' : 'badge-fail'}">${a.passed ? 'Пройдено' : 'Ошибки'}</span>
+      <span class="muted">${a.created_at ? new Date(a.created_at).toLocaleString('ru-RU') : ''}</span>
+    </div>
+  `).join('');
+}
+
+let ws = null;
+let studentTypingTimer = null;
+
+function sendMessage(payload) {
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify(payload));
+  }
+}
+
+function connectWs() {
+  const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  ws = new WebSocket(`${protocol}//${location.host}/ws/session/${studentId}`);
+
+  ws.onmessage = (event) => {
+    const msg = JSON.parse(event.data);
+    if (msg.type === 'student_code') {
+      mirrorEditor.setValue(msg.code || '');
+      document.getElementById('student-live-status').textContent = 'ученик печатает';
+      clearTimeout(studentTypingTimer);
+      studentTypingTimer = setTimeout(() => {
+        document.getElementById('student-live-status').textContent = 'ученик не печатает';
+      }, 4000);
+    } else if (msg.type === 'tutor_hint') {
+      hintEditor.setValue(msg.code || '');
+    }
+  };
+
+  ws.onclose = () => {
+    setTimeout(connectWs, 2000);
+  };
+}
+
+loadAttempts();
+connectWs();
+</script>
+</body>
+</html>

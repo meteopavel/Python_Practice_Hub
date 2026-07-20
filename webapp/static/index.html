@@ -23,6 +23,9 @@
   .code-mount { min-height: 260px; }
   .code-mount .cm-editor { height: 100%; }
   .code-mount .cm-scroller { min-height: 260px; }
+  .hint-mount { min-height: 140px; }
+  .hint-mount .cm-editor { height: 100%; }
+  .hint-mount .cm-scroller { min-height: 140px; }
 </style>
 </head>
 <body>
@@ -56,6 +59,17 @@
       <pre class="block" id="solution-code" style="display: none"></pre>
     </section>
 
+    <section class="stack stack-3" id="hint-section" style="display: none">
+      <div class="row between">
+        <span class="panel-title">Подсказка от репетитора</span>
+        <span class="badge badge-pass">Репетитор online</span>
+      </div>
+      <div class="code-editor">
+        <div class="code-editor-bar"><span>hint.py</span></div>
+        <div class="hint-mount" id="hint-mount"></div>
+      </div>
+    </section>
+
     <section class="stack stack-3">
       <div class="row between">
         <span class="panel-title">Ваше решение · Python 3</span>
@@ -86,9 +100,18 @@
 const taskList = document.getElementById('task-list');
 const description = document.getElementById('description');
 const taskTitle = document.getElementById('task-title');
+let codeSendTimer = null;
 const codeEditor = PracticeHubEditor.create(
   document.getElementById('code-mount'),
-  'def solve(data):\n    pass\n'
+  'def solve(data):\n    pass\n',
+  (code) => {
+    clearTimeout(codeSendTimer);
+    codeSendTimer = setTimeout(() => sendMessage({code}), 300);
+  }
+);
+const hintSection = document.getElementById('hint-section');
+const hintEditor = PracticeHubEditor.create(
+  document.getElementById('hint-mount'), '', null, {readOnly: true}
 );
 const submitBtn = document.getElementById('submit-btn');
 const summary = document.getElementById('summary');
@@ -96,6 +119,32 @@ const results = document.getElementById('results');
 const resultsSection = document.getElementById('results-section');
 const solutionBtn = document.getElementById('solution-btn');
 const solutionCode = document.getElementById('solution-code');
+
+let ws = null;
+
+function sendMessage(payload) {
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify(payload));
+  }
+}
+
+function connectWs(ownId) {
+  const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  ws = new WebSocket(`${protocol}//${location.host}/ws/session/${ownId}`);
+
+  ws.onmessage = (event) => {
+    const msg = JSON.parse(event.data);
+    if (msg.type === 'tutor_status') {
+      hintSection.style.display = msg.online ? 'flex' : 'none';
+    } else if (msg.type === 'tutor_hint') {
+      hintEditor.setValue(msg.code || '');
+    }
+  };
+
+  ws.onclose = () => {
+    setTimeout(() => connectWs(ownId), 2000);
+  };
+}
 
 let tasks = [];
 let currentTaskId = null;
@@ -124,6 +173,8 @@ async function loadMe() {
   if (data.role === 'tutor') {
     document.getElementById('tutor-link').style.display = 'inline-flex';
     solutionBtn.style.display = 'inline-flex';
+  } else {
+    connectWs(data.id);
   }
 }
 
