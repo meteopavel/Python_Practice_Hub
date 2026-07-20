@@ -59,6 +59,15 @@
       <pre class="block" id="solution-code" style="display: none"></pre>
     </section>
 
+    <div class="card card-pad row between wrap" id="call-bar" style="display: none">
+      <div class="stack stack-2">
+        <span class="panel-title">Аудиозвонок</span>
+        <span class="muted" id="call-status"></span>
+      </div>
+      <div class="row" id="call-actions"></div>
+    </div>
+    <audio id="remote-audio" autoplay></audio>
+
     <section class="stack stack-3" id="hint-section" style="display: none">
       <div class="row between">
         <span class="panel-title">Подсказка от репетитора</span>
@@ -138,12 +147,133 @@ function connectWs(ownId) {
       hintSection.style.display = msg.online ? 'flex' : 'none';
     } else if (msg.type === 'tutor_hint') {
       hintEditor.setValue(msg.code || '');
+    } else if (msg.type === 'call_offer') {
+      handleCallOffer(msg);
+    } else if (msg.type === 'call_ice') {
+      handleRemoteIce(msg);
+    } else if (msg.type === 'call_end') {
+      endCall(false);
     }
   };
 
   ws.onclose = () => {
     setTimeout(() => connectWs(ownId), 2000);
   };
+}
+
+// --- Аудиозвонок (WebRTC, P2P) ---------------------------------------------
+// Ученик всегда принимающий: ждёт offer от тьютора, отвечает answer'ом.
+// Сигналинг идёт через тот же WebSocket, что и live-код/подсказки.
+let pc = null;
+let localStream = null;
+let pendingRemoteIce = [];
+let incomingOffer = null;
+let callState = 'idle'; // idle | ringing | in-call
+
+const callBar = document.getElementById('call-bar');
+const callStatusEl = document.getElementById('call-status');
+const callActionsEl = document.getElementById('call-actions');
+const remoteAudio = document.getElementById('remote-audio');
+
+function renderCallBar() {
+  if (callState === 'idle') {
+    callBar.style.display = 'none';
+    return;
+  }
+  callBar.style.display = 'flex';
+  if (callState === 'ringing') {
+    callStatusEl.textContent = 'входящий звонок от репетитора';
+    callActionsEl.innerHTML = `
+      <button class="btn btn-primary btn-sm" id="accept-btn">Принять</button>
+      <button class="btn btn-sm btn-ghost" id="decline-btn">Отклонить</button>
+    `;
+    document.getElementById('accept-btn').addEventListener('click', acceptCall);
+    document.getElementById('decline-btn').addEventListener('click', () => endCall(true));
+  } else if (callState === 'in-call') {
+    callStatusEl.textContent = 'в разговоре с репетитором';
+    callActionsEl.innerHTML = `
+      <button class="btn btn-sm" id="mute-btn">Выключить микрофон</button>
+      <button class="btn btn-sm btn-ghost" id="hangup-btn">Завершить звонок</button>
+    `;
+    document.getElementById('mute-btn').addEventListener('click', toggleMute);
+    document.getElementById('hangup-btn').addEventListener('click', () => endCall(true));
+  }
+}
+
+async function fetchIceServers() {
+  const res = await fetch('/api/turn-credentials');
+  const data = await res.json();
+  return data.iceServers;
+}
+
+function setupPeerConnection(iceServers) {
+  const conn = new RTCPeerConnection({iceServers});
+  conn.onicecandidate = (e) => {
+    if (e.candidate) sendMessage({type: 'call_ice', candidate: e.candidate});
+  };
+  conn.ontrack = (e) => { remoteAudio.srcObject = e.streams[0]; };
+  conn.onconnectionstatechange = () => {
+    if (conn.connectionState === 'failed' || conn.connectionState === 'disconnected') {
+      endCall(true);
+    }
+  };
+  return conn;
+}
+
+function handleCallOffer(msg) {
+  if (callState !== 'idle') return; // уже звоним/говорим — второй входящий игнорируем
+  incomingOffer = msg.sdp;
+  callState = 'ringing';
+  renderCallBar();
+}
+
+async function acceptCall() {
+  if (!incomingOffer) return;
+  try {
+    const iceServers = await fetchIceServers();
+    localStream = await navigator.mediaDevices.getUserMedia({audio: true});
+    pc = setupPeerConnection(iceServers);
+    localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
+    await pc.setRemoteDescription(incomingOffer);
+    for (const candidate of pendingRemoteIce) {
+      await pc.addIceCandidate(candidate);
+    }
+    pendingRemoteIce = [];
+    const answer = await pc.createAnswer();
+    await pc.setLocalDescription(answer);
+    sendMessage({type: 'call_answer', sdp: answer});
+    callState = 'in-call';
+    renderCallBar();
+  } catch (e) {
+    callStatusEl.textContent = 'не удалось включить микрофон';
+    endCall(true);
+  }
+}
+
+async function handleRemoteIce(msg) {
+  if (pc && pc.remoteDescription) {
+    await pc.addIceCandidate(msg.candidate);
+  } else {
+    pendingRemoteIce.push(msg.candidate);
+  }
+}
+
+function toggleMute() {
+  if (!localStream) return;
+  const track = localStream.getAudioTracks()[0];
+  track.enabled = !track.enabled;
+  document.getElementById('mute-btn').textContent = track.enabled ? 'Выключить микрофон' : 'Включить микрофон';
+}
+
+function endCall(notify) {
+  if (pc) { pc.close(); pc = null; }
+  if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
+  pendingRemoteIce = [];
+  incomingOffer = null;
+  remoteAudio.srcObject = null;
+  if (notify) sendMessage({type: 'call_end'});
+  callState = 'idle';
+  renderCallBar();
 }
 
 let tasks = [];

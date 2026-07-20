@@ -42,6 +42,15 @@
     <h1 id="student-title" style="font-size: var(--fs-2xl)">…</h1>
   </div>
 
+  <div class="card card-pad row between wrap" id="call-bar" style="margin-bottom: var(--space-5)">
+    <div class="stack stack-2">
+      <span class="panel-title">Аудиозвонок</span>
+      <span class="muted" id="call-status">не в разговоре</span>
+    </div>
+    <div class="row" id="call-actions"></div>
+  </div>
+  <audio id="remote-audio" autoplay></audio>
+
   <div class="session-layout">
     <aside class="card card-pad stack stack-3 attempts-panel">
       <span class="panel-title">История попыток</span>
@@ -142,6 +151,12 @@ function connectWs() {
       }, 4000);
     } else if (msg.type === 'tutor_hint') {
       hintEditor.setValue(msg.code || '');
+    } else if (msg.type === 'call_answer') {
+      handleCallAnswer(msg);
+    } else if (msg.type === 'call_ice') {
+      handleRemoteIce(msg);
+    } else if (msg.type === 'call_end') {
+      endCall(false);
     }
   };
 
@@ -150,6 +165,124 @@ function connectWs() {
   };
 }
 
+// --- Аудиозвонок (WebRTC, P2P) ---------------------------------------------
+// Тьютор всегда звонящий: создаёт offer, ждёт answer. Сигналинг (offer/answer/
+// ICE) идёт через тот же WebSocket, что и live-код/подсказки — отдельного
+// канала/сервиса для этого не заводим.
+let pc = null;
+let localStream = null;
+let pendingRemoteIce = [];
+let callState = 'idle'; // idle | calling | in-call
+let callTimeoutTimer = null;
+
+const callStatusEl = document.getElementById('call-status');
+const callActionsEl = document.getElementById('call-actions');
+const remoteAudio = document.getElementById('remote-audio');
+
+function renderCallBar() {
+  if (callState === 'idle') {
+    callStatusEl.textContent = 'не в разговоре';
+    callActionsEl.innerHTML = '<button class="btn btn-primary btn-sm" id="call-btn">Позвонить</button>';
+    document.getElementById('call-btn').addEventListener('click', startCall);
+  } else if (callState === 'calling') {
+    callStatusEl.textContent = 'звоним ученику…';
+    callActionsEl.innerHTML = '<button class="btn btn-sm btn-ghost" id="hangup-btn">Отменить</button>';
+    document.getElementById('hangup-btn').addEventListener('click', () => endCall(true));
+  } else if (callState === 'in-call') {
+    callStatusEl.textContent = 'в разговоре';
+    callActionsEl.innerHTML = `
+      <button class="btn btn-sm" id="mute-btn">Выключить микрофон</button>
+      <button class="btn btn-sm btn-ghost" id="hangup-btn">Завершить звонок</button>
+    `;
+    document.getElementById('mute-btn').addEventListener('click', toggleMute);
+    document.getElementById('hangup-btn').addEventListener('click', () => endCall(true));
+  }
+}
+
+async function fetchIceServers() {
+  const res = await fetch('/api/turn-credentials');
+  const data = await res.json();
+  return data.iceServers;
+}
+
+function setupPeerConnection(iceServers) {
+  const conn = new RTCPeerConnection({iceServers});
+  conn.onicecandidate = (e) => {
+    if (e.candidate) sendMessage({type: 'call_ice', candidate: e.candidate});
+  };
+  conn.ontrack = (e) => { remoteAudio.srcObject = e.streams[0]; };
+  conn.onconnectionstatechange = () => {
+    if (conn.connectionState === 'connected') {
+      clearTimeout(callTimeoutTimer);
+      callState = 'in-call';
+      renderCallBar();
+    } else if (conn.connectionState === 'failed' || conn.connectionState === 'disconnected') {
+      endCall(true);
+    }
+  };
+  return conn;
+}
+
+async function startCall() {
+  if (callState !== 'idle') return;
+  callState = 'calling';
+  renderCallBar();
+  try {
+    const iceServers = await fetchIceServers();
+    localStream = await navigator.mediaDevices.getUserMedia({audio: true});
+    pc = setupPeerConnection(iceServers);
+    localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+    sendMessage({type: 'call_offer', sdp: offer});
+    callTimeoutTimer = setTimeout(() => {
+      if (callState === 'calling') {
+        callStatusEl.textContent = 'ученик не отвечает';
+        endCall(true);
+      }
+    }, 30000);
+  } catch (e) {
+    callStatusEl.textContent = 'не удалось включить микрофон';
+    endCall(false);
+  }
+}
+
+async function handleCallAnswer(msg) {
+  if (!pc) return;
+  await pc.setRemoteDescription(msg.sdp);
+  for (const candidate of pendingRemoteIce) {
+    await pc.addIceCandidate(candidate);
+  }
+  pendingRemoteIce = [];
+}
+
+async function handleRemoteIce(msg) {
+  if (pc && pc.remoteDescription) {
+    await pc.addIceCandidate(msg.candidate);
+  } else {
+    pendingRemoteIce.push(msg.candidate);
+  }
+}
+
+function toggleMute() {
+  if (!localStream) return;
+  const track = localStream.getAudioTracks()[0];
+  track.enabled = !track.enabled;
+  document.getElementById('mute-btn').textContent = track.enabled ? 'Выключить микрофон' : 'Включить микрофон';
+}
+
+function endCall(notify) {
+  clearTimeout(callTimeoutTimer);
+  if (pc) { pc.close(); pc = null; }
+  if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
+  pendingRemoteIce = [];
+  remoteAudio.srcObject = null;
+  if (notify) sendMessage({type: 'call_end'});
+  callState = 'idle';
+  renderCallBar();
+}
+
+renderCallBar();
 loadAttempts();
 connectWs();
 </script>

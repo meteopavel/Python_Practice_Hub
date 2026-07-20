@@ -6,8 +6,28 @@ services:
       - EXECUTOR_URL=${EXECUTOR_URL}
       - DATABASE_URL=${DATABASE_URL}
       - SESSION_SECRET=${SESSION_SECRET}
+      - TURN_SECRET=${TURN_SECRET}
+      - TURN_URLS=${TURN_URLS}
+      - STUN_URLS=${STUN_URLS}
     expose:
       - "8000"
+
+  # STUN/TURN для аудиозвонков (WebRTC, тьютор <-> ученик). host-networking —
+  # рекомендованный для coturn режим: иначе Docker NAT путает внешний IP,
+  # который STUN/TURN обязаны сообщать клиентам. Порты 3478 (tcp+udp) и
+  # диапазон релея (min-port..max-port из turnserver.conf) должны быть
+  # открыты на файрволе хоста отдельно — coturn ими управляет сам, Docker
+  # port-publish тут ни при чём (host-режим).
+  coturn:
+    image: coturn/coturn:4.6-alpine
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ./turnserver.conf:/etc/coturn/turnserver.conf:ro
+    command: >
+      -c /etc/coturn/turnserver.conf
+      --static-auth-secret=${TURN_SECRET}
+      --external-ip=${TURN_EXTERNAL_IP}
 
   caddy:
     image: caddy:2-alpine

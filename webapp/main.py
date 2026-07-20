@@ -2,8 +2,12 @@
 """FastAPI-приложение веб-грейдера. Оболочка: отдаёт список заданий,
 логин/сессию и принимает решение ученика. Вся логика проверки —
 в grading.py/sandbox.py, вся модель данных — в models.py."""
+import base64
+import hashlib
+import hmac
 import inspect
 import os
+import time
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, Form, Request, WebSocket, WebSocketDisconnect
@@ -24,6 +28,13 @@ from test_cases import TEST_CASES
 SESSION_SECRET = os.environ.get("SESSION_SECRET")
 if not SESSION_SECRET:
     raise RuntimeError("SESSION_SECRET не задан — см. env.example")
+
+# TURN — на случай, если STUN не пробивает NAT (симметричный NAT, часть
+# провайдеров/файрволов). Без TURN_SECRET/TURN_URLS отдаём только STUN —
+# работает для локальной разработки, не работает во всех сетях в проде.
+TURN_SECRET = os.environ.get("TURN_SECRET")
+TURN_URLS = os.environ.get("TURN_URLS")
+STUN_URLS = os.environ.get("STUN_URLS", "stun:informatika.meteopavel.space:3478")
 
 app = FastAPI(title="Python Practice Hub — веб-грейдер")
 app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET)
@@ -109,6 +120,27 @@ def get_solution(task_id: int, request: Request):
     if oracle is None:
         return JSONResponse(status_code=404, content={"error": f"Эталон для задания {task_id} не найден"})
     return {"task_id": task_id, "source": inspect.getsource(oracle)}
+
+
+@app.get("/api/turn-credentials")
+def turn_credentials(request: Request):
+    if current_user_id(request) is None:
+        return unauthorized()
+
+    ice_servers = [{"urls": STUN_URLS.split(",")}]
+    if TURN_SECRET and TURN_URLS:
+        # Временные учётки по схеме TURN REST API (coturn use-auth-secret):
+        # username = "<unix-timestamp-истечения>:<метка>", credential — HMAC-SHA1
+        # от username на общем секрете. Никакого статичного пароля во фронте.
+        username = f"{int(time.time()) + 3600}:{request.session.get('username', 'user')}"
+        digest = hmac.new(TURN_SECRET.encode(), username.encode(), hashlib.sha1).digest()
+        credential = base64.b64encode(digest).decode()
+        ice_servers.append({
+            "urls": TURN_URLS.split(","),
+            "username": username,
+            "credential": credential,
+        })
+    return {"iceServers": ice_servers}
 
 
 @app.get("/api/me")
@@ -234,6 +266,20 @@ async def session_ws(websocket: WebSocket, student_id: int):
     try:
         while True:
             data = await websocket.receive_json()
+
+            # Сигналинг звонка (SDP offer/answer, ICE-кандидаты, завершение) —
+            # тот же канал, просто пересылаем сообщение как есть другой стороне
+            # комнаты. Медиа (звук) идёт напрямую между браузерами по WebRTC,
+            # сервер только сводит вдвоём и дальше не участвует.
+            if data.get("type") in ("call_offer", "call_answer", "call_ice", "call_end"):
+                if is_tutor:
+                    if room.student_ws is not None:
+                        await safe_send(room.student_ws, data)
+                else:
+                    for tutor_ws in room.tutor_sockets:
+                        await safe_send(tutor_ws, data)
+                continue
+
             code = data.get("code", "")
             if is_tutor:
                 room.last_tutor_hint = code
@@ -248,10 +294,16 @@ async def session_ws(websocket: WebSocket, student_id: int):
     finally:
         if is_tutor:
             room.tutor_sockets.discard(websocket)
-            if not room.tutor_sockets and room.student_ws is not None:
-                await safe_send(room.student_ws, {"type": "tutor_status", "online": False})
+            if room.student_ws is not None:
+                # Обрыв связи с тьютором посреди звонка должен сразу сбросить
+                # состояние у ученика, а не ждать ICE-таймаут.
+                await safe_send(room.student_ws, {"type": "call_end"})
+                if not room.tutor_sockets:
+                    await safe_send(room.student_ws, {"type": "tutor_status", "online": False})
         elif room.student_ws is websocket:
             room.student_ws = None
+            for tutor_ws in room.tutor_sockets:
+                await safe_send(tutor_ws, {"type": "call_end"})
 
 
 @app.post("/api/submit")
