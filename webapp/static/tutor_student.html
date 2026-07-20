@@ -85,6 +85,7 @@
 </div>
 
 <script src="/static/codemirror.bundle.js"></script>
+<script src="/static/noise-suppressor.bundle.js"></script>
 <script>
 const studentId = Number(window.location.pathname.split('/').pop());
 
@@ -171,6 +172,7 @@ function connectWs() {
 // канала/сервиса для этого не заводим.
 let pc = null;
 let localStream = null;
+let noiseSuppressionCtx = null;
 let pendingRemoteIce = [];
 let callState = 'idle'; // idle | calling | in-call
 let callTimeoutTimer = null;
@@ -178,6 +180,30 @@ let callTimeoutTimer = null;
 const callStatusEl = document.getElementById('call-status');
 const callActionsEl = document.getElementById('call-actions');
 const remoteAudio = document.getElementById('remote-audio');
+
+// Прогоняет сырой поток микрофона через RNNoise (WASM, AudioWorklet) —
+// шумоподавление сверх штатного echoCancellation/noiseSuppression браузера,
+// которое на телефонах особенно слабое. При любой ошибке (нет AudioWorklet,
+// не загрузился WASM) — тихо откатываемся на необработанный поток: рабочий
+// звонок без шумодава лучше сорванного звонка.
+async function applyNoiseSuppression(rawStream) {
+  try {
+    const audioCtx = new AudioContext({sampleRate: 48000});
+    await audioCtx.audioWorklet.addModule('/static/rnnoise-worklet.js');
+    const wasmBinary = await NoiseSuppressor.loadRnnoise({
+      url: '/static/rnnoise.wasm',
+      simdUrl: '/static/rnnoise_simd.wasm',
+    });
+    const source = audioCtx.createMediaStreamSource(rawStream);
+    const rnnoiseNode = new NoiseSuppressor.RnnoiseWorkletNode(audioCtx, {maxChannels: 1, wasmBinary});
+    const destination = audioCtx.createMediaStreamDestination();
+    source.connect(rnnoiseNode).connect(destination);
+    noiseSuppressionCtx = audioCtx;
+    return destination.stream;
+  } catch (e) {
+    return rawStream;
+  }
+}
 
 function renderCallBar() {
   if (callState === 'idle') {
@@ -220,7 +246,7 @@ function boostAudioBitrate(peerConnection) {
   if (!sender) return;
   const params = sender.getParameters();
   if (!params.encodings || !params.encodings.length) params.encodings = [{}];
-  params.encodings[0].maxBitrate = 64000;
+  params.encodings[0].maxBitrate = 128000;
   sender.setParameters(params).catch(() => {});
 }
 
@@ -249,8 +275,9 @@ async function startCall() {
   try {
     const iceServers = await fetchIceServers();
     localStream = await navigator.mediaDevices.getUserMedia({audio: AUDIO_CONSTRAINTS});
+    const outgoingStream = await applyNoiseSuppression(localStream);
     pc = setupPeerConnection(iceServers);
-    localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
+    outgoingStream.getTracks().forEach(t => pc.addTrack(t, outgoingStream));
     boostAudioBitrate(pc);
     const offer = await pc.createOffer();
     await pc.setLocalDescription(offer);
@@ -295,6 +322,7 @@ function endCall(notify) {
   clearTimeout(callTimeoutTimer);
   if (pc) { pc.close(); pc = null; }
   if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
+  if (noiseSuppressionCtx) { noiseSuppressionCtx.close(); noiseSuppressionCtx = null; }
   pendingRemoteIce = [];
   remoteAudio.srcObject = null;
   if (notify) sendMessage({type: 'call_end'});
