@@ -20,6 +20,9 @@
   }
   .task-desc p { margin: 0 0 var(--space-3); white-space: pre-wrap; }
   .task-desc p:last-child { margin-bottom: 0; }
+  .code-mount { min-height: 260px; }
+  .code-mount .cm-editor { height: 100%; }
+  .code-mount .cm-scroller { min-height: 260px; }
 </style>
 </head>
 <body>
@@ -62,9 +65,7 @@
         <div class="code-editor-bar">
           <span>solution.py</span>
         </div>
-        <textarea class="code-textarea" id="code" spellcheck="false">def solve(data):
-    pass
-</textarea>
+        <div class="code-mount" id="code-mount"></div>
       </div>
       <div class="row between wrap">
         <span class="muted" style="font-size: var(--fs-sm)">Код выполняется на сервере в изолированной среде.</span>
@@ -80,11 +81,15 @@
   </main>
 </div>
 
+<script src="/static/codemirror.bundle.js"></script>
 <script>
 const taskList = document.getElementById('task-list');
 const description = document.getElementById('description');
 const taskTitle = document.getElementById('task-title');
-const codeArea = document.getElementById('code');
+const codeEditor = PracticeHubEditor.create(
+  document.getElementById('code-mount'),
+  'def solve(data):\n    pass\n'
+);
 const submitBtn = document.getElementById('submit-btn');
 const summary = document.getElementById('summary');
 const results = document.getElementById('results');
@@ -199,7 +204,7 @@ submitBtn.addEventListener('click', async () => {
     const res = await fetch('/api/submit', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({task_id: currentTaskId, code: codeArea.value}),
+      body: JSON.stringify({task_id: currentTaskId, code: codeEditor.getValue()}),
     });
     if (redirectToLoginIfUnauthorized(res)) return;
     const data = await res.json();
