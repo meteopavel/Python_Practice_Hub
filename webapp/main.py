@@ -17,7 +17,7 @@ from auth import authenticate, current_user_id, current_user_role, forbidden, un
 from bot_bridge import TASKS, get_solver
 from db import Base, SessionLocal, engine, get_db
 from grading import grade
-from models import ROLE_TUTOR, Attempt, User
+from models import ROLE_STUDENT, ROLE_TUTOR, Attempt, User
 from test_cases import TEST_CASES
 
 SESSION_SECRET = os.environ.get("SESSION_SECRET")
@@ -117,6 +117,7 @@ def list_attempts(request: Request, db: Session = Depends(get_db)):
     rows = (
         db.query(Attempt, User.username)
         .join(User, Attempt.user_id == User.id)
+        .filter(User.role == ROLE_STUDENT)
         .order_by(Attempt.created_at.desc())
         .limit(200)
         .all()
