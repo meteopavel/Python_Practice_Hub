@@ -655,3 +655,162 @@ def solve_task_80(data):
     for item, count in data:
         result.extend([item] * count)
     return result
+
+
+def solve_task_81(data):
+    return [(data[i], data[i + 1]) for i in range(len(data) - 1)]
+
+
+def solve_task_82(data):
+    if len(data) < 2:
+        return '✅ Да'
+    diff = data[1] - data[0]
+    for i in range(1, len(data)):
+        if data[i] - data[i - 1] != diff:
+            return '❌ Нет'
+    return '✅ Да'
+
+
+def solve_task_83(data):
+    vowels = 'aeiouAEIOU'
+    best_word = data[0]
+    best_count = sum(1 for ch in data[0] if ch in vowels)
+    for word in data[1:]:
+        count = sum(1 for ch in word if ch in vowels)
+        if count > best_count:
+            best_count = count
+            best_word = word
+    return best_word
+
+
+def solve_task_84(data):
+    return [item for i, item in enumerate(data) if i % 2 == 0]
+
+
+def solve_task_85(data):
+    return [word[::-1] for word in data]
+
+
+def solve_task_86(data):
+    def digit_sum(n):
+        return sum(int(d) for d in str(abs(n)))
+    best = data[0]
+    best_sum = digit_sum(data[0])
+    for num in data[1:]:
+        s = digit_sum(num)
+        if s > best_sum:
+            best_sum = s
+            best = num
+    return best
+
+
+def solve_task_87(data):
+    even = sum(1 for x in data if x % 2 == 0)
+    odd = len(data) - even
+    return '✅ Одинаково' if even == odd else '❌ Не одинаково'
+
+
+def solve_task_88(data):
+    result = {}
+    for num in data:
+        key = num % 3
+        result.setdefault(key, []).append(num)
+    return result
+
+
+def solve_task_89(data):
+    word = data[0]
+    return [word[:i] for i in range(1, len(word) + 1)]
+
+
+def solve_task_90(data):
+    word = data[0]
+    return [word[i:] for i in range(len(word))]
+
+
+def solve_task_91(data):
+    total = sum(data)
+    if total % 2 != 0:
+        return '❌ Нельзя'
+    target = total // 2
+    n = len(data)
+    for mask in range(1 << n):
+        s = sum(data[i] for i in range(n) if mask & (1 << i))
+        if s == target:
+            return '✅ Можно'
+    return '❌ Нельзя'
+
+
+def solve_task_92(data):
+    n = len(data)
+    return [(data[i], data[n - 1 - i]) for i in range(n // 2)]
+
+
+def solve_task_93(data):
+    return {word: len(word) for word in data}
+
+
+def solve_task_94(data):
+    result = []
+    for i in range(1, len(data) - 1):
+        if data[i] > data[i - 1] and data[i] > data[i + 1]:
+            result.append(data[i])
+    return result
+
+
+def solve_task_95(data):
+    return [word[0] + word[-1] for word in data]
+
+
+def solve_task_96(data):
+    if not data:
+        return []
+    result = [data[0]]
+    for item in data[1:]:
+        if item != result[-1]:
+            result.append(item)
+    return result
+
+
+def solve_task_97(data):
+    if not data:
+        return 0
+    best = cur = 1
+    for i in range(1, len(data)):
+        if data[i] == data[i - 1]:
+            cur += 1
+            best = max(best, cur)
+        else:
+            cur = 1
+    return best
+
+
+def solve_task_98(data):
+    def is_increasing(lst):
+        return all(lst[i] < lst[i + 1] for i in range(len(lst) - 1))
+    for i in range(len(data)):
+        if is_increasing(data[:i] + data[i + 1:]):
+            return '✅ Можно'
+    return '❌ Нельзя'
+
+
+def solve_task_99(data):
+    result = []
+    i = 0
+    length = 1
+    while i < len(data):
+        result.append(data[i:i + length])
+        i += length
+        length += 1
+    return result
+
+
+def solve_task_100(data):
+    counts = {}
+    for x in data:
+        counts[x] = counts.get(x, 0) + 1
+    result = []
+    for x in data:
+        if counts[x] > 1 and x not in result:
+            result.append(x)
+    return result
