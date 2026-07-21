@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Справочные материалы — Python Practice Hub</title>
+<link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+<link rel="stylesheet" href="/static/styles.css">
+<style>
+  .material-main { padding-block: var(--space-4); max-width: 860px; }
+  .material-cell-mount { min-height: 0; }
+  .material-cell-mount .cm-editor { height: 100%; }
+  .material-output {
+    margin: 0;
+    white-space: pre-wrap;
+  }
+  .material-output.is-error { color: var(--c-fail); background: var(--c-fail-bg); border-color: var(--c-fail-border); }
+</style>
+</head>
+<body>
+<header class="app-header">
+  <div class="brand"><span class="brand-mark">&lt;/&gt;</span> Python Practice Hub</div>
+  <div class="header-spacer"></div>
+  <span class="muted" id="username"></span>
+  <span class="avatar" id="avatar"></span>
+  <form method="post" action="/logout" style="display: inline; margin: 0;">
+    <button class="btn btn-sm btn-ghost" type="submit">Выйти</button>
+  </form>
+</header>
+
+<div class="container material-main">
+  <a class="btn btn-sm btn-ghost" href="/" style="margin-bottom: var(--space-4)">← к практике</a>
+
+  <div class="card card-pad stack stack-2" style="margin-bottom: var(--space-4)">
+    <span class="panel-title" id="module-title"></span>
+    <h1 id="lesson-title" style="font-size: var(--fs-2xl); margin: 0"></h1>
+  </div>
+
+  <div class="stack stack-4" id="cells"></div>
+</div>
+
+<script src="/static/codemirror.bundle.js"></script>
+<script>
+function escapeHtml(value) {
+  const div = document.createElement('div');
+  div.textContent = value === undefined ? '' : String(value);
+  return div.innerHTML;
+}
+
+function redirectToLoginIfUnauthorized(res) {
+  if (res.status === 401) { window.location.href = '/login'; return true; }
+  return false;
+}
+
+async function loadMe() {
+  const res = await fetch('/api/me');
+  if (redirectToLoginIfUnauthorized(res)) return;
+  const data = await res.json();
+  document.getElementById('username').textContent = data.username || '';
+  document.getElementById('avatar').textContent = (data.username || '?').slice(0, 2).toUpperCase();
+}
+
+async function loadLesson() {
+  const parts = window.location.pathname.split('/').filter(Boolean); // ['materials', module, lesson]
+  const module = decodeURIComponent(parts[1]);
+  const lesson = decodeURIComponent(parts[2]);
+
+  const manifestRes = await fetch('/api/materials');
+  if (redirectToLoginIfUnauthorized(manifestRes)) return;
+  const manifest = await manifestRes.json();
+  document.getElementById('module-title').textContent = manifest[module] ? manifest[module].title : '';
+
+  const res = await fetch(`/api/materials/${encodeURIComponent(module)}/${encodeURIComponent(lesson)}`);
+  if (redirectToLoginIfUnauthorized(res)) return;
+  if (!res.ok) {
+    document.getElementById('lesson-title').textContent = 'Материал не найден';
+    return;
+  }
+  const data = await res.json();
+  document.title = `${data.title} — Python Practice Hub`;
+  document.getElementById('lesson-title').textContent = data.title;
+
+  const cellsEl = document.getElementById('cells');
+  cellsEl.innerHTML = data.cells.map((_, i) => `
+    <div class="stack stack-2">
+      <div class="code-editor"><div class="material-cell-mount" id="cell-${i}"></div></div>
+    </div>
+  `).join('');
+
+  data.cells.forEach((cell, i) => {
+    const mount = document.getElementById(`cell-${i}`);
+    PracticeHubEditor.create(mount, cell.code, null, {readOnly: true});
+    if (cell.output) {
+      const pre = document.createElement('pre');
+      pre.className = 'block material-output' + (cell.is_error ? ' is-error' : '');
+      pre.textContent = cell.output;
+      mount.parentElement.after(pre);
+    }
+  });
+}
+
+loadMe();
+loadLesson();
+</script>
+</body>
+</html>

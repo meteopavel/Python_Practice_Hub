@@ -13,6 +13,14 @@ RUN pip install --no-cache-dir -r webapp/requirements.txt
 COPY --chmod=755 bot/solvers.py bot/tasks.json bot/
 COPY --chmod=755 webapp/ webapp/
 
+# Справочные материалы (учебные ноутбуки) — webapp/materials.py читает их
+# напрямую, отдельного конвертированного формата нет.
+COPY --chmod=755 1_introduction 1_introduction/
+COPY --chmod=755 2_loops_and_conditions 2_loops_and_conditions/
+COPY --chmod=755 3_functions 3_functions/
+COPY --chmod=755 4_dicts_and_sets 4_dicts_and_sets/
+COPY --chmod=755 5_strings 5_strings/
+
 USER app
 WORKDIR /app/webapp
 EXPOSE 8000

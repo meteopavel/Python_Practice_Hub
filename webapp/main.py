@@ -21,6 +21,7 @@ from auth import authenticate, current_user_id, current_user_role, forbidden, ha
 from bot_bridge import TASKS, get_solver
 from db import Base, SessionLocal, engine, get_db
 from grading import grade
+from materials import MATERIALS_MANIFEST, get_lesson
 from models import ROLE_STUDENT, ROLE_TUTOR, Attempt, User
 from realtime import get_room, safe_send
 from test_cases import TEST_CASES
@@ -127,6 +128,15 @@ def stop_impersonation(request: Request):
     return RedirectResponse(url="/", status_code=303)
 
 
+@app.get("/materials/{module}/{lesson}")
+def materials_page(module: str, lesson: str, request: Request):
+    if current_user_id(request) is None:
+        return RedirectResponse(url="/login", status_code=303)
+    if get_lesson(module, lesson) is None:
+        return JSONResponse(status_code=404, content={"error": "Материал не найден"})
+    return FileResponse(STATIC_DIR / "materials.html")
+
+
 def effective_identity(request: Request, db: Session):
     """Для тьютора в режиме "посмотреть как ученик" подменяет личность только
     для student-facing данных (список заданий/свои попытки) — НЕ для
@@ -148,6 +158,23 @@ def list_tasks(request: Request):
         {"id": task_id, "description": TASKS[task_id]["description"], "example": TASKS[task_id]["example"]}
         for task_id in sorted(TEST_CASES)
     ]
+
+
+@app.get("/api/materials")
+def list_materials(request: Request):
+    if current_user_id(request) is None:
+        return unauthorized()
+    return MATERIALS_MANIFEST
+
+
+@app.get("/api/materials/{module}/{lesson}")
+def get_material(module: str, lesson: str, request: Request):
+    if current_user_id(request) is None:
+        return unauthorized()
+    data = get_lesson(module, lesson)
+    if data is None:
+        return JSONResponse(status_code=404, content={"error": "Материал не найден"})
+    return data
 
 
 @app.get("/api/solution/{task_id}")
