@@ -323,6 +323,14 @@ a:hover { color: var(--c-primary-hover); }
 }
 .call-icon-btn.is-sm { width: 32px; height: 32px; }
 .call-icon-btn.is-sm svg { width: 15px; height: 15px; }
+.call-icon-btn.is-pulsing {
+  background: var(--c-pass-solid);
+  animation: call-pulse-green 1.6s ease-in-out infinite;
+}
+@keyframes call-pulse-green {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--c-pass-solid) 55%, transparent); }
+  50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--c-pass-solid) 0%, transparent); }
+}
 
 /* --------------------------------------------------------------------------
    7. ПОЛЯ ВВОДА

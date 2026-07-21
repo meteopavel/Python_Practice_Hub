@@ -38,6 +38,11 @@
 <body>
 <header class="app-header">
   <div class="brand"><span class="brand-mark">&lt;/&gt;</span> Python Practice Hub</div>
+  <a class="chip" id="impersonation-chip" href="#" style="display: none; background: var(--c-primary-soft); color: var(--c-primary); text-decoration: none;"></a>
+  <a class="call-icon-btn is-mute is-sm" id="impersonation-call-link" href="#" title="К звонку и подсказке" style="display: none"></a>
+  <form method="post" action="/impersonate/stop" id="impersonation-exit-form" style="display: none; margin: 0;">
+    <button class="call-icon-btn is-sm is-pulsing" type="submit" title="Вернуться к репетитору" id="impersonation-eye-btn"></button>
+  </form>
   <div class="header-spacer"></div>
   <span class="muted" id="username"></span>
   <span class="avatar" id="avatar"></span>
@@ -45,15 +50,6 @@
     <button class="btn btn-sm btn-ghost" type="submit">Выйти</button>
   </form>
 </header>
-
-<div class="container">
-  <div class="card card-pad row between wrap" id="impersonation-banner" style="display: none; margin-top: var(--space-4); background: var(--c-primary-soft); border-color: var(--c-primary);">
-    <span>Вы смотрите как ученик <strong id="impersonation-username"></strong> — видно ровно то же, что и ему. Отправка кода отключена.</span>
-    <form method="post" action="/impersonate/stop" style="margin: 0;">
-      <button class="btn btn-sm" type="submit">Вернуться к репетитору</button>
-    </form>
-  </div>
-</div>
 
 <div class="container student-layout">
   <div class="task-sidebar stack stack-4">
@@ -208,6 +204,9 @@ const remoteAudio = document.getElementById('remote-audio');
 const ICON_PHONE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>';
 const ICON_MIC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>';
 const ICON_MIC_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="1" y1="1" x2="23" y2="23"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/><path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>';
+const ICON_EYE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+document.getElementById('impersonation-call-link').innerHTML = ICON_PHONE;
+document.getElementById('impersonation-eye-btn').innerHTML = ICON_EYE;
 
 // Прогоняет сырой поток микрофона через RNNoise (WASM, AudioWorklet) —
 // шумоподавление сверх штатного echoCancellation/noiseSuppression браузера,
@@ -411,8 +410,15 @@ async function loadMe() {
   document.getElementById('avatar').textContent = (data.username || '?').slice(0, 2).toUpperCase();
   impersonating = !!data.impersonating;
   if (impersonating) {
-    document.getElementById('impersonation-banner').style.display = 'flex';
-    document.getElementById('impersonation-username').textContent = data.username || '';
+    const sessionUrl = `/tutor/student/${data.id}`;
+    const chip = document.getElementById('impersonation-chip');
+    chip.textContent = data.username || '';
+    chip.href = sessionUrl;
+    chip.style.display = 'inline-block';
+    const callLink = document.getElementById('impersonation-call-link');
+    callLink.href = sessionUrl;
+    callLink.style.display = 'inline-flex';
+    document.getElementById('impersonation-exit-form').style.display = 'inline-flex';
     submitBtn.disabled = true;
     submitBtn.title = 'Отправка кода отключена в режиме просмотра «как ученик»';
   } else {
