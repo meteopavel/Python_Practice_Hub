@@ -383,7 +383,7 @@ def solve_task_47(data):
     data[1] = abs(data[1])
     max_delim = max(data)
     while True:
-        if data[0] % max_delim == 0 and data[1] % max_delim == 0:
+        if max_delim % data[0] == 0 and max_delim % data[1] == 0:
             return max_delim
         max_delim += 1
 
