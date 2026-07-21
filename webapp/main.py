@@ -17,7 +17,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from starlette.middleware.sessions import SessionMiddleware
 
-from auth import authenticate, current_user_id, current_user_role, forbidden, unauthorized
+from auth import authenticate, current_user_id, current_user_role, forbidden, hash_password, unauthorized
 from bot_bridge import TASKS, get_solver
 from db import Base, SessionLocal, engine, get_db
 from grading import grade
@@ -76,9 +76,15 @@ def logout(request: Request):
 
 
 @app.get("/")
-def index(request: Request):
+def index(request: Request, db: Session = Depends(get_db)):
     if current_user_id(request) is None:
         return RedirectResponse(url="/login", status_code=303)
+    # Тьютор без имперсонации попадает на список учеников — это теперь его
+    # главная страница, отдельного /tutor больше нет. Во время имперсонации
+    # (эффективная роль student) видит ровно ту же index.html, что и ученик.
+    _, impersonating, _, _ = effective_identity(request, db)
+    if current_user_role(request) == ROLE_TUTOR and not impersonating:
+        return FileResponse(STATIC_DIR / "tutor.html")
     return FileResponse(STATIC_DIR / "index.html")
 
 
@@ -86,9 +92,7 @@ def index(request: Request):
 def tutor_page(request: Request):
     if current_user_id(request) is None:
         return RedirectResponse(url="/login", status_code=303)
-    if current_user_role(request) != ROLE_TUTOR:
-        return RedirectResponse(url="/", status_code=303)
-    return FileResponse(STATIC_DIR / "tutor.html")
+    return RedirectResponse(url="/", status_code=303)
 
 
 @app.get("/tutor/student/{student_id}")
@@ -120,7 +124,7 @@ def stop_impersonation(request: Request):
     student_id = request.session.pop("impersonate_student_id", None)
     if student_id is not None:
         return RedirectResponse(url=f"/tutor/student/{student_id}", status_code=303)
-    return RedirectResponse(url="/tutor", status_code=303)
+    return RedirectResponse(url="/", status_code=303)
 
 
 def effective_identity(request: Request, db: Session):
@@ -274,6 +278,48 @@ def list_students(request: Request, db: Session = Depends(get_db)):
             "last_attempt_at": last_attempt.created_at.isoformat() if last_attempt and last_attempt.created_at else None,
         })
     return result
+
+
+class CreateStudentRequest(BaseModel):
+    username: str
+    password: str
+
+
+@app.post("/api/students")
+def create_student(payload: CreateStudentRequest, request: Request, db: Session = Depends(get_db)):
+    if current_user_id(request) is None:
+        return unauthorized()
+    if current_user_role(request) != ROLE_TUTOR:
+        return forbidden()
+    username = payload.username.strip()
+    if not username or not payload.password:
+        return JSONResponse(status_code=400, content={"error": "Логин и пароль не должны быть пустыми"})
+    if db.query(User).filter(User.username == username).first() is not None:
+        return JSONResponse(status_code=400, content={"error": f"Логин «{username}» уже занят"})
+    student = User(username=username, password_hash=hash_password(payload.password), role=ROLE_STUDENT)
+    db.add(student)
+    db.commit()
+    return {"id": student.id, "username": student.username}
+
+
+class SetPasswordRequest(BaseModel):
+    password: str
+
+
+@app.post("/api/students/{student_id}/password")
+def set_student_password(student_id: int, payload: SetPasswordRequest, request: Request, db: Session = Depends(get_db)):
+    if current_user_id(request) is None:
+        return unauthorized()
+    if current_user_role(request) != ROLE_TUTOR:
+        return forbidden()
+    if not payload.password:
+        return JSONResponse(status_code=400, content={"error": "Пароль не должен быть пустым"})
+    student = db.query(User).filter(User.id == student_id, User.role == ROLE_STUDENT).first()
+    if student is None:
+        return JSONResponse(status_code=404, content={"error": "Ученик не найден"})
+    student.password_hash = hash_password(payload.password)
+    db.commit()
+    return {"ok": True}
 
 
 @app.get("/api/students/{student_id}/attempts")

@@ -34,7 +34,6 @@
 <header class="app-header">
   <div class="brand"><span class="brand-mark">&lt;/&gt;</span> Python Practice Hub</div>
   <div class="header-spacer"></div>
-  <a id="tutor-link" class="btn btn-sm" href="/tutor" style="display: none;">Успехи учеников</a>
   <span class="muted" id="username"></span>
   <span class="avatar" id="avatar"></span>
   <form method="post" action="/logout" style="display: inline; margin: 0;">
@@ -64,10 +63,8 @@
           <span class="panel-title">Задание</span>
           <h2 id="task-title"></h2>
         </div>
-        <button id="solution-btn" class="btn btn-sm btn-ghost" style="display: none">Показать эталон</button>
       </div>
       <div class="task-desc muted" id="description"></div>
-      <pre class="block" id="solution-code" style="display: none"></pre>
     </section>
 
     <section class="stack stack-3" id="my-attempts-section" style="display: none">
@@ -144,8 +141,6 @@ const submitBtn = document.getElementById('submit-btn');
 const summary = document.getElementById('summary');
 const results = document.getElementById('results');
 const resultsSection = document.getElementById('results-section');
-const solutionBtn = document.getElementById('solution-btn');
-const solutionCode = document.getElementById('solution-code');
 const myAttemptsSection = document.getElementById('my-attempts-section');
 const myAttemptsRows = document.getElementById('my-attempts-rows');
 const solveSection = document.getElementById('solve-section');
@@ -198,6 +193,10 @@ const callStatusEl = document.getElementById('call-status');
 const callActionsEl = document.getElementById('call-actions');
 const remoteAudio = document.getElementById('remote-audio');
 
+const ICON_PHONE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>';
+const ICON_MIC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>';
+const ICON_MIC_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="1" y1="1" x2="23" y2="23"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/><path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>';
+
 // Прогоняет сырой поток микрофона через RNNoise (WASM, AudioWorklet) —
 // шумоподавление сверх штатного echoCancellation/noiseSuppression браузера,
 // которое на телефонах особенно слабое. При любой ошибке (нет AudioWorklet,
@@ -231,16 +230,17 @@ function renderCallBar() {
   if (callState === 'ringing') {
     callStatusEl.textContent = 'входящий звонок от репетитора';
     callActionsEl.innerHTML = `
-      <button class="btn btn-primary btn-sm" id="accept-btn">Принять</button>
-      <button class="btn btn-sm btn-ghost" id="decline-btn">Отклонить</button>
+      <button class="call-icon-btn is-accept" id="accept-btn" title="Принять">${ICON_PHONE}</button>
+      <button class="call-icon-btn is-hangup" id="decline-btn" title="Отклонить">${ICON_PHONE}</button>
     `;
     document.getElementById('accept-btn').addEventListener('click', acceptCall);
     document.getElementById('decline-btn').addEventListener('click', () => endCall(true));
   } else if (callState === 'in-call') {
     callStatusEl.textContent = 'в разговоре с репетитором';
+    const muted = localStream && !localStream.getAudioTracks()[0].enabled;
     callActionsEl.innerHTML = `
-      <button class="btn btn-sm" id="mute-btn">Выключить микрофон</button>
-      <button class="btn btn-sm btn-ghost" id="hangup-btn">Завершить звонок</button>
+      <button class="call-icon-btn is-mute${muted ? ' is-active' : ''}" id="mute-btn" title="${muted ? 'Включить микрофон' : 'Выключить микрофон'}">${muted ? ICON_MIC_OFF : ICON_MIC}</button>
+      <button class="call-icon-btn is-hangup" id="hangup-btn" title="Завершить звонок">${ICON_PHONE}</button>
     `;
     document.getElementById('mute-btn').addEventListener('click', toggleMute);
     document.getElementById('hangup-btn').addEventListener('click', () => endCall(true));
@@ -356,7 +356,7 @@ function toggleMute() {
   if (!localStream) return;
   const track = localStream.getAudioTracks()[0];
   track.enabled = !track.enabled;
-  document.getElementById('mute-btn').textContent = track.enabled ? 'Выключить микрофон' : 'Включить микрофон';
+  renderCallBar();
 }
 
 function endCall(notify) {
@@ -403,9 +403,6 @@ async function loadMe() {
     document.getElementById('impersonation-username').textContent = data.username || '';
     submitBtn.disabled = true;
     submitBtn.title = 'Отправка кода отключена в режиме просмотра «как ученик»';
-  } else if (data.role === 'tutor') {
-    document.getElementById('tutor-link').style.display = 'inline-flex';
-    solutionBtn.style.display = 'inline-flex';
   } else {
     connectWs(data.id);
   }
@@ -457,9 +454,6 @@ function showDescription() {
   description.innerHTML = task
     ? `<p>${escapeHtml(task.description)}</p><p><strong style="color: var(--c-text)">Пример:</strong> ${escapeHtml(task.example)}</p>`
     : '';
-  solutionCode.style.display = 'none';
-  solutionCode.textContent = '';
-  solutionBtn.textContent = 'Показать эталон';
   updateSolveVisibility();
   loadMyAttemptHistory(currentTaskId);
 }
@@ -494,29 +488,6 @@ function updateSolveVisibility() {
   solveSection.style.display = solved ? 'none' : '';
   solvedNote.style.display = solved ? 'block' : 'none';
 }
-
-solutionBtn.addEventListener('click', async () => {
-  if (currentTaskId === null) return;
-  const isHidden = solutionCode.style.display === 'none';
-  if (!isHidden) {
-    solutionCode.style.display = 'none';
-    solutionBtn.textContent = 'Показать эталон';
-    return;
-  }
-  if (!solutionCode.textContent) {
-    solutionBtn.disabled = true;
-    try {
-      const res = await fetch(`/api/solution/${currentTaskId}`);
-      if (redirectToLoginIfUnauthorized(res)) return;
-      const data = await res.json();
-      solutionCode.textContent = data.error || data.source;
-    } finally {
-      solutionBtn.disabled = false;
-    }
-  }
-  solutionCode.style.display = 'block';
-  solutionBtn.textContent = 'Скрыть эталон';
-});
 
 submitBtn.addEventListener('click', async () => {
   if (currentTaskId === null) return;

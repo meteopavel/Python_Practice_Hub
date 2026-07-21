@@ -446,6 +446,50 @@ a:hover { color: var(--c-primary-hover); }
   color: var(--c-text-muted);
 }
 
+/* Выпадашка в хедере (аккаунт, переключатель ученика) — <details>, без JS
+   на открытие/закрытие; закрытие по клику вне — маленький общий обработчик
+   на каждой странице (см. скрипты). */
+.account-menu { position: relative; list-style: none; }
+.account-trigger {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+}
+.account-trigger::-webkit-details-marker { display: none; }
+.account-trigger::marker { content: ""; }
+.account-menu-panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  min-width: 200px;
+  padding: var(--space-2);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  z-index: 30;
+}
+.account-menu-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: var(--space-2) var(--space-3);
+  border: none;
+  background: none;
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-sm);
+  color: var(--c-text);
+  cursor: pointer;
+}
+.account-menu-item:hover { background: var(--c-surface-2); }
+.account-menu-empty { padding: var(--space-2) var(--space-3); font-size: var(--fs-sm); color: var(--c-text-faint); }
+
 /* --------------------------------------------------------------------------
    10. РЕДАКТОР КОДА
    -------------------------------------------------------------------------- */

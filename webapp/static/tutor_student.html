@@ -26,24 +26,34 @@
 <body>
 <header class="app-header">
   <div class="brand"><span class="brand-mark">&lt;/&gt;</span> Python Practice Hub</div>
-  <span class="chip" style="background: var(--c-primary-soft); color: var(--c-primary)">Репетитор</span>
+  <details class="account-menu">
+    <summary class="chip account-trigger" style="background: var(--c-primary-soft); color: var(--c-primary)">
+      <span id="switcher-current-name">…</span>
+    </summary>
+    <div class="account-menu-panel" id="switcher-list"></div>
+  </details>
   <div class="header-spacer"></div>
-  <form id="impersonate-form" method="post" style="display: inline; margin: 0;">
-    <button class="btn btn-sm" type="submit">Посмотреть как ученик</button>
-  </form>
-  <a class="btn btn-sm btn-ghost" href="/tutor">← к списку учеников</a>
+  <button class="call-icon-btn is-mute" id="header-call-btn" title="Позвонить"></button>
+  <button class="call-icon-btn is-mute" id="header-mute-btn" title="Микрофон" style="display: none"></button>
+  <a class="btn btn-sm btn-ghost" href="/">← к списку учеников</a>
+  <details class="account-menu">
+    <summary class="account-trigger">
+      <span class="muted" id="username"></span>
+      <span class="avatar" id="avatar"></span>
+    </summary>
+    <div class="account-menu-panel">
+      <form id="impersonate-form" method="post" style="margin: 0">
+        <button class="account-menu-item" type="submit">Посмотреть как ученик</button>
+      </form>
+      <form method="post" action="/logout" style="margin: 0">
+        <button class="account-menu-item" type="submit">Выйти</button>
+      </form>
+    </div>
+  </details>
 </header>
+<audio id="remote-audio" autoplay></audio>
 
 <div class="container session-main">
-  <div class="card card-pad row between wrap" id="call-bar" style="margin-bottom: var(--space-4)">
-    <div class="stack stack-2">
-      <h1 id="student-title" style="font-size: var(--fs-2xl); margin: 0">…</h1>
-      <span class="muted" id="call-status">не в разговоре</span>
-    </div>
-    <div class="row" id="call-actions"></div>
-  </div>
-  <audio id="remote-audio" autoplay></audio>
-
   <div class="session-layout">
     <aside class="card card-pad stack stack-3 attempts-panel">
       <span class="panel-title">История попыток</span>
@@ -83,6 +93,42 @@
 const studentId = Number(window.location.pathname.split('/').pop());
 document.getElementById('impersonate-form').action = `/tutor/student/${studentId}/impersonate`;
 
+function escapeHtml(value) {
+  const div = document.createElement('div');
+  div.textContent = value === undefined ? '' : String(value);
+  return div.innerHTML;
+}
+
+async function loadMe() {
+  const res = await fetch('/api/me');
+  if (res.status === 401) { window.location.href = '/login'; return; }
+  const data = await res.json();
+  document.getElementById('username').textContent = data.username || '';
+  document.getElementById('avatar').textContent = (data.username || '?').slice(0, 2).toUpperCase();
+}
+
+async function loadStudentSwitcher() {
+  const res = await fetch('/api/students');
+  if (!res.ok) return;
+  const students = await res.json();
+  const current = students.find(s => s.id === studentId);
+  document.getElementById('switcher-current-name').textContent = current ? current.username : '…';
+  const list = document.getElementById('switcher-list');
+  if (!students.length) {
+    list.innerHTML = '<span class="account-menu-empty">Нет учеников</span>';
+    return;
+  }
+  list.innerHTML = students.map(s => `
+    <button class="account-menu-item" data-id="${s.id}"${s.id === studentId ? ' style="font-weight: var(--fw-semibold)"' : ''}>${escapeHtml(s.username)}</button>
+  `).join('');
+  list.querySelectorAll('button[data-id]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (Number(btn.dataset.id) === studentId) return;
+      window.location.href = `/tutor/student/${btn.dataset.id}`;
+    });
+  });
+}
+
 const mirrorEditor = PracticeHubEditor.create(
   document.getElementById('student-mirror-mount'), '', null, {readOnly: true}
 );
@@ -100,9 +146,8 @@ const hintEditor = PracticeHubEditor.create(
 async function loadAttempts() {
   const res = await fetch(`/api/students/${studentId}/attempts`);
   if (res.status === 401) { window.location.href = '/login'; return; }
-  if (res.status === 403 || res.status === 404) { window.location.href = '/tutor'; return; }
+  if (res.status === 403 || res.status === 404) { window.location.href = '/'; return; }
   const data = await res.json();
-  document.getElementById('student-title').textContent = data.username;
   document.title = `${data.username} — Python Practice Hub`;
 
   const rows = document.getElementById('attempts-rows');
@@ -176,8 +221,8 @@ let pendingRemoteIce = [];
 let callState = 'idle'; // idle | calling | in-call
 let callTimeoutTimer = null;
 
-const callStatusEl = document.getElementById('call-status');
-const callActionsEl = document.getElementById('call-actions');
+const headerCallBtn = document.getElementById('header-call-btn');
+const headerMuteBtn = document.getElementById('header-mute-btn');
 const remoteAudio = document.getElementById('remote-audio');
 
 const ICON_PHONE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>';
@@ -208,24 +253,32 @@ async function applyNoiseSuppression(rawStream) {
   }
 }
 
-function renderCallBar() {
+// Кнопка звонка сама сигнализирует статус цветом (как и кнопка микрофона) —
+// серая в простое/дозвоне, зелёная только когда звонок реально активен.
+function renderHeaderCall() {
   if (callState === 'idle') {
-    callStatusEl.textContent = 'не в разговоре';
-    callActionsEl.innerHTML = `<button class="call-icon-btn is-accept" id="call-btn" title="Позвонить">${ICON_PHONE}</button>`;
-    document.getElementById('call-btn').addEventListener('click', startCall);
+    headerCallBtn.className = 'call-icon-btn is-mute';
+    headerCallBtn.title = 'Позвонить';
+    headerCallBtn.innerHTML = ICON_PHONE;
+    headerCallBtn.onclick = startCall;
+    headerMuteBtn.style.display = 'none';
   } else if (callState === 'calling') {
-    callStatusEl.textContent = 'звоним ученику…';
-    callActionsEl.innerHTML = `<button class="call-icon-btn is-hangup" id="hangup-btn" title="Отменить">${ICON_PHONE}</button>`;
-    document.getElementById('hangup-btn').addEventListener('click', () => endCall(true));
+    headerCallBtn.className = 'call-icon-btn is-mute';
+    headerCallBtn.title = 'Отменить вызов';
+    headerCallBtn.innerHTML = ICON_PHONE;
+    headerCallBtn.onclick = () => endCall(true);
+    headerMuteBtn.style.display = 'none';
   } else if (callState === 'in-call') {
-    callStatusEl.textContent = 'в разговоре';
+    headerCallBtn.className = 'call-icon-btn is-accept';
+    headerCallBtn.title = 'Завершить звонок';
+    headerCallBtn.innerHTML = ICON_PHONE;
+    headerCallBtn.onclick = () => endCall(true);
     const muted = localStream && !localStream.getAudioTracks()[0].enabled;
-    callActionsEl.innerHTML = `
-      <button class="call-icon-btn is-mute${muted ? ' is-active' : ''}" id="mute-btn" title="${muted ? 'Включить микрофон' : 'Выключить микрофон'}">${muted ? ICON_MIC_OFF : ICON_MIC}</button>
-      <button class="call-icon-btn is-hangup" id="hangup-btn" title="Завершить звонок">${ICON_PHONE}</button>
-    `;
-    document.getElementById('mute-btn').addEventListener('click', toggleMute);
-    document.getElementById('hangup-btn').addEventListener('click', () => endCall(true));
+    headerMuteBtn.style.display = 'inline-flex';
+    headerMuteBtn.className = `call-icon-btn is-mute${muted ? ' is-active' : ''}`;
+    headerMuteBtn.title = muted ? 'Включить микрофон' : 'Выключить микрофон';
+    headerMuteBtn.innerHTML = muted ? ICON_MIC_OFF : ICON_MIC;
+    headerMuteBtn.onclick = toggleMute;
   }
 }
 
@@ -289,7 +342,7 @@ function setupPeerConnection(iceServers) {
     if (conn.connectionState === 'connected') {
       clearTimeout(callTimeoutTimer);
       callState = 'in-call';
-      renderCallBar();
+      renderHeaderCall();
     } else if (conn.connectionState === 'failed' || conn.connectionState === 'disconnected') {
       endCall(true);
     }
@@ -300,7 +353,7 @@ function setupPeerConnection(iceServers) {
 async function startCall() {
   if (callState !== 'idle') return;
   callState = 'calling';
-  renderCallBar();
+  renderHeaderCall();
   try {
     const iceServers = await fetchIceServers();
     localStream = await navigator.mediaDevices.getUserMedia({audio: AUDIO_CONSTRAINTS});
@@ -314,12 +367,12 @@ async function startCall() {
     sendMessage({type: 'call_offer', sdp: offer});
     callTimeoutTimer = setTimeout(() => {
       if (callState === 'calling') {
-        callStatusEl.textContent = 'ученик не отвечает';
+        alert('Ученик не отвечает');
         endCall(true);
       }
     }, 30000);
   } catch (e) {
-    callStatusEl.textContent = 'не удалось включить микрофон';
+    alert('Не удалось включить микрофон');
     endCall(false);
   }
 }
@@ -345,7 +398,7 @@ function toggleMute() {
   if (!localStream) return;
   const track = localStream.getAudioTracks()[0];
   track.enabled = !track.enabled;
-  renderCallBar();
+  renderHeaderCall();
 }
 
 function endCall(notify) {
@@ -357,10 +410,18 @@ function endCall(notify) {
   remoteAudio.srcObject = null;
   if (notify) sendMessage({type: 'call_end'});
   callState = 'idle';
-  renderCallBar();
+  renderHeaderCall();
 }
 
-renderCallBar();
+document.addEventListener('click', (e) => {
+  document.querySelectorAll('details.account-menu[open]').forEach(d => {
+    if (!d.contains(e.target)) d.removeAttribute('open');
+  });
+});
+
+loadMe();
+loadStudentSwitcher();
+renderHeaderCall();
 loadAttempts();
 connectWs();
 </script>
