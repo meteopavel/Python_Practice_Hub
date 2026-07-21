@@ -169,7 +169,7 @@ h3 { font-size: var(--fs-xl); line-height: var(--lh-tight); font-weight: var(--f
 h4 { font-size: var(--fs-lg); font-weight: var(--fw-semibold); }
 
 a { color: var(--c-primary); text-decoration: none; }
-a:hover { color: var(--c-primary-hover); text-decoration: underline; }
+a:hover { color: var(--c-primary-hover); }
 
 :focus-visible {
   outline: 2px solid var(--c-focus);
@@ -289,6 +289,38 @@ a:hover { color: var(--c-primary-hover); text-decoration: underline; }
 .btn-sm { padding: 6px 12px; font-size: var(--fs-sm); }
 .btn-lg { padding: 12px 22px; font-size: var(--fs-lg); }
 .btn-block { width: 100%; }
+
+/* Круглые icon-кнопки звонка (принять/сбросить/микрофон) — как в звонилках,
+   а не текстовые кнопки. Иконка hangup — тот же svg "телефон", просто
+   повёрнутый на 135° (стандартный приём, не отдельная картинка). */
+.call-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: var(--transition);
+  color: #fff;
+}
+.call-icon-btn svg { width: 20px; height: 20px; }
+.call-icon-btn.is-accept { background: var(--c-pass-solid); }
+.call-icon-btn.is-accept:hover { filter: brightness(1.08); }
+.call-icon-btn.is-hangup { background: var(--c-fail-solid); }
+.call-icon-btn.is-hangup:hover { filter: brightness(1.08); }
+.call-icon-btn.is-hangup svg { transform: rotate(135deg); }
+.call-icon-btn.is-mute {
+  background: var(--c-surface-2);
+  color: var(--c-text);
+  border: 1px solid var(--c-border-strong);
+}
+.call-icon-btn.is-mute.is-active {
+  background: var(--c-fail-bg);
+  color: var(--c-fail);
+  border-color: var(--c-fail-border);
+}
 
 /* --------------------------------------------------------------------------
    7. ПОЛЯ ВВОДА
