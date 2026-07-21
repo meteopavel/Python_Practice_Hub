@@ -407,6 +407,13 @@ async def session_ws(websocket: WebSocket, student_id: int):
                         await safe_send(tutor_ws, data)
                 continue
 
+            # Результат прогона кода в редакторе подсказки — только тьютор
+            # запускает, ученику просто пересылаем результат посмотреть.
+            if data.get("type") == "hint_result":
+                if is_tutor and room.student_ws is not None:
+                    await safe_send(room.student_ws, data)
+                continue
+
             code = data.get("code", "")
             if is_tutor:
                 room.last_tutor_hint = code
@@ -455,3 +462,14 @@ def submit(payload: SubmissionRequest, request: Request, db: Session = Depends(g
         db.commit()
 
     return result
+
+
+@app.post("/api/hint/run")
+def run_hint_code(payload: SubmissionRequest, request: Request):
+    """Тьютор проверяет код прямо в редакторе подсказки — тот же grade(),
+    но без записи Attempt: это демонстрация ученику, а не его попытка."""
+    if current_user_id(request) is None:
+        return unauthorized()
+    if current_user_role(request) != ROLE_TUTOR:
+        return forbidden()
+    return grade(payload.task_id, payload.code)

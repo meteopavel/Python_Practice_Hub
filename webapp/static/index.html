@@ -53,9 +53,14 @@
 
 <div class="container student-layout">
   <div class="task-sidebar stack stack-4">
-    <aside class="card card-pad stack stack-4">
+    <aside class="card card-pad stack stack-3">
       <span class="panel-title">Задания</span>
       <nav class="task-list" id="task-list"></nav>
+      <div class="row between">
+        <button class="btn btn-sm btn-ghost" id="task-prev-btn">←</button>
+        <span class="muted" id="task-page-label" style="font-size: var(--fs-sm)"></span>
+        <button class="btn btn-sm btn-ghost" id="task-next-btn">→</button>
+      </div>
     </aside>
 
     <aside class="card card-pad stack stack-3">
@@ -98,6 +103,7 @@
         <div class="code-editor-bar"><span>hint.py</span></div>
         <div class="hint-mount" id="hint-mount"></div>
       </div>
+      <div id="hint-result"></div>
     </section>
 
     <section class="stack stack-3" id="solve-section">
@@ -172,6 +178,14 @@ function connectWs(ownId) {
       hintSection.style.display = msg.online ? 'flex' : 'none';
     } else if (msg.type === 'tutor_hint') {
       hintEditor.setValue(msg.code || '');
+    } else if (msg.type === 'hint_result') {
+      const container = document.getElementById('hint-result');
+      renderGradeResult(container, msg.result);
+      const label = document.createElement('p');
+      label.className = 'muted';
+      label.style.cssText = 'font-size: var(--fs-sm); margin: 0 0 8px 0';
+      label.textContent = `Результат по заданию ${msg.task_id}`;
+      container.prepend(label);
     } else if (msg.type === 'call_offer') {
       handleCallOffer(msg);
     } else if (msg.type === 'call_ice') {
@@ -207,6 +221,53 @@ const ICON_MIC_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
 const ICON_EYE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
 document.getElementById('impersonation-call-link').innerHTML = ICON_PHONE;
 document.getElementById('impersonation-eye-btn').innerHTML = ICON_EYE;
+
+// --- Звук звонка (Web Audio, без внешних файлов) ---------------------------
+// AudioContext нельзя запустить без жеста пользователя — "разблокируем" его
+// на первый же клик/нажатие клавиши на странице, заранее, чтобы звук
+// входящего звонка не потерялся из-за автоплей-политики браузера.
+let ringAudioCtx = null;
+let ringInterval = null;
+
+function unlockRingAudio() {
+  if (!ringAudioCtx) ringAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (ringAudioCtx.state === 'suspended') ringAudioCtx.resume();
+}
+document.addEventListener('pointerdown', unlockRingAudio, {once: true});
+document.addEventListener('keydown', unlockRingAudio, {once: true});
+
+function playRingTone(freqs, duration) {
+  if (!ringAudioCtx) return;
+  const now = ringAudioCtx.currentTime;
+  freqs.forEach(freq => {
+    const osc = ringAudioCtx.createOscillator();
+    const gain = ringAudioCtx.createGain();
+    osc.frequency.value = freq;
+    osc.connect(gain).connect(ringAudioCtx.destination);
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(0.12, now + 0.02);
+    gain.gain.setValueAtTime(0.12, now + duration - 0.03);
+    gain.gain.linearRampToValueAtTime(0, now + duration);
+    osc.start(now);
+    osc.stop(now + duration);
+  });
+}
+
+// Двойной короткий гудок — сторона принимающего (ученик), входящий звонок.
+function startRingtone() {
+  unlockRingAudio();
+  stopRingSound();
+  const cycle = () => {
+    playRingTone([700], 0.15);
+    setTimeout(() => playRingTone([700], 0.15), 250);
+  };
+  cycle();
+  ringInterval = setInterval(cycle, 1800);
+}
+
+function stopRingSound() {
+  if (ringInterval) { clearInterval(ringInterval); ringInterval = null; }
+}
 
 // Прогоняет сырой поток микрофона через RNNoise (WASM, AudioWorklet) —
 // шумоподавление сверх штатного echoCancellation/noiseSuppression браузера,
@@ -249,8 +310,9 @@ function renderCallBar() {
   } else if (callState === 'in-call') {
     callStatusEl.textContent = 'в разговоре с репетитором';
     const muted = localStream && !localStream.getAudioTracks()[0].enabled;
+    const muteClass = muted ? 'call-icon-btn is-mute is-active' : 'call-icon-btn is-accept is-pulsing';
     callActionsEl.innerHTML = `
-      <button class="call-icon-btn is-mute${muted ? ' is-active' : ''}" id="mute-btn" title="${muted ? 'Включить микрофон' : 'Выключить микрофон'}">${muted ? ICON_MIC_OFF : ICON_MIC}</button>
+      <button class="${muteClass}" id="mute-btn" title="${muted ? 'Включить микрофон' : 'Выключить микрофон'}">${muted ? ICON_MIC_OFF : ICON_MIC}</button>
       <button class="call-icon-btn is-hangup" id="hangup-btn" title="Завершить звонок">${ICON_PHONE}</button>
     `;
     document.getElementById('mute-btn').addEventListener('click', toggleMute);
@@ -327,6 +389,7 @@ function handleCallOffer(msg) {
   incomingOffer = msg.sdp;
   callState = 'ringing';
   renderCallBar();
+  startRingtone();
 }
 
 async function acceptCall() {
@@ -347,6 +410,7 @@ async function acceptCall() {
     answer.sdp = tuneOpusSdp(answer.sdp);
     await pc.setLocalDescription(answer);
     sendMessage({type: 'call_answer', sdp: answer});
+    stopRingSound();
     callState = 'in-call';
     renderCallBar();
   } catch (e) {
@@ -371,6 +435,7 @@ function toggleMute() {
 }
 
 function endCall(notify) {
+  stopRingSound();
   if (pc) { pc.close(); pc = null; }
   if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
   if (noiseSuppressionCtx) { noiseSuppressionCtx.close(); noiseSuppressionCtx = null; }
@@ -442,8 +507,16 @@ async function loadTasks() {
   showDescription();
 }
 
+const TASK_PAGE_SIZE = 10;
+let taskPage = 0;
+
 function renderTaskList() {
-  taskList.innerHTML = tasks.map(t => {
+  const totalPages = Math.max(1, Math.ceil(tasks.length / TASK_PAGE_SIZE));
+  taskPage = Math.min(taskPage, totalPages - 1);
+  const start = taskPage * TASK_PAGE_SIZE;
+  const pageTasks = tasks.slice(start, start + TASK_PAGE_SIZE);
+
+  taskList.innerHTML = pageTasks.map(t => {
     const status = taskStatus[t.id];
     const dotClass = status === 'pass' ? 'dot-pass' : status === 'fail' ? 'dot-fail' : 'dot-none';
     const activeClass = t.id === currentTaskId ? ' is-active' : '';
@@ -464,7 +537,18 @@ function renderTaskList() {
       resultsSection.style.display = 'none';
     });
   });
+
+  document.getElementById('task-page-label').textContent = `${taskPage + 1} / ${totalPages}`;
+  document.getElementById('task-prev-btn').disabled = taskPage === 0;
+  document.getElementById('task-next-btn').disabled = taskPage >= totalPages - 1;
 }
+
+document.getElementById('task-prev-btn').addEventListener('click', () => {
+  if (taskPage > 0) { taskPage--; renderTaskList(); }
+});
+document.getElementById('task-next-btn').addEventListener('click', () => {
+  taskPage++; renderTaskList();
+});
 
 function showDescription() {
   const task = tasks.find(t => t.id === currentTaskId);
@@ -530,6 +614,44 @@ submitBtn.addEventListener('click', async () => {
     submitBtn.textContent = 'Проверить';
   }
 });
+
+function renderGradeResult(container, data) {
+  if (data.error) {
+    container.innerHTML = `<div class="result-summary is-fail"><span>${escapeHtml(data.error)}</span></div>`;
+    return;
+  }
+  const summaryHtml = `<div class="result-summary ${data.all_passed ? 'is-pass' : 'is-fail'}">
+    <span class="count">${data.passed} / ${data.total}</span>
+    <span>${data.all_passed ? 'Все тесты пройдены' : 'Есть ошибки'}</span>
+  </div>`;
+  const casesHtml = data.results.map((r, i) => {
+    const input = escapeHtml(JSON.stringify(r.input));
+    if (!r.passed && r.error) {
+      return `<div class="test-case is-fail">
+        <div class="test-case-head">
+          <span class="test-case-name">Тест ${i + 1}</span>
+          <span class="badge badge-fail">Ошибка</span>
+        </div>
+        <dl class="test-io">
+          <dt>Вход</dt><dd>${input}</dd>
+          <dt>Ошибка</dt><dd class="diff-got">${escapeHtml(r.error)}</dd>
+        </dl>
+      </div>`;
+    }
+    return `<div class="test-case ${r.passed ? 'is-pass' : 'is-fail'}">
+      <div class="test-case-head">
+        <span class="test-case-name">Тест ${i + 1}</span>
+        <span class="badge ${r.passed ? 'badge-pass' : 'badge-fail'}">${r.passed ? 'Пройден' : 'Не пройден'}</span>
+      </div>
+      <dl class="test-io">
+        <dt>Вход</dt><dd>${input}</dd>
+        <dt>Ожидалось</dt><dd>${escapeHtml(JSON.stringify(r.expected))}</dd>
+        <dt>Получено</dt><dd class="${r.passed ? '' : 'diff-got'}">${escapeHtml(JSON.stringify(r.actual))}</dd>
+      </dl>
+    </div>`;
+  }).join('');
+  container.innerHTML = `<div class="stack stack-3">${summaryHtml}<div class="test-list">${casesHtml}</div></div>`;
+}
 
 function render(data) {
   resultsSection.style.display = 'block';

@@ -53,9 +53,14 @@
 
 <div class="container session-main">
   <div class="session-layout">
-    <aside class="task-sidebar card card-pad stack stack-4">
+    <aside class="task-sidebar card card-pad stack stack-3">
       <span class="panel-title">Задания</span>
       <nav class="task-list" id="task-list"></nav>
+      <div class="row between">
+        <button class="btn btn-sm btn-ghost" id="task-prev-btn">←</button>
+        <span class="muted" id="task-page-label" style="font-size: var(--fs-sm)"></span>
+        <button class="btn btn-sm btn-ghost" id="task-next-btn">→</button>
+      </div>
     </aside>
 
     <main class="stack stack-4">
@@ -90,6 +95,11 @@
           <div class="code-editor-bar"><span>hint.py</span></div>
           <div class="live-mount" id="hint-mount"></div>
         </div>
+        <div class="row between wrap">
+          <span class="muted" style="font-size: var(--fs-sm)">Проверка идёт на выбранном слева задании — результат увидит и ученик.</span>
+          <button class="btn btn-sm btn-primary" id="run-hint-btn">Проверить</button>
+        </div>
+        <div id="hint-result"></div>
       </section>
     </main>
   </div>
@@ -176,8 +186,16 @@ async function loadTasks() {
   showTask();
 }
 
+const TASK_PAGE_SIZE = 10;
+let taskPage = 0;
+
 function renderTaskList() {
-  document.getElementById('task-list').innerHTML = tasks.map(t => {
+  const totalPages = Math.max(1, Math.ceil(tasks.length / TASK_PAGE_SIZE));
+  taskPage = Math.min(taskPage, totalPages - 1);
+  const start = taskPage * TASK_PAGE_SIZE;
+  const pageTasks = tasks.slice(start, start + TASK_PAGE_SIZE);
+
+  document.getElementById('task-list').innerHTML = pageTasks.map(t => {
     const status = taskStatus[t.id];
     const dotClass = status === 'pass' ? 'dot-pass' : status === 'fail' ? 'dot-fail' : 'dot-none';
     const activeClass = t.id === currentTaskId ? ' is-active' : '';
@@ -195,7 +213,18 @@ function renderTaskList() {
       showTask();
     });
   });
+
+  document.getElementById('task-page-label').textContent = `${taskPage + 1} / ${totalPages}`;
+  document.getElementById('task-prev-btn').disabled = taskPage === 0;
+  document.getElementById('task-next-btn').disabled = taskPage >= totalPages - 1;
 }
+
+document.getElementById('task-prev-btn').addEventListener('click', () => {
+  if (taskPage > 0) { taskPage--; renderTaskList(); }
+});
+document.getElementById('task-next-btn').addEventListener('click', () => {
+  taskPage++; renderTaskList();
+});
 
 function showTask() {
   const task = tasks.find(t => t.id === currentTaskId);
@@ -232,6 +261,67 @@ async function loadStudentAttempts(taskId) {
     });
   });
 }
+
+function renderGradeResult(container, data) {
+  if (data.error) {
+    container.innerHTML = `<div class="result-summary is-fail"><span>${escapeHtml(data.error)}</span></div>`;
+    return;
+  }
+  const summaryHtml = `<div class="result-summary ${data.all_passed ? 'is-pass' : 'is-fail'}">
+    <span class="count">${data.passed} / ${data.total}</span>
+    <span>${data.all_passed ? 'Все тесты пройдены' : 'Есть ошибки'}</span>
+  </div>`;
+  const casesHtml = data.results.map((r, i) => {
+    const input = escapeHtml(JSON.stringify(r.input));
+    if (!r.passed && r.error) {
+      return `<div class="test-case is-fail">
+        <div class="test-case-head">
+          <span class="test-case-name">Тест ${i + 1}</span>
+          <span class="badge badge-fail">Ошибка</span>
+        </div>
+        <dl class="test-io">
+          <dt>Вход</dt><dd>${input}</dd>
+          <dt>Ошибка</dt><dd class="diff-got">${escapeHtml(r.error)}</dd>
+        </dl>
+      </div>`;
+    }
+    return `<div class="test-case ${r.passed ? 'is-pass' : 'is-fail'}">
+      <div class="test-case-head">
+        <span class="test-case-name">Тест ${i + 1}</span>
+        <span class="badge ${r.passed ? 'badge-pass' : 'badge-fail'}">${r.passed ? 'Пройден' : 'Не пройден'}</span>
+      </div>
+      <dl class="test-io">
+        <dt>Вход</dt><dd>${input}</dd>
+        <dt>Ожидалось</dt><dd>${escapeHtml(JSON.stringify(r.expected))}</dd>
+        <dt>Получено</dt><dd class="${r.passed ? '' : 'diff-got'}">${escapeHtml(JSON.stringify(r.actual))}</dd>
+      </dl>
+    </div>`;
+  }).join('');
+  container.innerHTML = `<div class="stack stack-3">${summaryHtml}<div class="test-list">${casesHtml}</div></div>`;
+}
+
+async function runHintCode() {
+  if (currentTaskId === null) return;
+  const btn = document.getElementById('run-hint-btn');
+  const resultEl = document.getElementById('hint-result');
+  btn.disabled = true;
+  btn.textContent = 'Проверяю...';
+  try {
+    const code = hintEditor.getValue();
+    const res = await fetch('/api/hint/run', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({task_id: currentTaskId, code}),
+    });
+    const result = await res.json();
+    renderGradeResult(resultEl, result);
+    sendMessage({type: 'hint_result', task_id: currentTaskId, result});
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Проверить';
+  }
+}
+document.getElementById('run-hint-btn').addEventListener('click', runHintCode);
 
 let ws = null;
 let studentTypingTimer = null;
@@ -290,6 +380,49 @@ const ICON_PHONE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
 const ICON_MIC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>';
 const ICON_MIC_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="1" y1="1" x2="23" y2="23"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/><path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>';
 
+// --- Звук звонка (Web Audio, без внешних файлов) ---------------------------
+// AudioContext нельзя запустить без жеста пользователя — "разблокируем" его
+// на первый же клик/нажатие клавиши на странице, заранее, чтобы звук вызова
+// не потерялся из-за автоплей-политики браузера.
+let ringAudioCtx = null;
+let ringInterval = null;
+
+function unlockRingAudio() {
+  if (!ringAudioCtx) ringAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (ringAudioCtx.state === 'suspended') ringAudioCtx.resume();
+}
+document.addEventListener('pointerdown', unlockRingAudio, {once: true});
+document.addEventListener('keydown', unlockRingAudio, {once: true});
+
+function playRingTone(freqs, duration) {
+  if (!ringAudioCtx) return;
+  const now = ringAudioCtx.currentTime;
+  freqs.forEach(freq => {
+    const osc = ringAudioCtx.createOscillator();
+    const gain = ringAudioCtx.createGain();
+    osc.frequency.value = freq;
+    osc.connect(gain).connect(ringAudioCtx.destination);
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(0.12, now + 0.02);
+    gain.gain.setValueAtTime(0.12, now + duration - 0.03);
+    gain.gain.linearRampToValueAtTime(0, now + duration);
+    osc.start(now);
+    osc.stop(now + duration);
+  });
+}
+
+// Гудок "дозваниваюсь" — сторона звонящего (тьютор).
+function startRingback() {
+  unlockRingAudio();
+  stopRingSound();
+  playRingTone([425, 480], 1);
+  ringInterval = setInterval(() => playRingTone([425, 480], 1), 3000);
+}
+
+function stopRingSound() {
+  if (ringInterval) { clearInterval(ringInterval); ringInterval = null; }
+}
+
 // Прогоняет сырой поток микрофона через RNNoise (WASM, AudioWorklet) —
 // шумоподавление сверх штатного echoCancellation/noiseSuppression браузера,
 // которое на телефонах особенно слабое. При любой ошибке (нет AudioWorklet,
@@ -330,13 +463,15 @@ function renderHeaderCall() {
     headerCallBtn.onclick = () => endCall(true);
     headerMuteBtn.style.display = 'none';
   } else if (callState === 'in-call') {
-    headerCallBtn.className = 'call-icon-btn is-accept is-sm';
+    headerCallBtn.className = 'call-icon-btn is-accept is-pulsing is-sm';
     headerCallBtn.title = 'Завершить звонок';
     headerCallBtn.innerHTML = ICON_PHONE;
     headerCallBtn.onclick = () => endCall(true);
     const muted = localStream && !localStream.getAudioTracks()[0].enabled;
     headerMuteBtn.style.display = 'inline-flex';
-    headerMuteBtn.className = `call-icon-btn is-sm is-mute${muted ? ' is-active' : ''}`;
+    headerMuteBtn.className = muted
+      ? 'call-icon-btn is-sm is-mute is-active'
+      : 'call-icon-btn is-sm is-accept is-pulsing';
     headerMuteBtn.title = muted ? 'Включить микрофон' : 'Выключить микрофон';
     headerMuteBtn.innerHTML = muted ? ICON_MIC_OFF : ICON_MIC;
     headerMuteBtn.onclick = toggleMute;
@@ -402,6 +537,7 @@ function setupPeerConnection(iceServers) {
   conn.onconnectionstatechange = () => {
     if (conn.connectionState === 'connected') {
       clearTimeout(callTimeoutTimer);
+      stopRingSound();
       callState = 'in-call';
       renderHeaderCall();
     } else if (conn.connectionState === 'failed' || conn.connectionState === 'disconnected') {
@@ -415,6 +551,7 @@ async function startCall() {
   if (callState !== 'idle') return;
   callState = 'calling';
   renderHeaderCall();
+  startRingback();
   try {
     const iceServers = await fetchIceServers();
     localStream = await navigator.mediaDevices.getUserMedia({audio: AUDIO_CONSTRAINTS});
@@ -464,6 +601,7 @@ function toggleMute() {
 
 function endCall(notify) {
   clearTimeout(callTimeoutTimer);
+  stopRingSound();
   if (pc) { pc.close(); pc = null; }
   if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
   if (noiseSuppressionCtx) { noiseSuppressionCtx.close(); noiseSuppressionCtx = null; }
