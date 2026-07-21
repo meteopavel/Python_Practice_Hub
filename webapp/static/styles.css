@@ -321,6 +321,8 @@ a:hover { color: var(--c-primary-hover); }
   color: var(--c-fail);
   border-color: var(--c-fail-border);
 }
+.call-icon-btn.is-sm { width: 32px; height: 32px; }
+.call-icon-btn.is-sm svg { width: 15px; height: 15px; }
 
 /* --------------------------------------------------------------------------
    7. ПОЛЯ ВВОДА
@@ -393,7 +395,10 @@ a:hover { color: var(--c-primary-hover); }
 /* --------------------------------------------------------------------------
    9. КАРТОЧКА / СПИСОК ЗАДАНИЙ
    -------------------------------------------------------------------------- */
-.task-list { display: flex; flex-direction: column; gap: 2px; }
+.task-sidebar { position: sticky; top: 68px; }
+.task-list { display: flex; flex-direction: column; gap: 2px; max-height: 520px; overflow-y: auto; }
+.task-desc p { margin: 0 0 var(--space-3); white-space: pre-wrap; }
+.task-desc p:last-child { margin-bottom: 0; }
 .task-item {
   display: flex;
   align-items: center;
@@ -489,6 +494,7 @@ a:hover { color: var(--c-primary-hover); }
 }
 .account-menu-item:hover { background: var(--c-surface-2); }
 .account-menu-empty { padding: var(--space-2) var(--space-3); font-size: var(--fs-sm); color: var(--c-text-faint); }
+.account-menu-divider { height: 1px; margin: var(--space-1) 0; background: var(--c-border); }
 
 /* --------------------------------------------------------------------------
    10. РЕДАКТОР КОДА

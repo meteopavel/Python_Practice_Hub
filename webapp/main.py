@@ -197,11 +197,10 @@ def me(request: Request, db: Session = Depends(get_db)):
     }
 
 
-@app.get("/api/attempts/mine")
-def my_attempts(request: Request, db: Session = Depends(get_db)):
-    if current_user_id(request) is None:
-        return unauthorized()
-    user_id, _, _, _ = effective_identity(request, db)
+def _task_status_map(db: Session, user_id: int) -> dict:
+    """task_id -> 'pass'/'fail' по всей истории попыток пользователя — 'pass'
+    если хоть одна попытка когда-либо прошла. Общий код для своей истории
+    (эффективная личность) и истории конкретного ученика (вид тьютора)."""
     rows = db.query(Attempt.task_id, Attempt.passed).filter(Attempt.user_id == user_id).all()
     passed_by_task = {}
     for task_id, passed in rows:
@@ -209,11 +208,7 @@ def my_attempts(request: Request, db: Session = Depends(get_db)):
     return {task_id: ("pass" if passed else "fail") for task_id, passed in passed_by_task.items()}
 
 
-@app.get("/api/attempts/mine/{task_id}")
-def my_task_attempts(task_id: int, request: Request, db: Session = Depends(get_db)):
-    if current_user_id(request) is None:
-        return unauthorized()
-    user_id, _, _, _ = effective_identity(request, db)
+def _task_attempts(db: Session, user_id: int, task_id: int) -> list:
     rows = (
         db.query(Attempt)
         .filter(Attempt.user_id == user_id, Attempt.task_id == task_id)
@@ -230,29 +225,20 @@ def my_task_attempts(task_id: int, request: Request, db: Session = Depends(get_d
     ]
 
 
-@app.get("/api/attempts")
-def list_attempts(request: Request, db: Session = Depends(get_db)):
+@app.get("/api/attempts/mine")
+def my_attempts(request: Request, db: Session = Depends(get_db)):
     if current_user_id(request) is None:
         return unauthorized()
-    if current_user_role(request) != ROLE_TUTOR:
-        return forbidden()
-    rows = (
-        db.query(Attempt, User.username)
-        .join(User, Attempt.user_id == User.id)
-        .filter(User.role == ROLE_STUDENT)
-        .order_by(Attempt.created_at.desc())
-        .limit(200)
-        .all()
-    )
-    return [
-        {
-            "username": username,
-            "task_id": attempt.task_id,
-            "passed": attempt.passed,
-            "created_at": attempt.created_at.isoformat() if attempt.created_at else None,
-        }
-        for attempt, username in rows
-    ]
+    user_id, _, _, _ = effective_identity(request, db)
+    return _task_status_map(db, user_id)
+
+
+@app.get("/api/attempts/mine/{task_id}")
+def my_task_attempts(task_id: int, request: Request, db: Session = Depends(get_db)):
+    if current_user_id(request) is None:
+        return unauthorized()
+    user_id, _, _, _ = effective_identity(request, db)
+    return _task_attempts(db, user_id, task_id)
 
 
 @app.get("/api/students")
@@ -322,34 +308,30 @@ def set_student_password(student_id: int, payload: SetPasswordRequest, request: 
     return {"ok": True}
 
 
-@app.get("/api/students/{student_id}/attempts")
-def student_attempts(student_id: int, request: Request, db: Session = Depends(get_db)):
+def _require_student(db: Session, student_id: int):
+    return db.query(User).filter(User.id == student_id, User.role == ROLE_STUDENT).first()
+
+
+@app.get("/api/students/{student_id}/attempts/status")
+def student_task_status(student_id: int, request: Request, db: Session = Depends(get_db)):
     if current_user_id(request) is None:
         return unauthorized()
     if current_user_role(request) != ROLE_TUTOR:
         return forbidden()
-    student = db.query(User).filter(User.id == student_id, User.role == ROLE_STUDENT).first()
-    if student is None:
+    if _require_student(db, student_id) is None:
         return JSONResponse(status_code=404, content={"error": "Ученик не найден"})
-    rows = (
-        db.query(Attempt)
-        .filter(Attempt.user_id == student_id)
-        .order_by(Attempt.created_at.desc())
-        .limit(200)
-        .all()
-    )
-    return {
-        "username": student.username,
-        "attempts": [
-            {
-                "task_id": a.task_id,
-                "passed": a.passed,
-                "code": a.code,
-                "created_at": a.created_at.isoformat() if a.created_at else None,
-            }
-            for a in rows
-        ],
-    }
+    return _task_status_map(db, student_id)
+
+
+@app.get("/api/students/{student_id}/attempts/{task_id}")
+def student_task_attempts(student_id: int, task_id: int, request: Request, db: Session = Depends(get_db)):
+    if current_user_id(request) is None:
+        return unauthorized()
+    if current_user_role(request) != ROLE_TUTOR:
+        return forbidden()
+    if _require_student(db, student_id) is None:
+        return JSONResponse(status_code=404, content={"error": "Ученик не найден"})
+    return _task_attempts(db, student_id, task_id)
 
 
 @app.websocket("/ws/session/{student_id}")

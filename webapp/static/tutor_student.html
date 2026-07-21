@@ -17,7 +17,6 @@
   @media (max-width: 900px) {
     .session-layout { grid-template-columns: 1fr; }
   }
-  .attempts-panel { max-height: 520px; overflow-y: auto; }
   .live-mount { min-height: 180px; }
   .live-mount .cm-editor { height: 100%; }
   .live-mount .cm-scroller { min-height: 180px; }
@@ -32,19 +31,18 @@
     </summary>
     <div class="account-menu-panel" id="switcher-list"></div>
   </details>
+  <button class="call-icon-btn is-mute is-sm" id="header-call-btn" title="Позвонить"></button>
+  <button class="call-icon-btn is-mute is-sm" id="header-mute-btn" title="Микрофон" style="display: none"></button>
+  <form id="impersonate-form" method="post" style="margin: 0">
+    <button class="call-icon-btn is-mute is-sm" id="impersonate-btn" type="submit" title="Посмотреть как ученик"></button>
+  </form>
   <div class="header-spacer"></div>
-  <button class="call-icon-btn is-mute" id="header-call-btn" title="Позвонить"></button>
-  <button class="call-icon-btn is-mute" id="header-mute-btn" title="Микрофон" style="display: none"></button>
-  <a class="btn btn-sm btn-ghost" href="/">← к списку учеников</a>
   <details class="account-menu">
     <summary class="account-trigger">
       <span class="muted" id="username"></span>
       <span class="avatar" id="avatar"></span>
     </summary>
     <div class="account-menu-panel">
-      <form id="impersonate-form" method="post" style="margin: 0">
-        <button class="account-menu-item" type="submit">Посмотреть как ученик</button>
-      </form>
       <form method="post" action="/logout" style="margin: 0">
         <button class="account-menu-item" type="submit">Выйти</button>
       </form>
@@ -55,13 +53,23 @@
 
 <div class="container session-main">
   <div class="session-layout">
-    <aside class="card card-pad stack stack-3 attempts-panel">
-      <span class="panel-title">История попыток</span>
-      <div id="attempts-rows" class="stack stack-2"></div>
-      <p class="muted" id="attempts-empty" style="display: none">Попыток пока нет.</p>
+    <aside class="task-sidebar card card-pad stack stack-4">
+      <span class="panel-title">Задания</span>
+      <nav class="task-list" id="task-list"></nav>
     </aside>
 
     <main class="stack stack-4">
+      <section class="card card-pad stack stack-3">
+        <span class="panel-title">Задание</span>
+        <h2 id="task-title"></h2>
+        <div class="task-desc muted" id="description"></div>
+      </section>
+
+      <section class="stack stack-3" id="student-attempts-section" style="display: none">
+        <span class="panel-title">Попытки ученика</span>
+        <div id="student-attempts-rows"></div>
+      </section>
+
       <section class="stack stack-3">
         <div class="row between">
           <span class="panel-title">Код ученика сейчас</span>
@@ -99,6 +107,9 @@ function escapeHtml(value) {
   return div.innerHTML;
 }
 
+const ICON_EYE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+document.getElementById('impersonate-btn').innerHTML = ICON_EYE;
+
 async function loadMe() {
   const res = await fetch('/api/me');
   if (res.status === 401) { window.location.href = '/login'; return; }
@@ -113,14 +124,15 @@ async function loadStudentSwitcher() {
   const students = await res.json();
   const current = students.find(s => s.id === studentId);
   document.getElementById('switcher-current-name').textContent = current ? current.username : '…';
+  document.title = `${current ? current.username : 'Ученик'} — Python Practice Hub`;
   const list = document.getElementById('switcher-list');
-  if (!students.length) {
-    list.innerHTML = '<span class="account-menu-empty">Нет учеников</span>';
-    return;
-  }
-  list.innerHTML = students.map(s => `
-    <button class="account-menu-item" data-id="${s.id}"${s.id === studentId ? ' style="font-weight: var(--fw-semibold)"' : ''}>${escapeHtml(s.username)}</button>
-  `).join('');
+  const backLink = '<a class="account-menu-item" href="/" style="display: block; text-decoration: none;">← к списку учеников</a><div class="account-menu-divider"></div>';
+  const studentsHtml = students.length
+    ? students.map(s => `
+        <button class="account-menu-item" data-id="${s.id}"${s.id === studentId ? ' style="font-weight: var(--fw-semibold)"' : ''}>${escapeHtml(s.username)}</button>
+      `).join('')
+    : '<span class="account-menu-empty">Нет учеников</span>';
+  list.innerHTML = backLink + studentsHtml;
   list.querySelectorAll('button[data-id]').forEach(btn => {
     btn.addEventListener('click', () => {
       if (Number(btn.dataset.id) === studentId) return;
@@ -143,19 +155,68 @@ const hintEditor = PracticeHubEditor.create(
   }
 );
 
-async function loadAttempts() {
-  const res = await fetch(`/api/students/${studentId}/attempts`);
-  if (res.status === 401) { window.location.href = '/login'; return; }
-  if (res.status === 403 || res.status === 404) { window.location.href = '/'; return; }
-  const data = await res.json();
-  document.title = `${data.username} — Python Practice Hub`;
+let tasks = [];
+let currentTaskId = null;
+const taskStatus = {};
 
-  const rows = document.getElementById('attempts-rows');
-  document.getElementById('attempts-empty').style.display = data.attempts.length ? 'none' : 'block';
-  rows.innerHTML = data.attempts.map((a, i) => `
+async function loadTasks() {
+  const res = await fetch('/api/tasks');
+  if (res.status === 401) { window.location.href = '/login'; return; }
+  tasks = await res.json();
+  currentTaskId = tasks.length ? tasks[0].id : null;
+
+  const statusRes = await fetch(`/api/students/${studentId}/attempts/status`);
+  if (statusRes.status === 403 || statusRes.status === 404) { window.location.href = '/'; return; }
+  if (statusRes.ok) {
+    const status = await statusRes.json();
+    for (const [taskId, s] of Object.entries(status)) taskStatus[taskId] = s;
+  }
+
+  renderTaskList();
+  showTask();
+}
+
+function renderTaskList() {
+  document.getElementById('task-list').innerHTML = tasks.map(t => {
+    const status = taskStatus[t.id];
+    const dotClass = status === 'pass' ? 'dot-pass' : status === 'fail' ? 'dot-fail' : 'dot-none';
+    const activeClass = t.id === currentTaskId ? ' is-active' : '';
+    const preview = t.description.length > 42 ? t.description.slice(0, 42) + '…' : t.description;
+    return `<button class="task-item${activeClass}" data-id="${t.id}">
+      <span class="task-item-num">${t.id}</span>
+      <span class="task-item-body"><span class="task-item-title">${escapeHtml(preview)}</span></span>
+      <span class="task-item-status"><span class="dot ${dotClass}"></span></span>
+    </button>`;
+  }).join('');
+  document.querySelectorAll('#task-list .task-item').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentTaskId = Number(btn.dataset.id);
+      renderTaskList();
+      showTask();
+    });
+  });
+}
+
+function showTask() {
+  const task = tasks.find(t => t.id === currentTaskId);
+  document.getElementById('task-title').textContent = task ? `Задание ${task.id}` : '';
+  document.getElementById('description').innerHTML = task
+    ? `<p>${escapeHtml(task.description)}</p><p><strong style="color: var(--c-text)">Пример:</strong> ${escapeHtml(task.example)}</p>`
+    : '';
+  loadStudentAttempts(currentTaskId);
+}
+
+async function loadStudentAttempts(taskId) {
+  const section = document.getElementById('student-attempts-section');
+  if (taskId === null) { section.style.display = 'none'; return; }
+  const res = await fetch(`/api/students/${studentId}/attempts/${taskId}`);
+  if (!res.ok) { section.style.display = 'none'; return; }
+  const attempts = await res.json();
+  section.style.display = attempts.length ? 'block' : 'none';
+  const rows = document.getElementById('student-attempts-rows');
+  rows.innerHTML = attempts.map((a, i) => `
     <details class="attempt-item">
       <summary class="attempt-row">
-        <span>Задание ${a.task_id}</span>
         <span class="badge ${a.passed ? 'badge-pass' : 'badge-fail'}">${a.passed ? 'Пройдено' : 'Ошибки'}</span>
         <span class="muted">${a.created_at ? new Date(a.created_at).toLocaleString('ru-RU') : ''}</span>
       </summary>
@@ -167,7 +228,7 @@ async function loadAttempts() {
       if (!details.open || details.dataset.mounted) return;
       details.dataset.mounted = '1';
       const mount = details.querySelector('.attempt-code-mount');
-      PracticeHubEditor.create(mount, data.attempts[i].code, null, {readOnly: true});
+      PracticeHubEditor.create(mount, attempts[i].code, null, {readOnly: true});
     });
   });
 }
@@ -257,25 +318,25 @@ async function applyNoiseSuppression(rawStream) {
 // серая в простое/дозвоне, зелёная только когда звонок реально активен.
 function renderHeaderCall() {
   if (callState === 'idle') {
-    headerCallBtn.className = 'call-icon-btn is-mute';
+    headerCallBtn.className = 'call-icon-btn is-mute is-sm';
     headerCallBtn.title = 'Позвонить';
     headerCallBtn.innerHTML = ICON_PHONE;
     headerCallBtn.onclick = startCall;
     headerMuteBtn.style.display = 'none';
   } else if (callState === 'calling') {
-    headerCallBtn.className = 'call-icon-btn is-mute';
+    headerCallBtn.className = 'call-icon-btn is-mute is-sm';
     headerCallBtn.title = 'Отменить вызов';
     headerCallBtn.innerHTML = ICON_PHONE;
     headerCallBtn.onclick = () => endCall(true);
     headerMuteBtn.style.display = 'none';
   } else if (callState === 'in-call') {
-    headerCallBtn.className = 'call-icon-btn is-accept';
+    headerCallBtn.className = 'call-icon-btn is-accept is-sm';
     headerCallBtn.title = 'Завершить звонок';
     headerCallBtn.innerHTML = ICON_PHONE;
     headerCallBtn.onclick = () => endCall(true);
     const muted = localStream && !localStream.getAudioTracks()[0].enabled;
     headerMuteBtn.style.display = 'inline-flex';
-    headerMuteBtn.className = `call-icon-btn is-mute${muted ? ' is-active' : ''}`;
+    headerMuteBtn.className = `call-icon-btn is-sm is-mute${muted ? ' is-active' : ''}`;
     headerMuteBtn.title = muted ? 'Включить микрофон' : 'Выключить микрофон';
     headerMuteBtn.innerHTML = muted ? ICON_MIC_OFF : ICON_MIC;
     headerMuteBtn.onclick = toggleMute;
@@ -422,7 +483,7 @@ document.addEventListener('click', (e) => {
 loadMe();
 loadStudentSwitcher();
 renderHeaderCall();
-loadAttempts();
+loadTasks();
 connectWs();
 </script>
 </body>
