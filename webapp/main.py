@@ -391,12 +391,15 @@ async def session_ws(websocket: WebSocket, student_id: int):
             "task_id": room.last_student_task_id,
         })
         await safe_send(websocket, {"type": "tutor_hint", "code": room.last_tutor_hint})
+        await safe_send(websocket, {"type": "student_status", "online": room.student_ws is not None})
         if room.student_ws is not None:
             await safe_send(room.student_ws, {"type": "tutor_status", "online": True})
     else:
         room.student_ws = websocket
         await safe_send(websocket, {"type": "tutor_status", "online": bool(room.tutor_sockets)})
         await safe_send(websocket, {"type": "tutor_hint", "code": room.last_tutor_hint})
+        for tutor_ws in room.tutor_sockets:
+            await safe_send(tutor_ws, {"type": "student_status", "online": True})
 
     try:
         while True:
@@ -410,9 +413,11 @@ async def session_ws(websocket: WebSocket, student_id: int):
             # DEPRECATED-пометку в index.html/tutor_student.html): тьютор
             # созванивается с учеником во внешнем сервисе (Телемост и т.п.)
             # и просто присылает ссылку тем же каналом, сервер её ретранслирует
-            # как есть, никакой обработки/хранения.
+            # как есть, никакой обработки/хранения. call_link_ack — ученик
+            # подтверждает тьютору, что ссылка реально дошла и отрендерилась.
             if data.get("type") in (
-                "call_offer", "call_answer", "call_ice", "call_end", "mute_status", "call_link",
+                "call_offer", "call_answer", "call_ice", "call_end", "mute_status",
+                "call_link", "call_link_ack",
             ):
                 if is_tutor:
                     if room.student_ws is not None:
@@ -473,6 +478,7 @@ async def session_ws(websocket: WebSocket, student_id: int):
             room.student_ws = None
             for tutor_ws in room.tutor_sockets:
                 await safe_send(tutor_ws, {"type": "call_end"})
+                await safe_send(tutor_ws, {"type": "student_status", "online": False})
 
 
 @app.post("/api/solve/run_free")

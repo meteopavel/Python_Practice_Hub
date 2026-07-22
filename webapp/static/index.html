@@ -248,6 +248,7 @@ const callLinkBtn = document.getElementById('call-link-btn');
 function showCallLink(url) {
   callLinkBtn.href = url;
   callLinkBar.style.display = 'flex';
+  sendMessage({type: 'call_link_ack'});
 }
 
 // --- Аудиозвонок (WebRTC, P2P) ---------------------------------------------
