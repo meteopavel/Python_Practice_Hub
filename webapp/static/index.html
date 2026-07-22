@@ -231,8 +231,17 @@ function connectWs(ownId) {
 }
 
 // --- Аудиозвонок (WebRTC, P2P) ---------------------------------------------
+// DEPRECATED и ОТКЛЮЧЕНО (2026-07-22): собственный WebRTC-стек решено не
+// развивать дальше — после нескольких заходов на отладку (шумодав,
+// битрейт, TURN) осталась невыясненная проблема с односторонней связью
+// (см. docs/personal/PROJECT_DOCUMENTATION.md §9.6 п.4). Планируется
+// заменить на интеграцию с Яндекс Телемостом (см. там же §11 п.3). Код не
+// удалён — просто входящий звонок теперь игнорируется через
+// CALLS_DISABLED (тьютор всё равно больше не может позвонить, кнопка у
+// него скрыта — это на случай рассинхрона версий или ручного вызова).
 // Ученик всегда принимающий: ждёт offer от тьютора, отвечает answer'ом.
 // Сигналинг идёт через тот же WebSocket, что и live-код/подсказки.
+const CALLS_DISABLED = true;
 let pc = null;
 let localStream = null;
 let noiseSuppressionCtx = null;
@@ -552,6 +561,7 @@ function setupPeerConnection(iceServers) {
 }
 
 function handleCallOffer(msg) {
+  if (CALLS_DISABLED) return;
   if (callState !== 'idle') return; // уже звоним/говорим — второй входящий игнорируем
   incomingOffer = msg.sdp;
   callState = 'ringing';

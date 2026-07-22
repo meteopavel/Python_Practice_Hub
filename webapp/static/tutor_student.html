@@ -477,9 +477,18 @@ function renderSubmitResult(msg) {
 }
 
 // --- Аудиозвонок (WebRTC, P2P) ---------------------------------------------
+// DEPRECATED и ОТКЛЮЧЕНО (2026-07-22): собственный WebRTC-стек решено не
+// развивать дальше — после нескольких заходов на отладку (шумодав,
+// битрейт, TURN) осталась невыясненная проблема с односторонней связью
+// (см. docs/personal/PROJECT_DOCUMENTATION.md §9.6 п.4). Планируется
+// заменить на интеграцию с Яндекс Телемостом (см. там же §11 п.3). Код не
+// удалён и функции ниже рабочие — просто кнопка звонка скрыта/задизейблена
+// через CALLS_DISABLED, чтобы им нельзя было воспользоваться, пока замена
+// не готова.
 // Тьютор всегда звонящий: создаёт offer, ждёт answer. Сигналинг (offer/answer/
 // ICE) идёт через тот же WebSocket, что и live-код/подсказки — отдельного
 // канала/сервиса для этого не заводим.
+const CALLS_DISABLED = true;
 let pc = null;
 let localStream = null;
 let noiseSuppressionCtx = null;
@@ -489,6 +498,9 @@ let callTimeoutTimer = null;
 let autoRedialAttempted = false;
 
 const headerCallBtn = document.getElementById('header-call-btn');
+if (CALLS_DISABLED) {
+  headerCallBtn.style.display = 'none';
+}
 const headerMuteBtn = document.getElementById('header-mute-btn');
 const micGainSlider = document.getElementById('mic-gain-slider');
 const remoteAudio = document.getElementById('remote-audio');
@@ -821,6 +833,7 @@ function setupPeerConnection(iceServers) {
 }
 
 async function startCall() {
+  if (CALLS_DISABLED) return;
   if (callState !== 'idle') return;
   autoRedialAttempted = false;
   callState = 'calling';
