@@ -96,3 +96,33 @@ def run_student_code(code: str, test_input) -> dict:
         return json.loads(proc.stdout[idx + len(RESULT_MARKER):])
     except json.JSONDecodeError:
         return {"ok": False, "error": "Не удалось разобрать результат выполнения"}
+
+
+def run_free_code(code: str) -> dict:
+    """Свободный запуск без эталона и без ожидания solve(data) — код
+    ученика/тьютора выполняется как есть, stdout возвращается как текст.
+    Нужен для подсказки, где print('hello') должен просто отработать."""
+    with tempfile.NamedTemporaryFile("w", suffix=".py", delete=False, encoding="utf-8") as f:
+        f.write(code)
+        script_path = f.name
+
+    try:
+        proc = subprocess.run(
+            [sys.executable, script_path],
+            input="",
+            capture_output=True,
+            text=True,
+            timeout=TIMEOUT_SECONDS,
+            preexec_fn=_limit_resources,
+            env={"PATH": "/usr/bin:/bin"},
+        )
+    except subprocess.TimeoutExpired:
+        return {"ok": False, "error": f"Превышено время выполнения ({TIMEOUT_SECONDS} сек) — проверь на бесконечный цикл"}
+    finally:
+        Path(script_path).unlink(missing_ok=True)
+
+    if proc.returncode != 0:
+        stderr_tail = proc.stderr.strip()[-800:]
+        return {"ok": False, "error": stderr_tail or f"Код завершился с ошибкой (код {proc.returncode})", "stdout": proc.stdout}
+
+    return {"ok": True, "stdout": proc.stdout}

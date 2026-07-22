@@ -89,6 +89,7 @@
       <div class="stack stack-2">
         <span class="panel-title">Аудиозвонок</span>
         <span class="muted" id="call-status"></span>
+        <span class="muted" id="remote-mute-status" style="font-size: var(--fs-sm); display: none">🔇 у репетитора выключен микрофон</span>
       </div>
       <div class="row" id="call-actions"></div>
     </div>
@@ -99,11 +100,14 @@
         <span class="panel-title">Подсказка от репетитора</span>
         <span class="badge badge-pass">Репетитор online</span>
       </div>
-      <div class="code-editor">
-        <div class="code-editor-bar"><span>hint.py</span></div>
-        <div class="hint-mount" id="hint-mount"></div>
+      <p class="muted" id="hint-locked-note" style="margin: 0">Репетитор пока не открыл подсказку.</p>
+      <div id="hint-body">
+        <div class="code-editor">
+          <div class="code-editor-bar"><span>hint.py</span></div>
+          <div class="hint-mount" id="hint-mount"></div>
+        </div>
+        <div id="hint-result"></div>
       </div>
-      <div id="hint-result"></div>
     </section>
 
     <section class="stack stack-3" id="solve-section">
@@ -119,8 +123,12 @@
       </div>
       <div class="row between wrap">
         <span class="muted" style="font-size: var(--fs-sm)">Код выполняется на сервере в изолированной среде.</span>
-        <button class="btn btn-primary" id="submit-btn">Проверить</button>
+        <div class="row" style="gap: 8px">
+          <button class="btn btn-sm" id="run-free-btn">Запустить</button>
+          <button class="btn btn-primary" id="submit-btn">Проверить</button>
+        </div>
       </div>
+      <div id="free-run-result"></div>
     </section>
     <p class="muted" id="solved-note" style="display: none">Задание уже решено ✅ — код можно посмотреть в «Мои попытки» выше.</p>
 
@@ -138,19 +146,30 @@
 const taskList = document.getElementById('task-list');
 const description = document.getElementById('description');
 const taskTitle = document.getElementById('task-title');
+const DEFAULT_SOLVE_CODE = 'def solve(data):\n    pass\n';
+const codeByTask = {}; // task_id -> код ученика, свой на каждое задание, не пересекается между ними
 let codeSendTimer = null;
 const codeEditor = PracticeHubEditor.create(
   document.getElementById('code-mount'),
-  'def solve(data):\n    pass\n',
+  DEFAULT_SOLVE_CODE,
   (code) => {
+    if (currentTaskId !== null) codeByTask[currentTaskId] = code;
     clearTimeout(codeSendTimer);
-    codeSendTimer = setTimeout(() => sendMessage({code}), 300);
+    codeSendTimer = setTimeout(() => sendMessage({code, task_id: currentTaskId}), 300);
   }
 );
 const hintSection = document.getElementById('hint-section');
 const hintEditor = PracticeHubEditor.create(
   document.getElementById('hint-mount'), '', null, {readOnly: true}
 );
+const hintLockedNote = document.getElementById('hint-locked-note');
+const hintBody = document.getElementById('hint-body');
+let hintVisible = false;
+
+function renderHintVisibility() {
+  hintBody.style.display = hintVisible ? '' : 'none';
+  hintLockedNote.style.display = hintVisible ? 'none' : 'block';
+}
 const submitBtn = document.getElementById('submit-btn');
 const summary = document.getElementById('summary');
 const results = document.getElementById('results');
@@ -186,6 +205,17 @@ function connectWs(ownId) {
       label.style.cssText = 'font-size: var(--fs-sm); margin: 0 0 8px 0';
       label.textContent = `Результат по заданию ${msg.task_id}`;
       container.prepend(label);
+    } else if (msg.type === 'hint_free_result') {
+      const container = document.getElementById('hint-result');
+      renderFreeRunResult(container, msg.result);
+    } else if (msg.type === 'hint_visibility') {
+      hintVisible = !!msg.visible;
+      renderHintVisibility();
+    } else if (msg.type === 'tutor_edit_code') {
+      if (msg.task_id === currentTaskId) codeEditor.setValue(msg.code || '');
+      codeByTask[msg.task_id] = msg.code || '';
+    } else if (msg.type === 'mute_status') {
+      renderRemoteMuteStatus(!!msg.muted);
     } else if (msg.type === 'call_offer') {
       handleCallOffer(msg);
     } else if (msg.type === 'call_ice') {
@@ -289,7 +319,38 @@ function setMicGain(value) {
   if (micGainNode) micGainNode.gain.value = value;
 }
 
+// RNNoise иногда режет слишком агрессивно (голос звучит приглушённо/рвано) —
+// даём возможность отключить его и остаться только на встроенном шумодаве
+// браузера + ручном усилении.
+function getNoiseSuppressionEnabled() {
+  return localStorage.getItem('noiseSuppressionEnabled') !== '0';
+}
+
+function setNoiseSuppressionEnabled(value) {
+  localStorage.setItem('noiseSuppressionEnabled', value ? '1' : '0');
+}
+
+async function applyPlainGain(rawStream) {
+  const audioCtx = new AudioContext();
+  const source = audioCtx.createMediaStreamSource(rawStream);
+  const gainNode = audioCtx.createGain();
+  gainNode.gain.value = getMicGain();
+  const destination = audioCtx.createMediaStreamDestination();
+  source.connect(gainNode).connect(destination);
+  noiseSuppressionCtx = audioCtx;
+  micGainNode = gainNode;
+  return destination.stream;
+}
+
 async function applyNoiseSuppression(rawStream) {
+  if (!getNoiseSuppressionEnabled()) {
+    try {
+      return await applyPlainGain(rawStream);
+    } catch (e) {
+      micGainNode = null;
+      return rawStream;
+    }
+  }
   try {
     const audioCtx = new AudioContext({sampleRate: 48000});
     await audioCtx.audioWorklet.addModule('/static/rnnoise-worklet.js');
@@ -308,15 +369,7 @@ async function applyNoiseSuppression(rawStream) {
     return destination.stream;
   } catch (e) {
     try {
-      const audioCtx = new AudioContext();
-      const source = audioCtx.createMediaStreamSource(rawStream);
-      const gainNode = audioCtx.createGain();
-      gainNode.gain.value = getMicGain();
-      const destination = audioCtx.createMediaStreamDestination();
-      source.connect(gainNode).connect(destination);
-      noiseSuppressionCtx = audioCtx;
-      micGainNode = gainNode;
-      return destination.stream;
+      return await applyPlainGain(rawStream);
     } catch (e2) {
       micGainNode = null;
       return rawStream;
@@ -333,11 +386,15 @@ function renderCallBar() {
   if (callState === 'ringing') {
     callStatusEl.textContent = 'входящий звонок от репетитора';
     callActionsEl.innerHTML = `
+      <label class="muted row" style="font-size: var(--fs-sm); gap: 4px; align-items: center">
+        <input type="checkbox" id="noise-suppression-toggle" ${getNoiseSuppressionEnabled() ? 'checked' : ''}> шумодав
+      </label>
       <button class="call-icon-btn is-accept" id="accept-btn" title="Принять">${ICON_PHONE}</button>
       <button class="call-icon-btn is-hangup" id="decline-btn" title="Отклонить">${ICON_PHONE}</button>
     `;
     document.getElementById('accept-btn').addEventListener('click', acceptCall);
     document.getElementById('decline-btn').addEventListener('click', () => endCall(true));
+    document.getElementById('noise-suppression-toggle').addEventListener('change', (e) => setNoiseSuppressionEnabled(e.target.checked));
   } else if (callState === 'in-call') {
     callStatusEl.textContent = 'в разговоре с репетитором';
     const muted = localStream && !localStream.getAudioTracks()[0].enabled;
@@ -446,6 +503,7 @@ async function acceptCall() {
     stopRingSound();
     callState = 'in-call';
     renderCallBar();
+    sendMessage({type: 'mute_status', muted: false});
   } catch (e) {
     callStatusEl.textContent = 'не удалось включить микрофон';
     endCall(true);
@@ -464,7 +522,12 @@ function toggleMute() {
   if (!localStream) return;
   const track = localStream.getAudioTracks()[0];
   track.enabled = !track.enabled;
+  sendMessage({type: 'mute_status', muted: !track.enabled});
   renderCallBar();
+}
+
+function renderRemoteMuteStatus(muted) {
+  document.getElementById('remote-mute-status').style.display = muted ? 'block' : 'none';
 }
 
 function endCall(notify) {
@@ -475,6 +538,7 @@ function endCall(notify) {
   pendingRemoteIce = [];
   incomingOffer = null;
   remoteAudio.srcObject = null;
+  renderRemoteMuteStatus(false);
   if (notify) sendMessage({type: 'call_end'});
   callState = 'idle';
   renderCallBar();
@@ -540,7 +604,7 @@ async function loadTasks() {
   showDescription();
 }
 
-const TASK_PAGE_SIZE = 10;
+const TASK_PAGE_SIZE = 7;
 let taskPage = 0;
 
 function renderTaskList() {
@@ -564,10 +628,7 @@ function renderTaskList() {
   }).join('');
   taskList.querySelectorAll('.task-item').forEach(btn => {
     btn.addEventListener('click', () => {
-      currentTaskId = Number(btn.dataset.id);
-      renderTaskList();
-      showDescription();
-      resultsSection.style.display = 'none';
+      switchToTask(Number(btn.dataset.id));
     });
   });
 
@@ -624,6 +685,22 @@ function updateSolveVisibility() {
   solvedNote.style.display = solved ? 'block' : 'none';
 }
 
+// Переключение задания: код и результаты — строго свои на каждое задание,
+// ничего от предыдущего задания не должно "протекать" в новое.
+function switchToTask(taskId) {
+  if (currentTaskId !== null) codeByTask[currentTaskId] = codeEditor.getValue();
+  currentTaskId = taskId;
+  renderTaskList();
+  showDescription();
+  codeEditor.setValue(codeByTask[currentTaskId] || DEFAULT_SOLVE_CODE);
+  resultsSection.style.display = 'none';
+  summary.innerHTML = '';
+  results.innerHTML = '';
+  document.getElementById('hint-result').innerHTML = '';
+  document.getElementById('free-run-result').innerHTML = '';
+  sendMessage({code: codeEditor.getValue(), task_id: currentTaskId});
+}
+
 submitBtn.addEventListener('click', async () => {
   if (currentTaskId === null) return;
   submitBtn.disabled = true;
@@ -639,12 +716,33 @@ submitBtn.addEventListener('click', async () => {
     if (redirectToLoginIfUnauthorized(res)) return;
     const data = await res.json();
     render(data);
+    sendMessage({type: 'submit_result', task_id: currentTaskId, result: data});
   } catch (e) {
     resultsSection.style.display = 'block';
     summary.innerHTML = `<div class="result-summary is-fail"><span>Ошибка запроса: ${escapeHtml(String(e))}</span></div>`;
   } finally {
     submitBtn.disabled = false;
     submitBtn.textContent = 'Проверить';
+  }
+});
+
+const runFreeBtn = document.getElementById('run-free-btn');
+runFreeBtn.addEventListener('click', async () => {
+  const resultEl = document.getElementById('free-run-result');
+  runFreeBtn.disabled = true;
+  runFreeBtn.textContent = 'Запускаю...';
+  try {
+    const res = await fetch('/api/solve/run_free', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({code: codeEditor.getValue()}),
+    });
+    if (redirectToLoginIfUnauthorized(res)) return;
+    const result = await res.json();
+    renderFreeRunResult(resultEl, result);
+  } finally {
+    runFreeBtn.disabled = false;
+    runFreeBtn.textContent = 'Запустить';
   }
 });
 
@@ -684,6 +782,18 @@ function renderGradeResult(container, data) {
     </div>`;
   }).join('');
   container.innerHTML = `<div class="stack stack-3">${summaryHtml}<div class="test-list">${casesHtml}</div></div>`;
+}
+
+function renderFreeRunResult(container, data) {
+  if (!data.ok) {
+    container.innerHTML = `<div class="result-summary is-fail"><span>${escapeHtml(data.error || 'Ошибка выполнения')}</span></div>`;
+    return;
+  }
+  const output = data.stdout ? escapeHtml(data.stdout) : '(нет вывода)';
+  container.innerHTML = `<div class="stack stack-3">
+    <div class="result-summary is-pass"><span>Код выполнен</span></div>
+    <pre class="block" style="white-space: pre-wrap; margin: 0">${output}</pre>
+  </div>`;
 }
 
 function render(data) {
@@ -742,12 +852,13 @@ async function loadMaterials() {
     <details class="attempt-item">
       <summary class="attempt-row">${escapeHtml(data.title)}</summary>
       <div class="stack stack-1">
-        ${data.lessons.map(l => `<a class="material-link" href="/materials/${encodeURIComponent(module)}/${encodeURIComponent(l.slug)}">${escapeHtml(l.title)}</a>`).join('')}
+        ${data.lessons.map(l => `<a class="material-link" target="_blank" rel="noopener" href="/materials/${encodeURIComponent(module)}/${encodeURIComponent(l.slug)}">${escapeHtml(l.title)}</a>`).join('')}
       </div>
     </details>
   `).join('');
 }
 
+renderHintVisibility();
 loadMe();
 loadTasks();
 loadMaterials();

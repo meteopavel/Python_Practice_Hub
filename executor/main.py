@@ -6,7 +6,7 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 
-from sandbox import run_student_code
+from sandbox import run_free_code, run_student_code
 
 app = FastAPI(title="Python Practice Hub — исполнитель")
 
@@ -16,9 +16,18 @@ class RunRequest(BaseModel):
     test_input: object
 
 
+class RunFreeRequest(BaseModel):
+    code: str
+
+
 @app.post("/run")
 def run(payload: RunRequest):
     return run_student_code(payload.code, payload.test_input)
+
+
+@app.post("/run_free")
+def run_free(payload: RunFreeRequest):
+    return run_free_code(payload.code)
 
 
 @app.get("/health")

@@ -43,6 +43,17 @@ def _normalize(value):
     return json.loads(json.dumps(value, ensure_ascii=False, default=str))
 
 
+def run_free(code: str) -> dict:
+    """Свободный запуск кода без сверки с эталоном — для подсказки, где
+    тьютору нужно просто показать вывод print(), а не пройти тесты."""
+    try:
+        response = httpx.post(f"{EXECUTOR_URL}/run_free", json={"code": code}, timeout=10)
+        response.raise_for_status()
+        return response.json()
+    except httpx.HTTPError:
+        return {"ok": False, "error": "Запуск кода временно недоступен. Попробуй чуть позже."}
+
+
 def grade(task_id: int, code: str) -> dict:
     test_inputs = TEST_CASES.get(task_id)
     if not test_inputs:

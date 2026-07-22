@@ -12,6 +12,7 @@ class Room:
         self.student_ws: WebSocket | None = None
         self.tutor_sockets: set[WebSocket] = set()
         self.last_student_code = ""
+        self.last_student_task_id: int | None = None
         self.last_tutor_hint = ""
 
 

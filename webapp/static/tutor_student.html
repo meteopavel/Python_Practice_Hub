@@ -34,6 +34,10 @@
   <button class="call-icon-btn is-mute is-sm" id="header-call-btn" title="Позвонить"></button>
   <button class="call-icon-btn is-mute is-sm" id="header-mute-btn" title="Микрофон" style="display: none"></button>
   <input type="range" class="mic-gain-slider" id="mic-gain-slider" min="0.5" max="3" step="0.1" title="Громкость микрофона" style="display: none">
+  <label class="muted" id="noise-suppression-label" style="font-size: var(--fs-sm); display: none; align-items: center; gap: 4px">
+    <input type="checkbox" id="noise-suppression-toggle"> шумодав
+  </label>
+  <span class="muted" id="remote-mute-status" style="font-size: var(--fs-sm); display: none">🔇 у ученика микрофон выключен</span>
   <form id="impersonate-form" method="post" style="margin: 0">
     <button class="call-icon-btn is-mute is-sm" id="impersonate-btn" type="submit" title="Посмотреть как ученик"></button>
   </form>
@@ -79,26 +83,33 @@
       <section class="stack stack-3">
         <div class="row between">
           <span class="panel-title">Код ученика сейчас</span>
-          <span class="faint" style="font-size: var(--fs-sm)" id="student-live-status">ученик не печатает</span>
+          <div class="row" style="gap: 8px; align-items: center">
+            <span class="faint" style="font-size: var(--fs-sm)" id="student-live-status">ученик не печатает</span>
+            <button class="btn btn-sm" id="edit-student-code-btn">Править код ученика</button>
+          </div>
         </div>
         <div class="code-editor">
-          <div class="code-editor-bar"><span>live, read-only</span></div>
+          <div class="code-editor-bar"><span id="student-mirror-bar-label">live, read-only</span></div>
           <div class="live-mount" id="student-mirror-mount"></div>
         </div>
+        <div id="student-submit-result"></div>
       </section>
 
       <section class="stack stack-3">
         <div class="row between">
           <span class="panel-title">Ваша подсказка ученику</span>
-          <span class="faint" style="font-size: var(--fs-sm)">видна ученику, пока вы онлайн</span>
+          <button class="btn btn-sm" id="hint-lock-btn">🔒 Скрыто от ученика</button>
         </div>
         <div class="code-editor">
           <div class="code-editor-bar"><span>hint.py</span></div>
           <div class="live-mount" id="hint-mount"></div>
         </div>
         <div class="row between wrap">
-          <span class="muted" style="font-size: var(--fs-sm)">Проверка идёт на выбранном слева задании — результат увидит и ученик.</span>
-          <button class="btn btn-sm btn-primary" id="run-hint-btn">Проверить</button>
+          <span class="muted" style="font-size: var(--fs-sm)">Проверка — по эталону выбранного задания. Запуск — просто выполняет код как есть. Результат увидит и ученик, только если подсказка открыта.</span>
+          <div class="row" style="gap: 8px">
+            <button class="btn btn-sm" id="run-hint-free-btn">Запустить</button>
+            <button class="btn btn-sm btn-primary" id="run-hint-btn">Проверить</button>
+          </div>
         </div>
         <div id="hint-result"></div>
       </section>
@@ -152,9 +163,45 @@ async function loadStudentSwitcher() {
   });
 }
 
-const mirrorEditor = PracticeHubEditor.create(
+const codeByTask = {}; // task_id -> последний известный код ученика по этому заданию
+let mirrorEditor = PracticeHubEditor.create(
   document.getElementById('student-mirror-mount'), '', null, {readOnly: true}
 );
+let editingStudentCode = false;
+let editSendTimer = null;
+
+// По умолчанию код ученика доступен только для просмотра — правка по кнопке,
+// пересоздаём редактор с/без readOnly (у обёртки нет способа переключить это
+// на лету, только пересоздание с сохранением текущего значения).
+function setEditingStudentCode(enabled) {
+  editingStudentCode = enabled;
+  const mount = document.getElementById('student-mirror-mount');
+  const value = mirrorEditor.getValue();
+  mount.innerHTML = '';
+  if (enabled) {
+    mirrorEditor = PracticeHubEditor.create(mount, value, (code) => {
+      codeByTask[currentTaskId] = code;
+      clearTimeout(editSendTimer);
+      editSendTimer = setTimeout(() => sendMessage({type: 'tutor_edit_code', code, task_id: currentTaskId}), 300);
+    });
+  } else {
+    mirrorEditor = PracticeHubEditor.create(mount, value, null, {readOnly: true});
+  }
+  document.getElementById('student-mirror-bar-label').textContent = enabled ? 'вы правите код ученика' : 'live, read-only';
+  document.getElementById('edit-student-code-btn').textContent = enabled ? 'Готово' : 'Править код ученика';
+}
+document.getElementById('edit-student-code-btn').addEventListener('click', () => setEditingStudentCode(!editingStudentCode));
+
+// Подсказка по умолчанию скрыта от ученика ("замок") — тьютор явно открывает
+// её, когда решил показать, а не оставляет постоянно видимой копипастой.
+let hintVisible = false;
+function setHintVisible(visible) {
+  hintVisible = visible;
+  document.getElementById('hint-lock-btn').textContent = visible ? '🔓 Видно ученику' : '🔒 Скрыто от ученика';
+  sendMessage({type: 'hint_visibility', visible});
+  if (visible) sendMessage({code: hintEditor.getValue()});
+}
+document.getElementById('hint-lock-btn').addEventListener('click', () => setHintVisible(!hintVisible));
 
 let hintSendTimer = null;
 const hintEditor = PracticeHubEditor.create(
@@ -162,7 +209,7 @@ const hintEditor = PracticeHubEditor.create(
   '',
   (code) => {
     clearTimeout(hintSendTimer);
-    hintSendTimer = setTimeout(() => sendMessage({code}), 300);
+    hintSendTimer = setTimeout(() => { if (hintVisible) sendMessage({code}); }, 300);
   }
 );
 
@@ -187,7 +234,7 @@ async function loadTasks() {
   showTask();
 }
 
-const TASK_PAGE_SIZE = 10;
+const TASK_PAGE_SIZE = 7;
 let taskPage = 0;
 
 function renderTaskList() {
@@ -234,6 +281,9 @@ function showTask() {
     ? `<p>${escapeHtml(task.description)}</p><p><strong style="color: var(--c-text)">Пример:</strong> ${escapeHtml(task.example)}</p>`
     : '';
   loadStudentAttempts(currentTaskId);
+  if (!editingStudentCode) mirrorEditor.setValue(codeByTask[currentTaskId] || '');
+  document.getElementById('student-submit-result').innerHTML = '';
+  document.getElementById('hint-result').innerHTML = '';
 }
 
 async function loadStudentAttempts(taskId) {
@@ -301,6 +351,18 @@ function renderGradeResult(container, data) {
   container.innerHTML = `<div class="stack stack-3">${summaryHtml}<div class="test-list">${casesHtml}</div></div>`;
 }
 
+function renderFreeRunResult(container, data) {
+  if (!data.ok) {
+    container.innerHTML = `<div class="result-summary is-fail"><span>${escapeHtml(data.error || 'Ошибка выполнения')}</span></div>`;
+    return;
+  }
+  const output = data.stdout ? escapeHtml(data.stdout) : '(нет вывода)';
+  container.innerHTML = `<div class="stack stack-3">
+    <div class="result-summary is-pass"><span>Код выполнен</span></div>
+    <pre class="block" style="white-space: pre-wrap; margin: 0">${output}</pre>
+  </div>`;
+}
+
 async function runHintCode() {
   if (currentTaskId === null) return;
   const btn = document.getElementById('run-hint-btn');
@@ -324,6 +386,28 @@ async function runHintCode() {
 }
 document.getElementById('run-hint-btn').addEventListener('click', runHintCode);
 
+async function runFreeHintCode() {
+  const btn = document.getElementById('run-hint-free-btn');
+  const resultEl = document.getElementById('hint-result');
+  btn.disabled = true;
+  btn.textContent = 'Запускаю...';
+  try {
+    const code = hintEditor.getValue();
+    const res = await fetch('/api/hint/run_free', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({code}),
+    });
+    const result = await res.json();
+    renderFreeRunResult(resultEl, result);
+    sendMessage({type: 'hint_free_result', result});
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Запустить';
+  }
+}
+document.getElementById('run-hint-free-btn').addEventListener('click', runFreeHintCode);
+
 let ws = null;
 let studentTypingTimer = null;
 
@@ -340,7 +424,10 @@ function connectWs() {
   ws.onmessage = (event) => {
     const msg = JSON.parse(event.data);
     if (msg.type === 'student_code') {
-      mirrorEditor.setValue(msg.code || '');
+      if (msg.task_id !== undefined && msg.task_id !== null) codeByTask[msg.task_id] = msg.code || '';
+      if (!editingStudentCode && (msg.task_id === currentTaskId || msg.task_id == null)) {
+        mirrorEditor.setValue(msg.code || '');
+      }
       document.getElementById('student-live-status').textContent = 'ученик печатает';
       clearTimeout(studentTypingTimer);
       studentTypingTimer = setTimeout(() => {
@@ -348,6 +435,11 @@ function connectWs() {
       }, 4000);
     } else if (msg.type === 'tutor_hint') {
       hintEditor.setValue(msg.code || '');
+    } else if (msg.type === 'submit_result') {
+      renderSubmitResult(msg);
+      loadStudentAttempts(currentTaskId);
+    } else if (msg.type === 'mute_status') {
+      document.getElementById('remote-mute-status').style.display = msg.muted ? 'inline' : 'none';
     } else if (msg.type === 'call_answer') {
       handleCallAnswer(msg);
     } else if (msg.type === 'call_ice') {
@@ -357,9 +449,30 @@ function connectWs() {
     }
   };
 
+  ws.onopen = () => {
+    if (sessionStorage.getItem(`resumeCall_${studentId}`) === '1') {
+      sessionStorage.removeItem(`resumeCall_${studentId}`);
+      setTimeout(() => { if (callState === 'idle') startCall(); }, 800);
+    }
+  };
+
   ws.onclose = () => {
     setTimeout(connectWs, 2000);
   };
+}
+
+function renderSubmitResult(msg) {
+  const container = document.getElementById('student-submit-result');
+  if (msg.task_id !== currentTaskId) {
+    container.innerHTML = `<p class="muted" style="font-size: var(--fs-sm)">Ученик только что отправил решение по заданию ${msg.task_id} (сейчас открыто задание ${currentTaskId ?? '—'}).</p>`;
+    return;
+  }
+  renderGradeResult(container, msg.result);
+  const label = document.createElement('p');
+  label.className = 'muted';
+  label.style.cssText = 'font-size: var(--fs-sm); margin: 0 0 8px 0';
+  label.textContent = 'Ученик только что отправил решение:';
+  container.prepend(label);
 }
 
 // --- Аудиозвонок (WebRTC, P2P) ---------------------------------------------
@@ -372,6 +485,7 @@ let noiseSuppressionCtx = null;
 let pendingRemoteIce = [];
 let callState = 'idle'; // idle | calling | in-call
 let callTimeoutTimer = null;
+let autoRedialAttempted = false;
 
 const headerCallBtn = document.getElementById('header-call-btn');
 const headerMuteBtn = document.getElementById('header-mute-btn');
@@ -379,6 +493,10 @@ const micGainSlider = document.getElementById('mic-gain-slider');
 const remoteAudio = document.getElementById('remote-audio');
 micGainSlider.value = getMicGain();
 micGainSlider.addEventListener('input', () => setMicGain(parseFloat(micGainSlider.value)));
+const noiseSuppressionLabel = document.getElementById('noise-suppression-label');
+const noiseSuppressionToggle = document.getElementById('noise-suppression-toggle');
+noiseSuppressionToggle.checked = getNoiseSuppressionEnabled();
+noiseSuppressionToggle.addEventListener('change', () => setNoiseSuppressionEnabled(noiseSuppressionToggle.checked));
 
 const ICON_PHONE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>';
 const ICON_MIC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>';
@@ -442,6 +560,29 @@ function setMicGain(value) {
   if (micGainNode) micGainNode.gain.value = value;
 }
 
+// RNNoise иногда режет слишком агрессивно (голос звучит приглушённо/рвано) —
+// даём возможность отключить его и остаться только на встроенном шумодаве
+// браузера + ручном усилении.
+function getNoiseSuppressionEnabled() {
+  return localStorage.getItem('noiseSuppressionEnabled') !== '0';
+}
+
+function setNoiseSuppressionEnabled(value) {
+  localStorage.setItem('noiseSuppressionEnabled', value ? '1' : '0');
+}
+
+async function applyPlainGain(rawStream) {
+  const audioCtx = new AudioContext();
+  const source = audioCtx.createMediaStreamSource(rawStream);
+  const gainNode = audioCtx.createGain();
+  gainNode.gain.value = getMicGain();
+  const destination = audioCtx.createMediaStreamDestination();
+  source.connect(gainNode).connect(destination);
+  noiseSuppressionCtx = audioCtx;
+  micGainNode = gainNode;
+  return destination.stream;
+}
+
 // Прогоняет сырой поток микрофона через RNNoise (WASM, AudioWorklet) —
 // шумоподавление сверх штатного echoCancellation/noiseSuppression браузера,
 // которое на телефонах особенно слабое — и через GainNode для ручного
@@ -450,6 +591,14 @@ function setMicGain(value) {
 // GainNode: рабочий звонок без шумодава лучше сорванного звонка, а вот
 // регулировку громкости хочется сохранить в любом случае.
 async function applyNoiseSuppression(rawStream) {
+  if (!getNoiseSuppressionEnabled()) {
+    try {
+      return await applyPlainGain(rawStream);
+    } catch (e) {
+      micGainNode = null;
+      return rawStream;
+    }
+  }
   try {
     const audioCtx = new AudioContext({sampleRate: 48000});
     await audioCtx.audioWorklet.addModule('/static/rnnoise-worklet.js');
@@ -468,15 +617,7 @@ async function applyNoiseSuppression(rawStream) {
     return destination.stream;
   } catch (e) {
     try {
-      const audioCtx = new AudioContext();
-      const source = audioCtx.createMediaStreamSource(rawStream);
-      const gainNode = audioCtx.createGain();
-      gainNode.gain.value = getMicGain();
-      const destination = audioCtx.createMediaStreamDestination();
-      source.connect(gainNode).connect(destination);
-      noiseSuppressionCtx = audioCtx;
-      micGainNode = gainNode;
-      return destination.stream;
+      return await applyPlainGain(rawStream);
     } catch (e2) {
       micGainNode = null;
       return rawStream;
@@ -494,6 +635,7 @@ function renderHeaderCall() {
     headerCallBtn.onclick = startCall;
     headerMuteBtn.style.display = 'none';
     micGainSlider.style.display = 'none';
+    noiseSuppressionLabel.style.display = 'flex';
   } else if (callState === 'calling') {
     headerCallBtn.className = 'call-icon-btn is-mute is-sm';
     headerCallBtn.title = 'Отменить вызов';
@@ -501,8 +643,10 @@ function renderHeaderCall() {
     headerCallBtn.onclick = () => endCall(true);
     headerMuteBtn.style.display = 'none';
     micGainSlider.style.display = 'none';
+    noiseSuppressionLabel.style.display = 'flex';
   } else if (callState === 'in-call') {
     micGainSlider.style.display = 'inline-block';
+    noiseSuppressionLabel.style.display = 'none';
     headerCallBtn.className = 'call-icon-btn is-accept is-pulsing is-sm';
     headerCallBtn.title = 'Завершить звонок';
     headerCallBtn.innerHTML = ICON_PHONE;
@@ -580,8 +724,19 @@ function setupPeerConnection(iceServers) {
       stopRingSound();
       callState = 'in-call';
       renderHeaderCall();
+      autoRedialAttempted = false;
+      sendMessage({type: 'mute_status', muted: false});
     } else if (conn.connectionState === 'failed' || conn.connectionState === 'disconnected') {
-      endCall(true);
+      // Одна попытка перезвонить самостоятельно (например, у ученика
+      // перезагрузилась страница) — если и она не удастся, дальше обычный
+      // 30-секундный таймаут в startCall() покажет "ученик не отвечает".
+      if (!autoRedialAttempted) {
+        autoRedialAttempted = true;
+        endCall(false);
+        setTimeout(() => { if (callState === 'idle') startCall(); }, 1500);
+      } else {
+        endCall(true);
+      }
     }
   };
   return conn;
@@ -589,6 +744,7 @@ function setupPeerConnection(iceServers) {
 
 async function startCall() {
   if (callState !== 'idle') return;
+  autoRedialAttempted = false;
   callState = 'calling';
   renderHeaderCall();
   startRingback();
@@ -636,6 +792,7 @@ function toggleMute() {
   if (!localStream) return;
   const track = localStream.getAudioTracks()[0];
   track.enabled = !track.enabled;
+  sendMessage({type: 'mute_status', muted: !track.enabled});
   renderHeaderCall();
 }
 
@@ -647,10 +804,19 @@ function endCall(notify) {
   if (noiseSuppressionCtx) { noiseSuppressionCtx.close(); noiseSuppressionCtx = null; }
   pendingRemoteIce = [];
   remoteAudio.srcObject = null;
+  document.getElementById('remote-mute-status').style.display = 'none';
   if (notify) sendMessage({type: 'call_end'});
   callState = 'idle';
   renderHeaderCall();
 }
+
+// Полная перезагрузка страницы (F5, выход в режим ученика через impersonate,
+// переключение на другого ученика) рвёт RTCPeerConnection — это неизбежно,
+// он живёт только в JS-памяти вкладки. Сохраняем "звонок был активен" и
+// перезваниваем сами при следующей загрузке (см. ws.onopen выше).
+window.addEventListener('beforeunload', () => {
+  if (callState !== 'idle') sessionStorage.setItem(`resumeCall_${studentId}`, '1');
+});
 
 document.addEventListener('click', (e) => {
   document.querySelectorAll('details.account-menu[open]').forEach(d => {

@@ -412,21 +412,22 @@ a:hover { color: var(--c-primary-hover); }
    9. КАРТОЧКА / СПИСОК ЗАДАНИЙ
    -------------------------------------------------------------------------- */
 .task-sidebar { position: sticky; top: 68px; }
-.task-list { display: flex; flex-direction: column; gap: 2px; max-height: 520px; overflow-y: auto; }
+.task-list { display: flex; flex-direction: column; gap: 2px; max-height: none; overflow-y: visible; }
 .task-desc p { margin: 0 0 var(--space-3); white-space: pre-wrap; }
 .task-desc p:last-child { margin-bottom: 0; }
 .task-item {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-2);
   width: 100%;
-  padding: var(--space-3);
+  padding: 6px var(--space-2);
   text-align: left;
   background: transparent;
   border: 1px solid transparent;
   border-radius: var(--radius-md);
   cursor: pointer;
   font: inherit;
+  font-size: var(--fs-sm);
   color: var(--c-text);
   transition: background var(--transition);
 }
@@ -438,9 +439,9 @@ a:hover { color: var(--c-primary-hover); }
 .task-item-num {
   flex-shrink: 0;
   display: grid; place-items: center;
-  width: 26px; height: 26px;
+  width: 20px; height: 20px;
   font-family: var(--font-mono);
-  font-size: var(--fs-sm);
+  font-size: 11px;
   font-weight: var(--fw-semibold);
   color: var(--c-text-muted);
   background: var(--c-surface-2);

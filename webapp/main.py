@@ -20,7 +20,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from auth import authenticate, current_user_id, current_user_role, forbidden, hash_password, unauthorized
 from bot_bridge import TASKS, get_solver
 from db import Base, SessionLocal, engine, get_db
-from grading import grade
+from grading import grade, run_free
 from materials import MATERIALS_MANIFEST, get_lesson
 from models import ROLE_STUDENT, ROLE_TUTOR, Attempt, User
 from realtime import get_room, safe_send
@@ -51,6 +51,10 @@ def create_tables():
 
 class SubmissionRequest(BaseModel):
     task_id: int
+    code: str
+
+
+class HintFreeRunRequest(BaseModel):
     code: str
 
 
@@ -381,7 +385,11 @@ async def session_ws(websocket: WebSocket, student_id: int):
 
     if is_tutor:
         room.tutor_sockets.add(websocket)
-        await safe_send(websocket, {"type": "student_code", "code": room.last_student_code})
+        await safe_send(websocket, {
+            "type": "student_code",
+            "code": room.last_student_code,
+            "task_id": room.last_student_task_id,
+        })
         await safe_send(websocket, {"type": "tutor_hint", "code": room.last_tutor_hint})
         if room.student_ws is not None:
             await safe_send(room.student_ws, {"type": "tutor_status", "online": True})
@@ -398,7 +406,7 @@ async def session_ws(websocket: WebSocket, student_id: int):
             # тот же канал, просто пересылаем сообщение как есть другой стороне
             # комнаты. Медиа (звук) идёт напрямую между браузерами по WebRTC,
             # сервер только сводит вдвоём и дальше не участвует.
-            if data.get("type") in ("call_offer", "call_answer", "call_ice", "call_end"):
+            if data.get("type") in ("call_offer", "call_answer", "call_ice", "call_end", "mute_status"):
                 if is_tutor:
                     if room.student_ws is not None:
                         await safe_send(room.student_ws, data)
@@ -409,20 +417,40 @@ async def session_ws(websocket: WebSocket, student_id: int):
 
             # Результат прогона кода в редакторе подсказки — только тьютор
             # запускает, ученику просто пересылаем результат посмотреть.
-            if data.get("type") == "hint_result":
+            # hint_visibility — тьютор открывает/закрывает подсказку "замком".
+            if data.get("type") in ("hint_result", "hint_free_result", "hint_visibility"):
+                if is_tutor and room.student_ws is not None:
+                    await safe_send(room.student_ws, data)
+                continue
+
+            # Результат отправки решения учеником (кнопка "Проверить" в своём
+            # редакторе) — тьютор должен увидеть его сразу, а не только когда
+            # сам откроет "Попытки ученика".
+            if data.get("type") == "submit_result":
+                if not is_tutor:
+                    for tutor_ws in room.tutor_sockets:
+                        await safe_send(tutor_ws, data)
+                continue
+
+            # Тьютор правит код ученика напрямую (по кнопке) — применяется
+            # у ученика как обычный live-код, поэтому и статус, и мираж у
+            # тьютора обновятся тем же путём, что при обычном наборе текста.
+            if data.get("type") == "tutor_edit_code":
                 if is_tutor and room.student_ws is not None:
                     await safe_send(room.student_ws, data)
                 continue
 
             code = data.get("code", "")
+            task_id = data.get("task_id")
             if is_tutor:
                 room.last_tutor_hint = code
                 if room.student_ws is not None:
                     await safe_send(room.student_ws, {"type": "tutor_hint", "code": code})
             else:
                 room.last_student_code = code
+                room.last_student_task_id = task_id
                 for tutor_ws in room.tutor_sockets:
-                    await safe_send(tutor_ws, {"type": "student_code", "code": code})
+                    await safe_send(tutor_ws, {"type": "student_code", "code": code, "task_id": task_id})
     except WebSocketDisconnect:
         pass
     finally:
@@ -438,6 +466,15 @@ async def session_ws(websocket: WebSocket, student_id: int):
             room.student_ws = None
             for tutor_ws in room.tutor_sockets:
                 await safe_send(tutor_ws, {"type": "call_end"})
+
+
+@app.post("/api/solve/run_free")
+def run_solve_code_free(payload: HintFreeRunRequest, request: Request):
+    """Свободный запуск кода ученика в его собственном редакторе — без сверки
+    с эталоном, чтобы можно было просто написать print(...) и посмотреть вывод."""
+    if current_user_id(request) is None:
+        return unauthorized()
+    return run_free(payload.code)
 
 
 @app.post("/api/submit")
@@ -473,3 +510,14 @@ def run_hint_code(payload: SubmissionRequest, request: Request):
     if current_user_role(request) != ROLE_TUTOR:
         return forbidden()
     return grade(payload.task_id, payload.code)
+
+
+@app.post("/api/hint/run_free")
+def run_hint_code_free(payload: HintFreeRunRequest, request: Request):
+    """Свободный запуск кода в подсказке — без сверки с эталоном, просто
+    исполняет код как есть (print() и любые операторы отрабатывают)."""
+    if current_user_id(request) is None:
+        return unauthorized()
+    if current_user_role(request) != ROLE_TUTOR:
+        return forbidden()
+    return run_free(payload.code)
