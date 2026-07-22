@@ -583,13 +583,46 @@ async function applyPlainGain(rawStream) {
   return destination.stream;
 }
 
-// Прогоняет сырой поток микрофона через RNNoise (WASM, AudioWorklet) —
-// шумоподавление сверх штатного echoCancellation/noiseSuppression браузера,
-// которое на телефонах особенно слабое — и через GainNode для ручного
-// усиления (см. getMicGain/setMicGain). При любой ошибке (нет AudioWorklet,
-// не загрузился WASM) — откатываемся на путь без RNNoise, но с тем же
-// GainNode: рабочий звонок без шумодава лучше сорванного звонка, а вот
-// регулировку громкости хочется сохранить в любом случае.
+// DeepFilterNet3 (WASM) — точнее отделяет речь от посторонних звуков, чем
+// RNNoise (не давит всё подряд). RNNoise оставлен как fallback на случай,
+// если DeepFilterNet3 не проинициализировался (старый браузер, урезанный
+// wasm-бюджет на слабом устройстве).
+async function applyDeepFilterNet(rawStream, audioCtx) {
+  const wasmResp = await fetch('/static/deepfilternet3.wasm');
+  const wasmBinary = await wasmResp.arrayBuffer();
+  await audioCtx.audioWorklet.addModule('/static/deepfilternet-worklet.js');
+  const source = audioCtx.createMediaStreamSource(rawStream);
+  const dfnNode = new AudioWorkletNode(audioCtx, 'deepfilternet-processor', {
+    processorOptions: {wasmBinary},
+  });
+  const gainNode = audioCtx.createGain();
+  gainNode.gain.value = getMicGain();
+  const destination = audioCtx.createMediaStreamDestination();
+  source.connect(dfnNode).connect(gainNode).connect(destination);
+  micGainNode = gainNode;
+  return destination.stream;
+}
+
+async function applyRnnoise(rawStream, audioCtx) {
+  await audioCtx.audioWorklet.addModule('/static/rnnoise-worklet.js');
+  const wasmBinary = await NoiseSuppressor.loadRnnoise({
+    url: '/static/rnnoise.wasm',
+    simdUrl: '/static/rnnoise_simd.wasm',
+  });
+  const source = audioCtx.createMediaStreamSource(rawStream);
+  const rnnoiseNode = new NoiseSuppressor.RnnoiseWorkletNode(audioCtx, {maxChannels: 1, wasmBinary});
+  const gainNode = audioCtx.createGain();
+  gainNode.gain.value = getMicGain();
+  const destination = audioCtx.createMediaStreamDestination();
+  source.connect(rnnoiseNode).connect(gainNode).connect(destination);
+  micGainNode = gainNode;
+  return destination.stream;
+}
+
+// При любой ошибке (нет AudioWorklet, не загрузился WASM) — откатываемся по
+// цепочке DeepFilterNet3 → RNNoise → чистое усиление: рабочий звонок без
+// шумодава лучше сорванного звонка, а регулировку громкости хочется
+// сохранить в любом случае.
 async function applyNoiseSuppression(rawStream) {
   if (!getNoiseSuppressionEnabled()) {
     try {
@@ -599,29 +632,24 @@ async function applyNoiseSuppression(rawStream) {
       return rawStream;
     }
   }
+  const audioCtx = new AudioContext({sampleRate: 48000});
+  noiseSuppressionCtx = audioCtx;
   try {
-    const audioCtx = new AudioContext({sampleRate: 48000});
-    await audioCtx.audioWorklet.addModule('/static/rnnoise-worklet.js');
-    const wasmBinary = await NoiseSuppressor.loadRnnoise({
-      url: '/static/rnnoise.wasm',
-      simdUrl: '/static/rnnoise_simd.wasm',
-    });
-    const source = audioCtx.createMediaStreamSource(rawStream);
-    const rnnoiseNode = new NoiseSuppressor.RnnoiseWorkletNode(audioCtx, {maxChannels: 1, wasmBinary});
-    const gainNode = audioCtx.createGain();
-    gainNode.gain.value = getMicGain();
-    const destination = audioCtx.createMediaStreamDestination();
-    source.connect(rnnoiseNode).connect(gainNode).connect(destination);
-    noiseSuppressionCtx = audioCtx;
-    micGainNode = gainNode;
-    return destination.stream;
+    return await applyDeepFilterNet(rawStream, audioCtx);
   } catch (e) {
-    try {
-      return await applyPlainGain(rawStream);
-    } catch (e2) {
-      micGainNode = null;
-      return rawStream;
-    }
+    console.warn('DeepFilterNet3 недоступен, откат на RNNoise:', e);
+  }
+  try {
+    return await applyRnnoise(rawStream, audioCtx);
+  } catch (e) {
+    console.warn('RNNoise тоже недоступен, откат на чистое усиление:', e);
+  }
+  await audioCtx.close();
+  try {
+    return await applyPlainGain(rawStream);
+  } catch (e2) {
+    micGainNode = null;
+    return rawStream;
   }
 }
 
