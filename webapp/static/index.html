@@ -529,7 +529,16 @@ function tuneOpusSdp(sdp) {
 }
 
 function setupPeerConnection(iceServers) {
-  const conn = new RTCPeerConnection({iceServers});
+  // iceTransportPolicy: 'relay' — форсируем всегда через свой TURN (coturn),
+  // не пытаясь напрямую P2P. Временная мера (2026-07-22): на тестовом
+  // компе лишние виртуальные адаптеры (VPN/Hyper-V/хот-спот) отдавали
+  // приватные IP как ICE-кандидаты, coturn их корректно отклонял
+  // (RFC-политика — иначе через TURN можно долбить чужие приватные сети),
+  // и ICE иногда выбирал именно такую нерабочую пару — отсюда
+  // непредсказуемая связь в одну сторону. Если основная причина реально
+  // в этом — держать forced-relay смысла нет, надёжнее почистить сетевые
+  // адаптеры и вернуть 'all' (даёт более короткий путь при прямом P2P).
+  const conn = new RTCPeerConnection({iceServers, iceTransportPolicy: 'relay'});
   conn.onicecandidate = (e) => {
     if (e.candidate) sendMessage({type: 'call_ice', candidate: e.candidate});
   };
