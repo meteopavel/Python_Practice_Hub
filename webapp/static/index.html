@@ -330,6 +330,36 @@ function setNoiseSuppressionEnabled(value) {
   localStorage.setItem('noiseSuppressionEnabled', value ? '1' : '0');
 }
 
+// Выбор конкретного микрофона — на устройствах с несколькими устройствами
+// захвата (веб-камера со своим микрофоном, USB-гарнитура и т.п.) браузер по
+// умолчанию не всегда берёт тот, что реально нужен. '' = системный дефолт.
+function getMicDeviceId() {
+  return localStorage.getItem('micDeviceId') || '';
+}
+
+function setMicDeviceId(value) {
+  localStorage.setItem('micDeviceId', value || '');
+}
+
+// Названия устройств доступны только после того, как на этот источник хоть
+// раз выдавали разрешение на микрофон (иначе label пустой) — для уже
+// звонившего тьютора/ученика это не проблема, для самого первого раза
+// в списке будут просто "Микрофон 1/2/...".
+async function populateMicSelect(selectEl) {
+  try {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const mics = devices.filter(d => d.kind === 'audioinput');
+    const current = getMicDeviceId();
+    selectEl.innerHTML = '<option value="">Микрофон по умолчанию</option>' + mics.map((d, i) =>
+      `<option value="${d.deviceId}">${d.label || ('Микрофон ' + (i + 1))}</option>`
+    ).join('');
+    selectEl.value = mics.some(d => d.deviceId === current) ? current : '';
+    selectEl.onchange = () => setMicDeviceId(selectEl.value);
+  } catch (e) {
+    selectEl.style.display = 'none';
+  }
+}
+
 async function applyPlainGain(rawStream) {
   const audioCtx = new AudioContext();
   const source = audioCtx.createMediaStreamSource(rawStream);
@@ -420,12 +450,14 @@ function renderCallBar() {
       <label class="muted row" style="font-size: var(--fs-sm); gap: 4px; align-items: center">
         <input type="checkbox" id="noise-suppression-toggle" ${getNoiseSuppressionEnabled() ? 'checked' : ''}> шумодав
       </label>
+      <select class="btn btn-sm" id="mic-select" style="max-width: 180px" title="Микрофон"></select>
       <button class="call-icon-btn is-accept" id="accept-btn" title="Принять">${ICON_PHONE}</button>
       <button class="call-icon-btn is-hangup" id="decline-btn" title="Отклонить">${ICON_PHONE}</button>
     `;
     document.getElementById('accept-btn').addEventListener('click', acceptCall);
     document.getElementById('decline-btn').addEventListener('click', () => endCall(true));
     document.getElementById('noise-suppression-toggle').addEventListener('change', (e) => setNoiseSuppressionEnabled(e.target.checked));
+    populateMicSelect(document.getElementById('mic-select'));
   } else if (callState === 'in-call') {
     callStatusEl.textContent = 'в разговоре с репетитором';
     const muted = localStream && !localStream.getAudioTracks()[0].enabled;
@@ -459,6 +491,11 @@ const AUDIO_CONSTRAINTS = {
   sampleRate: 48000,
   sampleSize: 16,
 };
+
+function buildAudioConstraints() {
+  const deviceId = getMicDeviceId();
+  return deviceId ? {...AUDIO_CONSTRAINTS, deviceId: {exact: deviceId}} : AUDIO_CONSTRAINTS;
+}
 
 // Дефолтный битрейт Opus в "голосовом" профиле довольно низкий — поднимаем
 // потолок, качество звонка это заметно улучшает.
@@ -517,7 +554,13 @@ async function acceptCall() {
   if (!incomingOffer) return;
   try {
     const iceServers = await fetchIceServers();
-    localStream = await navigator.mediaDevices.getUserMedia({audio: AUDIO_CONSTRAINTS});
+    try {
+      localStream = await navigator.mediaDevices.getUserMedia({audio: buildAudioConstraints()});
+    } catch (e) {
+      // выбранный микрофон мог отключиться/пропасть — не срывать звонок,
+      // откатываемся на системный дефолт.
+      localStream = await navigator.mediaDevices.getUserMedia({audio: AUDIO_CONSTRAINTS});
+    }
     const outgoingStream = await applyNoiseSuppression(localStream);
     pc = setupPeerConnection(iceServers);
     outgoingStream.getTracks().forEach(t => pc.addTrack(t, outgoingStream));
