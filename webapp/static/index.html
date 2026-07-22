@@ -274,6 +274,21 @@ function stopRingSound() {
 // которое на телефонах особенно слабое. При любой ошибке (нет AudioWorklet,
 // не загрузился WASM) — тихо откатываемся на необработанный поток: рабочий
 // звонок без шумодава лучше сорванного звонка.
+// Ручное усиление микрофона поверх автоматического AGC браузера — хранится
+// в localStorage, чтобы не крутить заново на каждом звонке. 1.0 = без
+// изменений (текущее поведение по умолчанию).
+let micGainNode = null;
+
+function getMicGain() {
+  const saved = parseFloat(localStorage.getItem('micGain'));
+  return Number.isFinite(saved) ? saved : 1;
+}
+
+function setMicGain(value) {
+  localStorage.setItem('micGain', value);
+  if (micGainNode) micGainNode.gain.value = value;
+}
+
 async function applyNoiseSuppression(rawStream) {
   try {
     const audioCtx = new AudioContext({sampleRate: 48000});
@@ -284,12 +299,28 @@ async function applyNoiseSuppression(rawStream) {
     });
     const source = audioCtx.createMediaStreamSource(rawStream);
     const rnnoiseNode = new NoiseSuppressor.RnnoiseWorkletNode(audioCtx, {maxChannels: 1, wasmBinary});
+    const gainNode = audioCtx.createGain();
+    gainNode.gain.value = getMicGain();
     const destination = audioCtx.createMediaStreamDestination();
-    source.connect(rnnoiseNode).connect(destination);
+    source.connect(rnnoiseNode).connect(gainNode).connect(destination);
     noiseSuppressionCtx = audioCtx;
+    micGainNode = gainNode;
     return destination.stream;
   } catch (e) {
-    return rawStream;
+    try {
+      const audioCtx = new AudioContext();
+      const source = audioCtx.createMediaStreamSource(rawStream);
+      const gainNode = audioCtx.createGain();
+      gainNode.gain.value = getMicGain();
+      const destination = audioCtx.createMediaStreamDestination();
+      source.connect(gainNode).connect(destination);
+      noiseSuppressionCtx = audioCtx;
+      micGainNode = gainNode;
+      return destination.stream;
+    } catch (e2) {
+      micGainNode = null;
+      return rawStream;
+    }
   }
 }
 
@@ -313,10 +344,12 @@ function renderCallBar() {
     const muteClass = muted ? 'call-icon-btn is-mute is-active' : 'call-icon-btn is-accept is-pulsing';
     callActionsEl.innerHTML = `
       <button class="${muteClass}" id="mute-btn" title="${muted ? 'Включить микрофон' : 'Выключить микрофон'}">${muted ? ICON_MIC_OFF : ICON_MIC}</button>
+      <input type="range" class="mic-gain-slider" id="mic-gain-slider" min="0.5" max="3" step="0.1" title="Громкость микрофона" value="${getMicGain()}">
       <button class="call-icon-btn is-hangup" id="hangup-btn" title="Завершить звонок">${ICON_PHONE}</button>
     `;
     document.getElementById('mute-btn').addEventListener('click', toggleMute);
     document.getElementById('hangup-btn').addEventListener('click', () => endCall(true));
+    document.getElementById('mic-gain-slider').addEventListener('input', (e) => setMicGain(parseFloat(e.target.value)));
   }
 }
 

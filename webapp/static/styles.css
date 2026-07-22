@@ -332,6 +332,14 @@ a:hover { color: var(--c-primary-hover); }
   50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--c-pass-solid) 0%, transparent); }
 }
 
+/* Регулировка усиления микрофона во время звонка */
+.mic-gain-slider {
+  width: 80px;
+  height: 32px;
+  accent-color: var(--c-primary);
+  cursor: pointer;
+}
+
 /* --------------------------------------------------------------------------
    7. ПОЛЯ ВВОДА
    -------------------------------------------------------------------------- */
