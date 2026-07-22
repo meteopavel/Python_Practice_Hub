@@ -406,7 +406,14 @@ async def session_ws(websocket: WebSocket, student_id: int):
             # тот же канал, просто пересылаем сообщение как есть другой стороне
             # комнаты. Медиа (звук) идёт напрямую между браузерами по WebRTC,
             # сервер только сводит вдвоём и дальше не участвует.
-            if data.get("type") in ("call_offer", "call_answer", "call_ice", "call_end", "mute_status"):
+            # call_link (2026-07-22) — замена самого WebRTC-звонка (см.
+            # DEPRECATED-пометку в index.html/tutor_student.html): тьютор
+            # созванивается с учеником во внешнем сервисе (Телемост и т.п.)
+            # и просто присылает ссылку тем же каналом, сервер её ретранслирует
+            # как есть, никакой обработки/хранения.
+            if data.get("type") in (
+                "call_offer", "call_answer", "call_ice", "call_end", "mute_status", "call_link",
+            ):
                 if is_tutor:
                     if room.student_ws is not None:
                         await safe_send(room.student_ws, data)

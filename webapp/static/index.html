@@ -95,6 +95,11 @@
     </div>
     <audio id="remote-audio" autoplay></audio>
 
+    <div class="card card-pad row between wrap" id="call-link-bar" style="display: none">
+      <span class="panel-title">Репетитор зовёт на созвон</span>
+      <a class="btn btn-primary" id="call-link-btn" href="#" target="_blank" rel="noopener">Присоединиться к звонку</a>
+    </div>
+
     <section class="stack stack-3" id="hint-section" style="display: none">
       <div class="row between">
         <span class="panel-title">Подсказка от репетитора</span>
@@ -222,12 +227,27 @@ function connectWs(ownId) {
       handleRemoteIce(msg);
     } else if (msg.type === 'call_end') {
       endCall(false);
+    } else if (msg.type === 'call_link') {
+      showCallLink(msg.url);
     }
   };
 
   ws.onclose = () => {
     setTimeout(() => connectWs(ownId), 2000);
   };
+}
+
+// --- Ссылка на звонок (2026-07-22, временная замена собственного WebRTC) --
+// Тьютор созванивается во внешнем сервисе (Телемост и т.п.) и присылает
+// ссылку тем же WS-каналом (`call_link`) — сервер её просто ретранслирует,
+// без хранения. Показываем как есть, без валидации содержимого (ссылку
+// прислал тьютор из своего личного кабинета, не произвольный ввод извне).
+const callLinkBar = document.getElementById('call-link-bar');
+const callLinkBtn = document.getElementById('call-link-btn');
+
+function showCallLink(url) {
+  callLinkBtn.href = url;
+  callLinkBar.style.display = 'flex';
 }
 
 // --- Аудиозвонок (WebRTC, P2P) ---------------------------------------------

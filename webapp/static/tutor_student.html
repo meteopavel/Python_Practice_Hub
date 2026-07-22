@@ -32,6 +32,10 @@
     <div class="account-menu-panel" id="switcher-list"></div>
   </details>
   <button class="call-icon-btn is-mute is-sm" id="header-call-btn" title="Позвонить"></button>
+  <form id="call-link-form" class="row" style="margin: 0; gap: 4px">
+    <input type="url" class="btn btn-sm" id="call-link-input" placeholder="Ссылка на звонок (Телемост и т.п.)" style="width: 220px" required>
+    <button class="btn btn-sm btn-primary" type="submit">Отправить</button>
+  </form>
   <button class="call-icon-btn is-mute is-sm" id="header-mute-btn" title="Микрофон" style="display: none"></button>
   <input type="range" class="mic-gain-slider" id="mic-gain-slider" min="0.5" max="3" step="0.1" title="Громкость микрофона" style="display: none">
   <label class="muted" id="noise-suppression-label" style="font-size: var(--fs-sm); display: none; align-items: center; gap: 4px">
@@ -496,6 +500,20 @@ let pendingRemoteIce = [];
 let callState = 'idle'; // idle | calling | in-call
 let callTimeoutTimer = null;
 let autoRedialAttempted = false;
+
+// --- Ссылка на звонок (2026-07-22, временная замена собственного WebRTC) --
+// Тьютор созванивается во внешнем сервисе (Телемост и т.п.) сам и просто
+// присылает готовую ссылку тем же WS-каналом — ученик увидит кнопку
+// "Присоединиться". Без какой-либо интеграции с API — просто передача
+// текста от одного к другому через уже существующий канал сигналинга.
+document.getElementById('call-link-form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const input = document.getElementById('call-link-input');
+  const url = input.value.trim();
+  if (!url) return;
+  sendMessage({type: 'call_link', url});
+  input.value = '';
+});
 
 const headerCallBtn = document.getElementById('header-call-btn');
 if (CALLS_DISABLED) {
