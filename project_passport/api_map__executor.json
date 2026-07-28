@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-19T09:21:10.059519+00:00",
+  "generated_at": "2026-07-28T11:47:58.117500+00:00",
   "generator": "tools/extract_api_map.py",
   "target": "executor",
   "scanned_python_files": 2,
@@ -9,9 +9,9 @@
   "skipped_files": [],
   "stats": {
     "modules": 2,
-    "classes": 1,
+    "classes": 2,
     "dataclasses": 0,
-    "functions": 4,
+    "functions": 6,
     "methods": 0,
     "constants": 5
   },
@@ -48,6 +48,28 @@
           "methods": [],
           "lineno": 14,
           "end_lineno": 16
+        },
+        {
+          "name": "RunFreeRequest",
+          "signature": "RunFreeRequest(BaseModel)",
+          "docstring": null,
+          "summary": null,
+          "kind": "class",
+          "bases": [
+            "BaseModel"
+          ],
+          "decorators": [],
+          "fields": [
+            {
+              "name": "code",
+              "annotation": "str",
+              "value_repr": null,
+              "lineno": 20
+            }
+          ],
+          "methods": [],
+          "lineno": 19,
+          "end_lineno": 20
         }
       ],
       "functions": [
@@ -60,8 +82,20 @@
           "decorators": [
             "app.post('/run')"
           ],
-          "lineno": 20,
-          "end_lineno": 21
+          "lineno": 24,
+          "end_lineno": 25
+        },
+        {
+          "name": "run_free",
+          "signature": "run_free(payload: RunFreeRequest)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [
+            "app.post('/run_free')"
+          ],
+          "lineno": 29,
+          "end_lineno": 30
         },
         {
           "name": "health",
@@ -72,22 +106,22 @@
           "decorators": [
             "app.get('/health')"
           ],
-          "lineno": 25,
-          "end_lineno": 26
+          "lineno": 34,
+          "end_lineno": 35
         }
       ],
       "constants": [],
       "stats": {
-        "classes": 1,
+        "classes": 2,
         "dataclasses": 0,
-        "functions": 2,
+        "functions": 3,
         "methods": 0,
         "constants": 0
       }
     },
     {
       "path": "executor/sandbox.py",
-      "module_docstring": "Исполнение кода ученика в изолированном процессе.\n\nЭто ядро проверки: код ученика никогда не выполняется в процессе веб-сервера.\nОн пишется во временный файл, оборачивается в харнесс, который читает вход из\nstdin и печатает результат в JSON, и запускается отдельным интерпретатором\npython с ограничением по времени, по памяти и с урезанным окружением (чтобы\nкод ученика не мог прочитать переменные окружения сервера, например токены).\n\nЧто сознательно НЕ сделано на этом шаге (осознанный пробел под MVP,\nне притворяемся, что его нет): нет сетевой/файловой изоляции (контейнер),\nкод ученика технически может пойти в сеть или потрогать диск. Это приемлемо,\nпока грейдер гоняется локально с одним учеником; для облачного деплоя это\nдолжно быть обёрнуто в Docker (--network none, read-only rootfs) — тот шаг\nописан в плане платформы и пока не реализован специально, чтобы не\nвайбкодить ядро вслепую.",
+      "module_docstring": "Исполнение кода ученика в изолированном процессе.\n\nЭто ядро проверки: код ученика никогда не выполняется в процессе веб-сервера.\nОн пишется во временный файл, оборачивается в харнесс, который читает вход из\nstdin и печатает результат в JSON, и запускается отдельным интерпретатором\npython с ограничением по времени, по памяти и с урезанным окружением (чтобы\nкод ученика не мог прочитать переменные окружения сервера, например токены).\n\nЭто слой изоляции на УРОВНЕ ПРОЦЕССА. Сетевая/файловая изоляция живёт на\nодин уровень выше — в контейнере Docker, в котором крутится сам этот сервис\n(read-only rootfs + tmpfs на /tmp + cap_drop ALL + запрещённая исходящая\nсеть через iptables DOCKER-USER, см. executor/docker-compose.yml). Таким\nобразом, даже если код ученика попытается открыть сокет или потрогать диск,\nконтейнер его остановит. Эфемерности (свежий контейнер на каждый прогон)\nпока нет — контейнер переиспользуется, теоретический след в /tmp возможен\n(см. PLATFORM_PLAN.md, осознанный пробел под одного ученика).",
       "module_summary": "Исполнение кода ученика в изолированном процессе.",
       "classes": [],
       "functions": [
@@ -98,8 +132,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 50,
-          "end_lineno": 60
+          "lineno": 51,
+          "end_lineno": 61
         },
         {
           "name": "run_student_code",
@@ -108,8 +142,18 @@
           "summary": "Ученик обязан определить функцию solve(data). Возвращает",
           "kind": "function",
           "decorators": [],
-          "lineno": 63,
-          "end_lineno": 98
+          "lineno": 64,
+          "end_lineno": 99
+        },
+        {
+          "name": "run_free_code",
+          "signature": "run_free_code(code: str) -> dict",
+          "docstring": "Свободный запуск без эталона и без ожидания solve(data) — код\nученика/тьютора выполняется как есть, stdout возвращается как текст.\nНужен для подсказки, где print('hello') должен просто отработать.",
+          "summary": "Свободный запуск без эталона и без ожидания solve(data) — код",
+          "kind": "function",
+          "decorators": [],
+          "lineno": 102,
+          "end_lineno": 129
         }
       ],
       "constants": [
@@ -117,37 +161,37 @@
           "name": "TIMEOUT_SECONDS",
           "annotation": null,
           "value_repr": "5",
-          "lineno": 24
+          "lineno": 25
         },
         {
           "name": "CPU_LIMIT_SECONDS",
           "annotation": null,
           "value_repr": "5",
-          "lineno": 25
+          "lineno": 26
         },
         {
           "name": "MEMORY_LIMIT_BYTES",
           "annotation": null,
           "value_repr": "256 * 1024 * 1024",
-          "lineno": 26
+          "lineno": 27
         },
         {
           "name": "RESULT_MARKER",
           "annotation": null,
           "value_repr": "'###RESULT###'",
-          "lineno": 28
+          "lineno": 29
         },
         {
           "name": "HARNESS_TEMPLATE",
           "annotation": null,
           "value_repr": "'\\nimport copy\\nimport json\\nimport sys\\n\\n{student_code}\\n\\ndef _main():\\n    data = json.loads(sys.stdin.read())\\n    try:\\n        value = solve(copy.deepcopy(data))\\n        print({marker!r} + json.dumps({{\"ok\": True, \"value\": value}}, ensure_ascii=False, default=str))\\n    except Exception as exc:\\n        print({marker!r} + json.dumps({{\"ok\": False, \"error\": f\"{{type(exc).__name__}}: {{exc}}\"}}, ensure_ascii=False))\\n\\nif __name__ == \"__main__\":\\n    _main()\\n'",
-          "lineno": 30
+          "lineno": 31
         }
       ],
       "stats": {
         "classes": 0,
         "dataclasses": 0,
-        "functions": 2,
+        "functions": 3,
         "methods": 0,
         "constants": 5
       }

@@ -1,0 +1,130 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-28T11:47:58.189653+00:00",
+  "generator": "tools/extract_api_map.py",
+  "target": "tutor-llm",
+  "scanned_python_files": 1,
+  "files_count": 1,
+  "skipped_files_count": 0,
+  "skipped_files": [],
+  "stats": {
+    "modules": 1,
+    "classes": 1,
+    "dataclasses": 0,
+    "functions": 3,
+    "methods": 0,
+    "constants": 4
+  },
+  "modules": [
+    {
+      "path": "tutor-llm/main.py",
+      "module_docstring": "Tutor-LLM — прокси к DeepSeek API для тьютора.\n\nЖивёт на роутере (как executor), доступен только внутри тоннеля\n(10.0.0.1:8011). Единственная задача: принять структурированный\nзапрос {task_context, student_code, question} от webapp'а на Frankfurt,\nсобрать промпт, сходить в DeepSeek, вернуть ответ. Ключ DEEPSEEK_API_KEY\nживёт только в этом контейнере — наружу (во webapp, в браузер) не уходит.\n\nВ будущем здесь же вырастет RAG: добавится обращение к векторной БД,\nпромпт будет заземляться найденными чанками методики. Пока — чистый\nLLM-вызов для проверки базовой связки end-to-end.",
+      "module_summary": "Tutor-LLM — прокси к DeepSeek API для тьютора.",
+      "classes": [
+        {
+          "name": "AskRequest",
+          "signature": "AskRequest(BaseModel)",
+          "docstring": "Запрос от webapp'а. Все поля опциональны кроме question —\nтьютор может спрашивать и без контекста задачи.",
+          "summary": "Запрос от webapp'а. Все поля опциональны кроме question —",
+          "kind": "class",
+          "bases": [
+            "BaseModel"
+          ],
+          "decorators": [],
+          "fields": [
+            {
+              "name": "task_context",
+              "annotation": "str | None",
+              "value_repr": "None",
+              "lineno": 41
+            },
+            {
+              "name": "student_code",
+              "annotation": "str | None",
+              "value_repr": "None",
+              "lineno": 42
+            },
+            {
+              "name": "question",
+              "annotation": "str",
+              "value_repr": null,
+              "lineno": 43
+            }
+          ],
+          "methods": [],
+          "lineno": 38,
+          "end_lineno": 43
+        }
+      ],
+      "functions": [
+        {
+          "name": "_build_user_message",
+          "signature": "_build_user_message(req: AskRequest) -> str",
+          "docstring": "Собирает пользовательское сообщение из структурированных полей.\nРазделители --- чтобы модели было проще различать блоки.",
+          "summary": "Собирает пользовательское сообщение из структурированных полей.",
+          "kind": "function",
+          "decorators": [],
+          "lineno": 46,
+          "end_lineno": 55
+        },
+        {
+          "name": "ask",
+          "signature": "ask(payload: AskRequest)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [
+            "app.post('/ask')"
+          ],
+          "lineno": 59,
+          "end_lineno": 116
+        },
+        {
+          "name": "health",
+          "signature": "health()",
+          "docstring": "Readiness-чек. Ключ НЕ отдаём наружу — только факт его наличия.",
+          "summary": "Readiness-чек. Ключ НЕ отдаём наружу — только факт его наличия.",
+          "kind": "function",
+          "decorators": [
+            "app.get('/health')"
+          ],
+          "lineno": 120,
+          "end_lineno": 122
+        }
+      ],
+      "constants": [
+        {
+          "name": "DEEPSEEK_API_KEY",
+          "annotation": null,
+          "value_repr": "os.environ.get('DEEPSEEK_API_KEY', '')",
+          "lineno": 21
+        },
+        {
+          "name": "DEEPSEEK_URL",
+          "annotation": null,
+          "value_repr": "'https://api.deepseek.com/v1/chat/completions'",
+          "lineno": 22
+        },
+        {
+          "name": "DEEPSEEK_MODEL",
+          "annotation": null,
+          "value_repr": "os.environ.get('DEEPSEEK_MODEL', 'deepseek-chat')",
+          "lineno": 23
+        },
+        {
+          "name": "SYSTEM_PROMPT",
+          "annotation": null,
+          "value_repr": "'Ты — тьютор по информатике (ОГЭ/ЕГЭ). Объясняешь ученику понятно, по делу, на русском. Если в вопросе есть код ученика — разбери, почему он работает или не работает, сошлись на конкретные строки. Не выдумывай факты: если не знаешь — скажи прямо. Отвечай кратко, без воды, без chain-of-thought в выводе.'",
+          "lineno": 27
+        }
+      ],
+      "stats": {
+        "classes": 1,
+        "dataclasses": 0,
+        "functions": 3,
+        "methods": 0,
+        "constants": 4
+      }
+    }
+  ]
+}

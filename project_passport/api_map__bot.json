@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-19T09:21:09.822916+00:00",
+  "generated_at": "2026-07-28T11:47:58.044754+00:00",
   "generator": "tools/extract_api_map.py",
   "target": "bot",
   "scanned_python_files": 6,
@@ -13,7 +13,7 @@
     "modules": 5,
     "classes": 0,
     "dataclasses": 0,
-    "functions": 85,
+    "functions": 105,
     "methods": 0,
     "constants": 5
   },
@@ -82,13 +82,13 @@
           "name": "INPUT_HINTS",
           "annotation": null,
           "value_repr": "{'number': 'Введите число в формате:', 'word': 'Введите слово в формате:', 'list_of_numbers': 'Введите числа в формате:', 'lists': 'Введите списки в формате:', 'list_and_number': 'Введите список и число в формате:', 'list_of_words': 'Введите слова в формате:', 'words_and_numbers': 'Введите слова и числа в формате:'}",
-          "lineno": 1
+          "lineno": 7
         },
         {
           "name": "TASKS",
           "annotation": null,
-          "value_repr": "{1: {'description': 'Удалить дубликаты из списка, сохранив порядок.', 'example': '[3, 2, 2, 1, 5, 3] → [3, 2, 1, 5]', 'type': 'list_of_numbers'}, 2: {'description': 'Найти сумму всех чётных чисел в списке.', 'example': '[1, 2, 3, 4, 5, 6] → 12', 'type': 'list_of_numbers'}, 3: {'description': 'Развернуть список (в порядке обратном исходному).', 'example': '[1, 2, 3, 4, 5] → [5, 4, 3, 2, 1]', 'type': 'list_of_numbers'}, 4: {'description': 'Найти максимальный элемент в списке, не используя max()', 'example': '[10, 3, 5, 6, 9, 8] → 10', 'type': 'list_of_numbers'}, 5: {'description': 'Объединить два списка в один, удалив повторяющиеся элементы.', 'example': '[1, 2, 3] [3, 4, 5] → [1, 2, 3, 4, 5]', 'type': 'lists'}, 6: {'description': 'Проверить, отсортирован ли список по возрастанию.', 'example': '\\n[1, 2, 3] → ✅ Список сортирован\\n[3, 2, 1] → ❌ Список не сортирован', 'type': 'list_of_numbers'}, 7: {'description': 'Вставить число в список на позицию, равную его значению.', 'example': '[10, 20, 30]; 2 → [10, 20, 2, 30]', 'type': 'list_and_number'}, 8: {'description': 'Удалить первое вхождение минимального элемента из списка.', 'example': '[5, 3, 2, 8, 2, 10] → [5, 3, 8, 2, 10]', 'type': 'list_of_numbers'}, 9: {'description': 'Сложить стоящие по соседству числа.', 'example': '[1, 2, 3, 4] → [2, 4, 6, 3];\\nобъяснение: [2, 1+3=4, 2+4=6, 3]', 'type': 'list_of_numbers'}, 10: {'description': 'Переместить нули в конец списка.', 'example': '[0, 1, 0, 3, 12] → [1, 3, 12, 0, 0]', 'type': 'list_of_numbers'}, 11: {'description': 'Объединить списки в кортеж.', 'example': \"['Alice', 'Bob', 'Charlie'] [25, 30, 28] → [(Alice, 25), (Bob, 30), (Charlie, 28)]\", 'type': 'words_and_numbers'}, 12: {'description': 'Найти элемент списка, который встречается чаще всего.', 'example': \"['apple', 'banana', 'apple', 'orange', 'banana', 'apple'] → apple\", 'type': 'list_of_words'}, 13: {'description': 'Разбить список на подсписки заданной длины.', 'example': '[1, 2, 3, 4, 5, 6, 7]; 3 → [[1, 2, 3], [4, 5, 6], [7]]', 'type': 'list_and_number'}, 14: {'description': 'Проверить наличие дубликатов.', 'example': '[1, 2, 3, 2] → ✅ Повторы есть; ❌ Повторов нету', 'type': 'list_of_numbers'}, 15: {'description': 'Найти среднее арифметическое.', 'example': '[1, 2, 3, 4, 5] → 3.0', 'type': 'list_of_numbers'}, 16: {'description': 'Удалить минимальный элемент.', 'example': '[5, 2, 8, 2, 1] → [5, 2, 8, 2]', 'type': 'list_of_numbers'}, 17: {'description': 'Сдвинуть элементы вправо.', 'example': '[1, 2, 3, 4, 5]; 6 → [4, 5, 1, 2, 3]', 'type': 'list_and_number'}, 18: {'description': 'Посчитать уникальные элементы .', 'example': '[1, 2, 2, 3, 4, 4, 4, 5] → 5', 'type': 'list_of_numbers'}, 19: {'description': 'Проверить на палиндром .', 'example': \"['radar'] → ✅ Слово палиндром; ❌ Слово не палиндром\", 'type': 'list_of_words'}, 20: {'description': 'Найти пару с заданной суммой.', 'example': '[1, 2, 3, 4, 5]; 5 → [(1, 4), (2, 3)]', 'type': 'list_and_number'}, 21: {'description': 'Сгруппировать по длине строки.', 'example': \"['apple', 'bat', 'car', 'ant', 'orange'] → {5: ['apple'], 3: ['bat', 'car', 'ant'], 6: ['orange']}\", 'type': 'list_of_words'}, 22: {'description': 'Объединить списки без повторений и сортировкой.', 'example': '[3, 2, 1] [2, 4, 5] [5, 6, 3] → [1, 2, 3, 4, 5, 6]', 'type': 'list_of_numbers'}, 23: {'description': 'Найти самый длинный подряд идущий подсписок.', 'example': '[1, 1, 2, 2, 2, 3, 3, 1, 1, 1, 1] → [1, 1, 1, 1]', 'type': 'lists'}, 24: {'description': 'Найти элемент, встречающийся ровно один раз.', 'example': '[4, 3, 2, 4, 1, 3, 2] → 1', 'type': 'lists'}, 25: {'description': 'Найти все элементы в порядке возрастания частоты.', 'example': \"['a', 'b', 'c', 'a', 'b', 'a'] → ['c', 'b', 'b', 'a', 'a', 'a']\", 'type': 'list_of_words'}, 26: {'description': 'Проверить, является ли список \"пилообразным\".', 'example': '[1, 3, 2, 4, 1] → ✅ Список пилообразный; ❌ Список не пилообразный', 'type': 'lists'}, 27: {'description': 'Разделить на чётные и нечётные.', 'example': '[1, 2, 3, 4, 5, 6] → [2, 4, 6, 1, 3, 5]', 'type': 'lists'}, 28: {'description': 'Найти ближайшее число.', 'example': '[10, 3, 8, 15]; 7 → 8', 'type': 'list_and_number'}, 29: {'description': 'Найти все пары с разностью.', 'example': '[1, 3, 5, 7]; 2 → [(1, 3), (3, 5), (5, 7)]', 'type': 'list_and_number'}, 30: {'description': 'Сгруппировать по первому символу.', 'example': \"['apple', 'ant', 'banana', 'bee', 'cat'] → {'a': ['apple', 'ant'], 'b': ['banana', 'bee'], 'c': ['cat']}\", 'type': 'list_of_words'}, 31: {'description': 'Найти все чётные числа в списке.', 'example': '[1, 2, 3, 4, 5, 6] → [2, 4, 6]', 'type': 'list_of_numbers'}, 32: {'description': 'Проверить, все ли элементы списка положительные.', 'example': '[1, 2, 3] → ✅ Все положительные\\n[-1, 2, 3] → ❌ Есть отрицательные', 'type': 'list_of_numbers'}, 33: {'description': 'Найти самое длинное слово в списке.', 'example': \"['cat', 'elephant', 'dog'] → elephant\", 'type': 'list_of_words'}, 34: {'description': 'Создать список квадратов чисел.', 'example': '[1, 2, 3, 4] → [1, 4, 9, 16]', 'type': 'list_of_numbers'}, 35: {'description': 'Объединить два списка в один, чередуя элементы.', 'example': '[1, 2, 3] [10, 20] → [1, 10, 2, 20, 3]', 'type': 'lists'}, 36: {'description': 'Найти все гласные буквы в слове.', 'example': \"'hello' → ['e', 'o']\", 'type': 'word'}, 37: {'description': 'Проверить, является ли число простым.', 'example': '7 → ✅ Простое число\\n8 → ❌ Не простое число', 'type': 'number'}, 38: {'description': 'Отсортировать слова по алфавиту.', 'example': \"['banana', 'apple', 'cherry'] → ['apple', 'banana', 'cherry']\", 'type': 'list_of_words'}, 39: {'description': 'Найти сумму всех элементов вложенных списков.', 'example': '[1, [2, 3], [4, [5]]] → 15', 'type': 'lists'}, 40: {'description': 'Удалить все отрицательные числа из списка.', 'example': '[-1, 2, -3, 4, 0] → [2, 4, 0]', 'type': 'list_of_numbers'}, 41: {'description': 'Найти все согласные буквы в слове.', 'example': \"['hello'] → ['h', 'l', 'l']\", 'type': 'list_of_words'}, 42: {'description': 'Проверить, является ли строка анаграммой другой строки.', 'example': \"['listen', 'silent'] → ✅ Анаграммы\\n['hello', 'world'] → ❌ Не анаграммы\", 'type': 'lists'}, 43: {'description': 'Найти факториал числа.', 'example': '[5] → 120', 'type': 'list_of_numbers'}, 44: {'description': 'Заменить все гласные в слове на символ \"*\".', 'example': \"['programming'] → pr*gr*mm*ng\", 'type': 'list_of_words'}, 45: {'description': 'Найти НОД (наибольший общий делитель) двух чисел.', 'example': '[48, 18] → 6', 'type': 'lists'}, 46: {'description': 'Проверить, состоит ли строка только из цифр.', 'example': \"['12345'] → ✅ Только цифры\\n['abc123'] → ❌ Содержит нецифровые символы\", 'type': 'list_of_words'}, 47: {'description': 'Найти наименьшее общее кратное (НОК) двух чисел.', 'example': '[12, 18] → 36', 'type': 'lists'}, 48: {'description': 'Подсчитать количество слов в строке.', 'example': \"['Hello world from Python'] → 4\", 'type': 'list_of_words'}, 49: {'description': 'Удалить все дубликаты из вложенного списка, сохранив порядок.', 'example': '[1, [2, 2], [3, [1, 1]]] → [1, [2], [3, [1]]]', 'type': 'lists'}, 50: {'description': 'Проверить, является ли список симметричным (зеркальным).', 'example': '[1, 2, 3, 2, 1] → ✅ Симметричный\\n[1, 2, 3, 4] → ❌ Не симметричный', 'type': 'list_of_numbers'}, 51: {'description': 'Проверить, все ли слова в списке начинаются с заглавной буквы.', 'example': \"['Apple', 'Banana', 'Cherry'] → ✅ Все с заглавной\\n['apple', 'Banana'] → ❌ Не все с заглавной\", 'type': 'list_of_words'}, 52: {'description': 'Найти произведение всех положительных чисел в списке.', 'example': '[2, -3, 4, 0, 5] → 40', 'type': 'list_of_numbers'}, 53: {'description': 'Объединить два списка в один, чередуя элементы до конца самого длинного.', 'example': '[1, 2] [10, 20, 30, 40] → [1, 10, 2, 20, 30, 40]', 'type': 'lists'}, 54: {'description': 'Заменить каждое число в списке на его абсолютное значение.', 'example': '[-1, 2, -3, 4] → [1, 2, 3, 4]', 'type': 'list_of_numbers'}, 55: {'description': 'Проверить, является ли список строго возрастающим (без равных элементов).', 'example': '[1, 2, 3, 4, 6] → ✅ Строго возрастает\\n[1, 2, 2, 3] → ❌ Не строго возрастает', 'type': 'list_of_numbers'}, 56: {'description': 'Найти второй по величине элемент в списке.', 'example': '[10, 5, 8, 12, 3] → 10', 'type': 'list_of_numbers'}, 57: {'description': 'Подсчитать, сколько раз каждый элемент встречается в списке.', 'example': '[1, 2, 2, 3, 1, 1] → {1: 3, 2: 2, 3: 1}', 'type': 'list_of_numbers'}, 58: {'description': 'Поменять местами минимальный и максимальный элементы списка.', 'example': '[4, 1, 7, 3] → [4, 7, 1, 3]', 'type': 'list_of_numbers'}, 59: {'description': 'Удалить из списка все элементы, которые встречаются более одного раза.', 'example': '[1, 2, 2, 3, 4, 4, 5] → [1, 3, 5]', 'type': 'list_of_numbers'}, 60: {'description': 'Найти общие элементы двух списков без повторений.', 'example': '[1, 2, 3, 4] [3, 4, 4, 5, 6] → [3, 4]', 'type': 'lists'}, 61: {'description': 'Разделить список на элементы с чётным и нечётным индексом.', 'example': '[10, 20, 30, 40, 50] → [[10, 30, 50], [20, 40]]', 'type': 'list_of_numbers'}, 62: {'description': 'Найти первый элемент, который повторяется.', 'example': '[3, 1, 4, 2, 1, 5, 3] → 3', 'type': 'list_of_numbers'}, 63: {'description': 'Заменить каждый элемент списка на разницу с предыдущим.', 'example': '[10, 13, 15, 20] → [10, 3, 2, 5]', 'type': 'list_of_numbers'}, 64: {'description': 'Проверить, можно ли из слова составить другое слово, используя его буквы.', 'example': \"['listen', 'silent'] → ✅ Можно\\n['cat', 'cast'] → ❌ Нельзя\", 'type': 'lists'}, 65: {'description': 'Найти количество гласных в каждом слове списка.', 'example': \"['apple', 'sky', 'orange'] → [2, 0, 3]\", 'type': 'list_of_words'}, 66: {'description': 'Удалить из строки все пробелы и знаки препинания.', 'example': \"['Hello, world!'] → Helloworld\", 'type': 'list_of_words'}, 67: {'description': 'Найти все числа, которые делятся на заданное число без остатка.', 'example': '[3, 5, 10, 12, 15]; 5 → [5, 10, 15]', 'type': 'list_and_number'}, 68: {'description': 'Преобразовать список чисел в строку через запятую.', 'example': '[1, 2, 3, 4] → \"1,2,3,4\"', 'type': 'list_of_numbers'}, 69: {'description': 'Разбить слово на пары соседних букв.', 'example': \"['python'] → ['py', 'th', 'on']\", 'type': 'list_of_words'}, 70: {'description': 'Найти сумму цифр каждого числа в списке.', 'example': '[12, 305, 47] → [3, 8, 11]', 'type': 'list_of_numbers'}, 71: {'description': 'Проверить, чередуются ли чётные и нечётные числа в списке.', 'example': '[2, 3, 4, 5, 6] → ✅ Чередуются\\n[2, 4, 5, 7] → ❌ Не чередуются', 'type': 'list_of_numbers'}, 72: {'description': 'Найти индекс последнего вхождения заданного элемента.', 'example': '[1, 2, 3, 2, 4]; 2 → 3', 'type': 'list_and_number'}, 73: {'description': 'Сделать список циклическим: последний элемент поставить в начало.', 'example': '[1, 2, 3, 4] → [4, 1, 2, 3]', 'type': 'list_of_numbers'}, 74: {'description': 'Удвоить все элементы списка, которые меньше заданного числа.', 'example': '[1, 5, 2, 8, 3]; 4 → [2, 5, 4, 8, 6]', 'type': 'list_and_number'}, 75: {'description': 'Найти самую короткую строку в списке.', 'example': \"['elephant', 'cat', 'dog', 'a'] → a\", 'type': 'list_of_words'}, 76: {'description': 'Проверить, есть ли в слове хотя бы одна повторяющаяся буква.', 'example': \"['letter'] → ✅ Есть\\n['dog'] → ❌ Нет\", 'type': 'list_of_words'}, 77: {'description': 'Заменить повторяющиеся элементы списка на строку \"dup\", начиная со второго появления.', 'example': \"[1, 2, 1, 3, 2, 2] → [1, 2, 'dup', 3, 'dup', 'dup']\", 'type': 'list_of_numbers'}, 78: {'description': 'Найти все слова, длина которых больше среднего.', 'example': \"['hi', 'python', 'cat', 'elephant'] → ['python', 'elephant']\", 'type': 'list_of_words'}, 79: {'description': 'Сжать список: заменить подряд идущие одинаковые элементы на пары (элемент, количество).', 'example': '[1, 1, 1, 2, 2, 3] → [(1, 3), (2, 2), (3, 1)]', 'type': 'list_of_numbers'}, 80: {'description': 'Восстановить список из пар (элемент, количество).', 'example': '[(1, 3), (2, 2), (3, 1)] → [1, 1, 1, 2, 2, 3]', 'type': 'lists'}}",
-          "lineno": 11
+          "value_repr": "{1: {'description': 'Удалить дубликаты из списка, сохранив порядок.', 'example': '[3, 2, 2, 1, 5, 3] → [3, 2, 1, 5]', 'type': 'list_of_numbers'}, 2: {'description': 'Найти сумму всех чётных чисел в списке.', 'example': '[1, 2, 3, 4, 5, 6] → 12', 'type': 'list_of_numbers'}, 3: {'description': 'Развернуть список (в порядке обратном исходному).', 'example': '[1, 2, 3, 4, 5] → [5, 4, 3, 2, 1]', 'type': 'list_of_numbers'}, 4: {'description': 'Найти максимальный элемент в списке, не используя max()', 'example': '[10, 3, 5, 6, 9, 8] → 10', 'type': 'list_of_numbers'}, 5: {'description': 'Объединить два списка в один, удалив повторяющиеся элементы.', 'example': '[1, 2, 3] [3, 4, 5] → [1, 2, 3, 4, 5]', 'type': 'lists'}, 6: {'description': 'Проверить, отсортирован ли список по возрастанию.', 'example': '\\n[1, 2, 3] → ✅ Список сортирован\\n[3, 2, 1] → ❌ Список не сортирован', 'type': 'list_of_numbers'}, 7: {'description': 'Вставить число в список на позицию, равную его значению.', 'example': '[10, 20, 30]; 2 → [10, 20, 2, 30]', 'type': 'list_and_number'}, 8: {'description': 'Удалить первое вхождение минимального элемента из списка.', 'example': '[5, 3, 2, 8, 2, 10] → [5, 3, 8, 2, 10]', 'type': 'list_of_numbers'}, 9: {'description': 'Сложить стоящие по соседству числа.', 'example': '[1, 2, 3, 4] → [2, 4, 6, 3];\\nобъяснение: [2, 1+3=4, 2+4=6, 3]', 'type': 'list_of_numbers'}, 10: {'description': 'Переместить нули в конец списка.', 'example': '[0, 1, 0, 3, 12] → [1, 3, 12, 0, 0]', 'type': 'list_of_numbers'}, 11: {'description': 'Объединить списки в кортеж.', 'example': \"['Alice', 'Bob', 'Charlie'] [25, 30, 28] → [(Alice, 25), (Bob, 30), (Charlie, 28)]\", 'type': 'words_and_numbers'}, 12: {'description': 'Найти элемент списка, который встречается чаще всего.', 'example': \"['apple', 'banana', 'apple', 'orange', 'banana', 'apple'] → apple\", 'type': 'list_of_words'}, 13: {'description': 'Разбить список на подсписки заданной длины.', 'example': '[1, 2, 3, 4, 5, 6, 7]; 3 → [[1, 2, 3], [4, 5, 6], [7]]', 'type': 'list_and_number'}, 14: {'description': 'Проверить наличие дубликатов.', 'example': '[1, 2, 3, 2] → ✅ Повторы есть; ❌ Повторов нету', 'type': 'list_of_numbers'}, 15: {'description': 'Найти среднее арифметическое.', 'example': '[1, 2, 3, 4, 5] → 3.0', 'type': 'list_of_numbers'}, 16: {'description': 'Удалить минимальный элемент.', 'example': '[5, 2, 8, 2, 1] → [5, 2, 8, 2]', 'type': 'list_of_numbers'}, 17: {'description': 'Сдвинуть элементы вправо.', 'example': '[1, 2, 3, 4, 5]; 6 → [4, 5, 1, 2, 3]', 'type': 'list_and_number'}, 18: {'description': 'Посчитать уникальные элементы .', 'example': '[1, 2, 2, 3, 4, 4, 4, 5] → 5', 'type': 'list_of_numbers'}, 19: {'description': 'Проверить на палиндром .', 'example': \"['radar'] → ✅ Слово палиндром; ❌ Слово не палиндром\", 'type': 'list_of_words'}, 20: {'description': 'Найти пару с заданной суммой.', 'example': '[1, 2, 3, 4, 5]; 5 → [(1, 4), (2, 3)]', 'type': 'list_and_number'}, 21: {'description': 'Сгруппировать по длине строки.', 'example': \"['apple', 'bat', 'car', 'ant', 'orange'] → {5: ['apple'], 3: ['bat', 'car', 'ant'], 6: ['orange']}\", 'type': 'list_of_words'}, 22: {'description': 'Объединить списки без повторений и сортировкой.', 'example': '[3, 2, 1] [2, 4, 5] [5, 6, 3] → [1, 2, 3, 4, 5, 6]', 'type': 'list_of_numbers'}, 23: {'description': 'Найти самый длинный подряд идущий подсписок.', 'example': '[1, 1, 2, 2, 2, 3, 3, 1, 1, 1, 1] → [1, 1, 1, 1]', 'type': 'lists'}, 24: {'description': 'Найти элемент, встречающийся ровно один раз.', 'example': '[4, 3, 2, 4, 1, 3, 2] → 1', 'type': 'lists'}, 25: {'description': 'Найти все элементы в порядке возрастания частоты.', 'example': \"['a', 'b', 'c', 'a', 'b', 'a'] → ['c', 'b', 'b', 'a', 'a', 'a']\", 'type': 'list_of_words'}, 26: {'description': 'Проверить, является ли список \"пилообразным\".', 'example': '[1, 3, 2, 4, 1] → ✅ Список пилообразный; ❌ Список не пилообразный', 'type': 'lists'}, 27: {'description': 'Разделить на чётные и нечётные.', 'example': '[1, 2, 3, 4, 5, 6] → [2, 4, 6, 1, 3, 5]', 'type': 'lists'}, 28: {'description': 'Найти ближайшее число.', 'example': '[10, 3, 8, 15]; 7 → 8', 'type': 'list_and_number'}, 29: {'description': 'Найти все пары с разностью.', 'example': '[1, 3, 5, 7]; 2 → [(1, 3), (3, 5), (5, 7)]', 'type': 'list_and_number'}, 30: {'description': 'Сгруппировать по первому символу.', 'example': \"['apple', 'ant', 'banana', 'bee', 'cat'] → {'a': ['apple', 'ant'], 'b': ['banana', 'bee'], 'c': ['cat']}\", 'type': 'list_of_words'}, 31: {'description': 'Найти все чётные числа в списке.', 'example': '[1, 2, 3, 4, 5, 6] → [2, 4, 6]', 'type': 'list_of_numbers'}, 32: {'description': 'Проверить, все ли элементы списка положительные.', 'example': '[1, 2, 3] → ✅ Все положительные\\n[-1, 2, 3] → ❌ Есть отрицательные', 'type': 'list_of_numbers'}, 33: {'description': 'Найти самое длинное слово в списке.', 'example': \"['cat', 'elephant', 'dog'] → elephant\", 'type': 'list_of_words'}, 34: {'description': 'Создать список квадратов чисел.', 'example': '[1, 2, 3, 4] → [1, 4, 9, 16]', 'type': 'list_of_numbers'}, 35: {'description': 'Объединить два списка в один, чередуя элементы.', 'example': '[1, 2, 3] [10, 20] → [1, 10, 2, 20, 3]', 'type': 'lists'}, 36: {'description': 'Найти все гласные буквы в слове.', 'example': \"'hello' → ['e', 'o']\", 'type': 'word'}, 37: {'description': 'Проверить, является ли число простым.', 'example': '7 → ✅ Простое число\\n8 → ❌ Не простое число', 'type': 'number'}, 38: {'description': 'Отсортировать слова по алфавиту.', 'example': \"['banana', 'apple', 'cherry'] → ['apple', 'banana', 'cherry']\", 'type': 'list_of_words'}, 39: {'description': 'Найти сумму всех элементов вложенных списков.', 'example': '[1, [2, 3], [4, [5]]] → 15', 'type': 'lists'}, 40: {'description': 'Удалить все отрицательные числа из списка.', 'example': '[-1, 2, -3, 4, 0] → [2, 4, 0]', 'type': 'list_of_numbers'}, 41: {'description': 'Найти все согласные буквы в слове.', 'example': \"['hello'] → ['h', 'l', 'l']\", 'type': 'list_of_words'}, 42: {'description': 'Проверить, является ли строка анаграммой другой строки.', 'example': \"['listen', 'silent'] → ✅ Анаграммы\\n['hello', 'world'] → ❌ Не анаграммы\", 'type': 'lists'}, 43: {'description': 'Найти факториал числа.', 'example': '[5] → 120', 'type': 'list_of_numbers'}, 44: {'description': 'Заменить все гласные в слове на символ \"*\".', 'example': \"['programming'] → pr*gr*mm*ng\", 'type': 'list_of_words'}, 45: {'description': 'Найти НОД (наибольший общий делитель) двух чисел.', 'example': '[48, 18] → 6', 'type': 'lists'}, 46: {'description': 'Проверить, состоит ли строка только из цифр.', 'example': \"['12345'] → ✅ Только цифры\\n['abc123'] → ❌ Содержит нецифровые символы\", 'type': 'list_of_words'}, 47: {'description': 'Найти наименьшее общее кратное (НОК) двух чисел.', 'example': '[12, 18] → 36', 'type': 'lists'}, 48: {'description': 'Подсчитать количество слов в строке.', 'example': \"['Hello world from Python'] → 4\", 'type': 'list_of_words'}, 49: {'description': 'Удалить все дубликаты из вложенного списка, сохранив порядок.', 'example': '[1, [2, 2], [3, [1, 1]]] → [1, [2], [3, [1]]]', 'type': 'lists'}, 50: {'description': 'Проверить, является ли список симметричным (зеркальным).', 'example': '[1, 2, 3, 2, 1] → ✅ Симметричный\\n[1, 2, 3, 4] → ❌ Не симметричный', 'type': 'list_of_numbers'}, 51: {'description': 'Проверить, все ли слова в списке начинаются с заглавной буквы.', 'example': \"['Apple', 'Banana', 'Cherry'] → ✅ Все с заглавной\\n['apple', 'Banana'] → ❌ Не все с заглавной\", 'type': 'list_of_words'}, 52: {'description': 'Найти произведение всех положительных чисел в списке.', 'example': '[2, -3, 4, 0, 5] → 40', 'type': 'list_of_numbers'}, 53: {'description': 'Объединить два списка в один, чередуя элементы до конца самого длинного.', 'example': '[1, 2] [10, 20, 30, 40] → [1, 10, 2, 20, 30, 40]', 'type': 'lists'}, 54: {'description': 'Заменить каждое число в списке на его абсолютное значение.', 'example': '[-1, 2, -3, 4] → [1, 2, 3, 4]', 'type': 'list_of_numbers'}, 55: {'description': 'Проверить, является ли список строго возрастающим (без равных элементов).', 'example': '[1, 2, 3, 4, 6] → ✅ Строго возрастает\\n[1, 2, 2, 3] → ❌ Не строго возрастает', 'type': 'list_of_numbers'}, 56: {'description': 'Найти второй по величине элемент в списке.', 'example': '[10, 5, 8, 12, 3] → 10', 'type': 'list_of_numbers'}, 57: {'description': 'Подсчитать, сколько раз каждый элемент встречается в списке.', 'example': '[1, 2, 2, 3, 1, 1] → {1: 3, 2: 2, 3: 1}', 'type': 'list_of_numbers'}, 58: {'description': 'Поменять местами минимальный и максимальный элементы списка.', 'example': '[4, 1, 7, 3] → [4, 7, 1, 3]', 'type': 'list_of_numbers'}, 59: {'description': 'Удалить из списка все элементы, которые встречаются более одного раза.', 'example': '[1, 2, 2, 3, 4, 4, 5] → [1, 3, 5]', 'type': 'list_of_numbers'}, 60: {'description': 'Найти общие элементы двух списков без повторений.', 'example': '[1, 2, 3, 4] [3, 4, 4, 5, 6] → [3, 4]', 'type': 'lists'}, 61: {'description': 'Разделить список на элементы с чётным и нечётным индексом.', 'example': '[10, 20, 30, 40, 50] → [[10, 30, 50], [20, 40]]', 'type': 'list_of_numbers'}, 62: {'description': 'Найти первый элемент, который повторяется.', 'example': '[3, 1, 4, 2, 1, 5, 3] → 3', 'type': 'list_of_numbers'}, 63: {'description': 'Заменить каждый элемент списка на разницу с предыдущим.', 'example': '[10, 13, 15, 20] → [10, 3, 2, 5]', 'type': 'list_of_numbers'}, 64: {'description': 'Проверить, можно ли из слова составить другое слово, используя его буквы.', 'example': \"['listen', 'silent'] → ✅ Можно\\n['cat', 'cast'] → ❌ Нельзя\", 'type': 'lists'}, 65: {'description': 'Найти количество гласных в каждом слове списка.', 'example': \"['apple', 'sky', 'orange'] → [2, 0, 3]\", 'type': 'list_of_words'}, 66: {'description': 'Удалить из строки все пробелы и знаки препинания.', 'example': \"['Hello, world!'] → Helloworld\", 'type': 'list_of_words'}, 67: {'description': 'Найти все числа, которые делятся на заданное число без остатка.', 'example': '[3, 5, 10, 12, 15]; 5 → [5, 10, 15]', 'type': 'list_and_number'}, 68: {'description': 'Преобразовать список чисел в строку через запятую.', 'example': '[1, 2, 3, 4] → \"1,2,3,4\"', 'type': 'list_of_numbers'}, 69: {'description': 'Разбить слово на пары соседних букв.', 'example': \"['python'] → ['py', 'th', 'on']\", 'type': 'list_of_words'}, 70: {'description': 'Найти сумму цифр каждого числа в списке.', 'example': '[12, 305, 47] → [3, 8, 11]', 'type': 'list_of_numbers'}, 71: {'description': 'Проверить, чередуются ли чётные и нечётные числа в списке.', 'example': '[2, 3, 4, 5, 6] → ✅ Чередуются\\n[2, 4, 5, 7] → ❌ Не чередуются', 'type': 'list_of_numbers'}, 72: {'description': 'Найти индекс последнего вхождения заданного элемента.', 'example': '[1, 2, 3, 2, 4]; 2 → 3', 'type': 'list_and_number'}, 73: {'description': 'Сделать список циклическим: последний элемент поставить в начало.', 'example': '[1, 2, 3, 4] → [4, 1, 2, 3]', 'type': 'list_of_numbers'}, 74: {'description': 'Удвоить все элементы списка, которые меньше заданного числа.', 'example': '[1, 5, 2, 8, 3]; 4 → [2, 5, 4, 8, 6]', 'type': 'list_and_number'}, 75: {'description': 'Найти самую короткую строку в списке.', 'example': \"['elephant', 'cat', 'dog', 'a'] → a\", 'type': 'list_of_words'}, 76: {'description': 'Проверить, есть ли в слове хотя бы одна повторяющаяся буква.', 'example': \"['letter'] → ✅ Есть\\n['dog'] → ❌ Нет\", 'type': 'list_of_words'}, 77: {'description': 'Заменить повторяющиеся элементы списка на строку \"dup\", начиная со второго появления.', 'example': \"[1, 2, 1, 3, 2, 2] → [1, 2, 'dup', 3, 'dup', 'dup']\", 'type': 'list_of_numbers'}, 78: {'description': 'Найти все слова, длина которых больше среднего.', 'example': \"['hi', 'python', 'cat', 'elephant'] → ['python', 'elephant']\", 'type': 'list_of_words'}, 79: {'description': 'Сжать список: заменить подряд идущие одинаковые элементы на пары (элемент, количество).', 'example': '[1, 1, 1, 2, 2, 3] → [(1, 3), (2, 2), (3, 1)]', 'type': 'list_of_numbers'}, 80: {'description': 'Восстановить список из пар (элемент, количество).', 'example': '[(1, 3), (2, 2), (3, 1)] → [1, 1, 1, 2, 2, 3]', 'type': 'lists'}, 81: {'description': 'Найти все пары соседних элементов списка — каждый элемент, кроме последнего, образует пару со следующим за ним по порядку.', 'example': '[1, 2, 3, 4] → [(1, 2), (2, 3), (3, 4)]', 'type': 'list_of_numbers'}, 82: {'description': 'Проверить, является ли список арифметической прогрессией.', 'example': '[2, 4, 6, 8] → ✅ Да\\n[1, 2, 4, 8] → ❌ Нет', 'type': 'list_of_numbers'}, 83: {'description': 'Найти слово с наибольшим количеством гласных.', 'example': \"['sky', 'banana', 'apple'] → banana\", 'type': 'list_of_words'}, 84: {'description': 'Удалить из списка все элементы, стоящие на нечётных позициях.', 'example': '[10, 20, 30, 40, 50, 60] → [10, 30, 50]', 'type': 'list_of_numbers'}, 85: {'description': 'Перевернуть буквы в каждом слове списка.', 'example': \"['cat', 'python'] → ['tac', 'nohtyp']\", 'type': 'list_of_words'}, 86: {'description': 'Найти число, у которого самая большая сумма цифр.', 'example': '[12, 99, 123, 40] → 99', 'type': 'list_of_numbers'}, 87: {'description': 'Проверить, одинаково ли количество чётных и нечётных чисел в списке.', 'example': '[1, 2, 3, 4] → ✅ Одинаково\\n[1, 2, 4, 6] → ❌ Не одинаково', 'type': 'list_of_numbers'}, 88: {'description': 'Сгруппировать числа по остатку от деления на 3.', 'example': '[1, 2, 3, 4, 5, 6, 7] → {0: [3, 6], 1: [1, 4, 7], 2: [2, 5]}', 'type': 'list_of_numbers'}, 89: {'description': 'Найти все префиксы слова.', 'example': \"['code'] → ['c', 'co', 'cod', 'code']\", 'type': 'list_of_words'}, 90: {'description': 'Найти все суффиксы слова.', 'example': \"['code'] → ['code', 'ode', 'de', 'e']\", 'type': 'list_of_words'}, 91: {'description': 'Проверить, можно ли разбить список на две части с одинаковой суммой.', 'example': '[1, 2, 3, 4] → ✅ Можно\\n[1, 2, 3, 5] → ❌ Нельзя', 'type': 'list_of_numbers'}, 92: {'description': 'Найти зеркальные пары в списке.', 'example': '[1, 2, 3, 2, 1] → [(1, 1), (2, 2)]', 'type': 'list_of_numbers'}, 93: {'description': 'Преобразовать список слов в словарь вида {слово: длина}.', 'example': \"['cat', 'elephant', 'dog'] → {'cat': 3, 'elephant': 8, 'dog': 3}\", 'type': 'list_of_words'}, 94: {'description': 'Найти все элементы, которые больше обоих своих соседей.', 'example': '[1, 5, 2, 7, 3, 6, 1] → [5, 7, 6]', 'type': 'list_of_numbers'}, 95: {'description': 'Заменить каждое слово в списке на его первую и последнюю букву.', 'example': \"['apple', 'banana', 'cat'] → ['ae', 'ba', 'ct']\", 'type': 'list_of_words'}, 96: {'description': 'Удалить подряд идущие дубликаты, оставив по одному.', 'example': '[1, 1, 2, 2, 2, 3, 1, 1] → [1, 2, 3, 1]', 'type': 'list_of_numbers'}, 97: {'description': 'Найти длину самой длинной серии одинаковых элементов подряд.', 'example': '[1, 1, 2, 2, 2, 3, 3] → 3', 'type': 'list_of_numbers'}, 98: {'description': 'Проверить, можно ли получить список, удалив ровно один элемент, чтобы он стал возрастающим.', 'example': '[1, 2, 5, 3, 4] → ✅ Можно\\n[5, 1, 2, 0] → ❌ Нельзя', 'type': 'list_of_numbers'}, 99: {'description': 'Построить лестницу из чисел: первый подсписок длины 1, второй — длины 2 и так далее.', 'example': '[1, 2, 3, 4, 5, 6] → [[1], [2, 3], [4, 5, 6]]', 'type': 'list_of_numbers'}, 100: {'description': 'Найти все элементы, которые встречаются в списке более одного раза, без повторов в ответе.', 'example': '[1, 2, 3, 2, 4, 1, 1] → [1, 2]', 'type': 'list_of_numbers'}}",
+          "lineno": 17
         }
       ],
       "stats": {
@@ -942,13 +942,213 @@
           "decorators": [],
           "lineno": 653,
           "end_lineno": 657
+        },
+        {
+          "name": "solve_task_81",
+          "signature": "solve_task_81(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 660,
+          "end_lineno": 661
+        },
+        {
+          "name": "solve_task_82",
+          "signature": "solve_task_82(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 664,
+          "end_lineno": 671
+        },
+        {
+          "name": "solve_task_83",
+          "signature": "solve_task_83(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 674,
+          "end_lineno": 683
+        },
+        {
+          "name": "solve_task_84",
+          "signature": "solve_task_84(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 686,
+          "end_lineno": 687
+        },
+        {
+          "name": "solve_task_85",
+          "signature": "solve_task_85(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 690,
+          "end_lineno": 691
+        },
+        {
+          "name": "solve_task_86",
+          "signature": "solve_task_86(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 694,
+          "end_lineno": 704
+        },
+        {
+          "name": "solve_task_87",
+          "signature": "solve_task_87(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 707,
+          "end_lineno": 710
+        },
+        {
+          "name": "solve_task_88",
+          "signature": "solve_task_88(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 713,
+          "end_lineno": 718
+        },
+        {
+          "name": "solve_task_89",
+          "signature": "solve_task_89(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 721,
+          "end_lineno": 723
+        },
+        {
+          "name": "solve_task_90",
+          "signature": "solve_task_90(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 726,
+          "end_lineno": 728
+        },
+        {
+          "name": "solve_task_91",
+          "signature": "solve_task_91(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 731,
+          "end_lineno": 741
+        },
+        {
+          "name": "solve_task_92",
+          "signature": "solve_task_92(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 744,
+          "end_lineno": 746
+        },
+        {
+          "name": "solve_task_93",
+          "signature": "solve_task_93(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 749,
+          "end_lineno": 750
+        },
+        {
+          "name": "solve_task_94",
+          "signature": "solve_task_94(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 753,
+          "end_lineno": 758
+        },
+        {
+          "name": "solve_task_95",
+          "signature": "solve_task_95(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 761,
+          "end_lineno": 762
+        },
+        {
+          "name": "solve_task_96",
+          "signature": "solve_task_96(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 765,
+          "end_lineno": 772
+        },
+        {
+          "name": "solve_task_97",
+          "signature": "solve_task_97(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 775,
+          "end_lineno": 785
+        },
+        {
+          "name": "solve_task_98",
+          "signature": "solve_task_98(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 788,
+          "end_lineno": 794
+        },
+        {
+          "name": "solve_task_99",
+          "signature": "solve_task_99(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 797,
+          "end_lineno": 805
+        },
+        {
+          "name": "solve_task_100",
+          "signature": "solve_task_100(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 808,
+          "end_lineno": 816
         }
       ],
       "constants": [],
       "stats": {
         "classes": 0,
         "dataclasses": 0,
-        "functions": 81,
+        "functions": 101,
         "methods": 0,
         "constants": 0
       }

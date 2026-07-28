@@ -78,7 +78,7 @@ require_env "DEPLOY_FRANKFURT_REPO_DIR" "$DEPLOY_FRANKFURT_REPO_DIR"
 
 log "🔧 Deploy config:"
 log "   Branch:    $DEPLOY_BRANCH"
-log "   Роутер:    $DEPLOY_ROUTER_ALIAS:$DEPLOY_ROUTER_REPO_DIR/executor"
+log "   Роутер:    $DEPLOY_ROUTER_ALIAS:$DEPLOY_ROUTER_REPO_DIR (executor + tutor-llm)"
 log "   Frankfurt: $DEPLOY_FRANKFURT_ALIAS:$DEPLOY_FRANKFURT_REPO_DIR (app + системный Caddy)"
 log "----------------------------------------"
 

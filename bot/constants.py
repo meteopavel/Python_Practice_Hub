@@ -1,3 +1,9 @@
+# ВНИМАНИЕ: этот файл — ИСТОЧНИК для генератора export_tasks_to_json.py, который
+# упаковывает TASKS/INPUT_HINTS в bot/tasks.json. После правки здесь нужно
+# перегенерировать tasks.json (python bot/export_tasks_to_json.py).
+# webapp через bot_bridge.py и bot/bot.py через load_tasks_from_json.py читают
+# ИМЕННО tasks.json, а не этот файл — рассинхрон = баг. Не править tasks.json
+# вручную в обход генератора.
 INPUT_HINTS = {
     'number': 'Введите число в формате:',
     'word': 'Введите слово в формате:',

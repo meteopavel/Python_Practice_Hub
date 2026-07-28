@@ -1,11 +1,11 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-19T09:24:07.281886+00:00",
-  "generated_by": "tools/build_project_passport.py",
+  "generated_at": "2026-07-28T11:49:16.091378+00:00",
+  "generated_by": "tools/build_project_passport.py (ручная правка: api_map-ы пересобраны, meta/public — точечное обновление 28.07.2026)",
   "id": "python-practice-hub",
   "title": "Python Practice Hub — веб-грейдер кода с изолированным исполнением",
   "tagline": "FastAPI-сервис проверки Python-кода реальным исполнением в изолированном окружении, развёрнутый на двух машинах через WireGuard-тоннель.",
-  "summary": "Изначально Telegram-бот с банком практических Python-заданий (80 упражнений на списки/строки). Развит в веб-платформу: ученик пишет решение в браузере, код реально выполняется отдельным сервисом-исполнителем (не в процессе основного приложения) в контейнере с урезанными правами — read-only файловая система, запрет новых исходящих сетевых соединений на уровне хоста, лимиты памяти и числа процессов — и сравнивается с эталонным решением на нескольких тестовых входах. Публичный фронт и приватный исполнитель развёрнуты на разных физических машинах, соединённых WireGuard-тоннелем; автоматический HTTPS и сквозной деплой одним скриптом на обе машины.",
+  "summary": "Изначально Telegram-бот с банком практических Python-заданий (100 упражнений на списки/строки). Развит в веб-платформу: ученик пишет решение в браузере, код реально выполняется отдельным сервисом-исполнителем (не в процессе основного приложения) в контейнере с урезанными правами — read-only файловая система, запрет новых исходящих сетевых соединений на уровне хоста, лимиты памяти и числа процессов — и сравнивается с эталонным решением на нескольких тестовых входах. Публичный фронт и приватный исполнитель развёрнуты на разных физических машинах, соединённых WireGuard-тоннелем; автоматический HTTPS и сквозной деплой одним скриптом на обе машины. С 28.07.2026 — ИИ-ассистент тьютора (DeepSeek через отдельный прокси-микросервис tutor-llm, baseline без векторной БД).",
   "status": "active",
   "visibility": "public_code",
   "role": "solo_developer",
@@ -23,7 +23,9 @@
     "Docker",
     "python-telegram-bot",
     "Caddy",
-    "Bash"
+    "Bash",
+    "DeepSeek API",
+    "WireGuard"
   ],
   "links": {
     "repo": "https://github.com/meteopavel/Python_Practice_Hub",
@@ -35,11 +37,13 @@
     "Исполнение недоверенного кода — отдельный сервис в Docker: read-only rootfs, tmpfs под /tmp, cap_drop ALL, no-new-privileges, лимиты памяти/процессов, блокировка новых исходящих соединений правилом в DOCKER-USER на хосте.",
     "Публичный фронт и приватный исполнитель — разные физические машины, соединены WireGuard-тоннелем; исполнитель недоступен ни из LAN, ни из интернета, только через тоннель.",
     "Автоматический HTTPS (Caddy) и сквозной деплой на обе машины одним скриптом.",
-    "Исходный банк из 80 практических заданий и Telegram-бот сохранены как отдельный компонент."
+    "Банк из 100 практических заданий и Telegram-бот сохранены как отдельный компонент.",
+    "ИИ-ассистент тьютора (28.07.2026): DeepSeek через отдельный прокси-микросервис tutor-llm на роутере, baseline без векторной БД (полноценный RAG — будущий этап)."
   ],
   "signals": [
     "json_artifacts",
-    "env_config"
+    "env_config",
+    "llm_ready"
   ],
   "tech_profile": {
     "python_files": 4,
@@ -52,7 +56,7 @@
     "has_cli": false,
     "has_redmine_integration": false,
     "has_document_generation": false,
-    "has_llm_workflow": false,
+    "has_llm_workflow": true,
     "has_api_map": true
   },
   "architecture": {
@@ -102,20 +106,38 @@
           "methods": 0,
           "constants": 1
         }
+      },
+      {
+        "path": "tutor-llm/main.py",
+        "summary": "Прокси-микросервис к DeepSeek API для ИИ-ассистента тьютора (28.07.2026).",
+        "stats": {
+          "classes": 1,
+          "dataclasses": 0,
+          "functions": 2,
+          "methods": 0,
+          "constants": 4
+        }
       }
     ]
   },
   "artifacts": {
     "api_map_json": "project_passport/api_map__webapp.json",
     "api_map_markdown": "project_passport/api_map__webapp.md",
+    "api_map_all_modules": [
+      "project_passport/api_map__webapp.{md,json}",
+      "project_passport/api_map__bot.{md,json}",
+      "project_passport/api_map__executor.{md,json}",
+      "project_passport/api_map__tutor-llm.{md,json}"
+    ],
     "project_meta_json": "project_passport/project.meta.json",
     "project_public_json": "project_passport/project.public.json"
   },
   "source": {
     "api_map_schema_version": "1.0",
-    "api_map_generated_at": "2026-07-19T09:21:09.967844+00:00",
+    "api_map_generated_at": "2026-07-28T11:49:16.091378+00:00",
     "api_map_generator": "tools/extract_api_map.py",
     "meta_auto_generated": false,
-    "meta_review_status": "reviewed"
+    "meta_review_status": "reviewed",
+    "note": "api_map-ы пересобраны для всех 4 модулей 28.07.2026; project.public.json/meta — ручная правка (build_project_passport.py рассчитан на один модуль и регрессит tagline/visibility, см. git history)"
   }
 }

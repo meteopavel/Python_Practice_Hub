@@ -1,21 +1,107 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-19T09:21:09.967844+00:00",
+  "generated_at": "2026-07-28T11:47:57.971416+00:00",
   "generator": "tools/extract_api_map.py",
   "target": "webapp",
-  "scanned_python_files": 4,
-  "files_count": 4,
+  "scanned_python_files": 10,
+  "files_count": 10,
   "skipped_files_count": 0,
   "skipped_files": [],
   "stats": {
-    "modules": 4,
-    "classes": 2,
+    "modules": 10,
+    "classes": 9,
     "dataclasses": 0,
-    "functions": 6,
-    "methods": 0,
-    "constants": 5
+    "functions": 53,
+    "methods": 1,
+    "constants": 18
   },
   "modules": [
+    {
+      "path": "webapp/auth.py",
+      "module_docstring": "Простая авторизация логин/пароль + сессия по подписанной cookie.\nУченики заводятся вручную (см. create_user.py) — самостоятельной регистрации нет.",
+      "module_summary": "Простая авторизация логин/пароль + сессия по подписанной cookie.",
+      "classes": [],
+      "functions": [
+        {
+          "name": "hash_password",
+          "signature": "hash_password(password: str) -> str",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 12,
+          "end_lineno": 13
+        },
+        {
+          "name": "verify_password",
+          "signature": "verify_password(password: str, password_hash: str) -> bool",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 16,
+          "end_lineno": 17
+        },
+        {
+          "name": "authenticate",
+          "signature": "authenticate(db: Session, username: str, password: str) -> User | None",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 20,
+          "end_lineno": 26
+        },
+        {
+          "name": "current_user_id",
+          "signature": "current_user_id(request: Request) -> int | None",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 29,
+          "end_lineno": 30
+        },
+        {
+          "name": "current_user_role",
+          "signature": "current_user_role(request: Request) -> str | None",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 33,
+          "end_lineno": 34
+        },
+        {
+          "name": "unauthorized",
+          "signature": "unauthorized() -> JSONResponse",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 37,
+          "end_lineno": 38
+        },
+        {
+          "name": "forbidden",
+          "signature": "forbidden() -> JSONResponse",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 41,
+          "end_lineno": 42
+        }
+      ],
+      "constants": [],
+      "stats": {
+        "classes": 0,
+        "dataclasses": 0,
+        "functions": 7,
+        "methods": 0,
+        "constants": 0
+      }
+    },
     {
       "path": "webapp/bot_bridge.py",
       "module_docstring": "Мост к банку заданий и эталонных решений в bot/ — общий источник\nдля Telegram-бота и веб-грейдера, чтобы не дублировать содержимое.",
@@ -42,6 +128,72 @@
         "functions": 0,
         "methods": 0,
         "constants": 2
+      }
+    },
+    {
+      "path": "webapp/create_user.py",
+      "module_docstring": "Завести пользователя вручную (самостоятельной регистрации нет).\n\nИспользование (внутри контейнера app):\n    docker exec -it python_practice_hub-app-1 python create_user.py <username> [role]\n\nrole: student (по умолчанию) | tutor\n\nСпросит пароль интерактивно (не через argv — не светится в истории/логах/ps).",
+      "module_summary": "Завести пользователя вручную (самостоятельной регистрации нет).",
+      "classes": [],
+      "functions": [
+        {
+          "name": "main",
+          "signature": "main() -> None",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 21,
+          "end_lineno": 48
+        }
+      ],
+      "constants": [
+        {
+          "name": "VALID_ROLES",
+          "annotation": null,
+          "value_repr": "(ROLE_STUDENT, ROLE_TUTOR)",
+          "lineno": 18
+        }
+      ],
+      "stats": {
+        "classes": 0,
+        "dataclasses": 0,
+        "functions": 1,
+        "methods": 0,
+        "constants": 1
+      }
+    },
+    {
+      "path": "webapp/db.py",
+      "module_docstring": "Подключение к БД: движок + фабрика сессий SQLAlchemy.",
+      "module_summary": "Подключение к БД: движок + фабрика сессий SQLAlchemy.",
+      "classes": [],
+      "functions": [
+        {
+          "name": "get_db",
+          "signature": "get_db()",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 15,
+          "end_lineno": 20
+        }
+      ],
+      "constants": [
+        {
+          "name": "DATABASE_URL",
+          "annotation": null,
+          "value_repr": "os.environ.get('DATABASE_URL', 'sqlite:///./local.db')",
+          "lineno": 8
+        }
+      ],
+      "stats": {
+        "classes": 0,
+        "dataclasses": 0,
+        "functions": 1,
+        "methods": 0,
+        "constants": 1
       }
     },
     {
@@ -87,14 +239,24 @@
           "end_lineno": 43
         },
         {
+          "name": "run_free",
+          "signature": "run_free(code: str) -> dict",
+          "docstring": "Свободный запуск кода без сверки с эталоном — для подсказки, где\nтьютору нужно просто показать вывод print(), а не пройти тесты.",
+          "summary": "Свободный запуск кода без сверки с эталоном — для подсказки, где",
+          "kind": "function",
+          "decorators": [],
+          "lineno": 46,
+          "end_lineno": 54
+        },
+        {
           "name": "grade",
           "signature": "grade(task_id: int, code: str) -> dict",
           "docstring": null,
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 46,
-          "end_lineno": 88
+          "lineno": 57,
+          "end_lineno": 99
         }
       ],
       "constants": [
@@ -108,15 +270,15 @@
       "stats": {
         "classes": 1,
         "dataclasses": 0,
-        "functions": 3,
+        "functions": 4,
         "methods": 0,
         "constants": 1
       }
     },
     {
       "path": "webapp/main.py",
-      "module_docstring": "FastAPI-приложение веб-грейдера. Оболочка: отдаёт список заданий и\nпринимает решение ученика. Вся логика проверки — в grading.py/sandbox.py.",
-      "module_summary": "FastAPI-приложение веб-грейдера. Оболочка: отдаёт список заданий и",
+      "module_docstring": "FastAPI-приложение веб-грейдера. Оболочка: отдаёт список заданий,\nлогин/сессию и принимает решение ученика. Вся логика проверки —\nв grading.py/sandbox.py, вся модель данных — в models.py.",
+      "module_summary": "FastAPI-приложение веб-грейдера. Оболочка: отдаёт список заданий,",
       "classes": [
         {
           "name": "SubmissionRequest",
@@ -133,77 +295,776 @@
               "name": "task_id",
               "annotation": "int",
               "value_repr": null,
-              "lineno": 22
+              "lineno": 60
             },
             {
               "name": "code",
               "annotation": "str",
               "value_repr": null,
-              "lineno": 23
+              "lineno": 61
             }
           ],
           "methods": [],
-          "lineno": 21,
-          "end_lineno": 23
+          "lineno": 59,
+          "end_lineno": 61
+        },
+        {
+          "name": "HintFreeRunRequest",
+          "signature": "HintFreeRunRequest(BaseModel)",
+          "docstring": null,
+          "summary": null,
+          "kind": "class",
+          "bases": [
+            "BaseModel"
+          ],
+          "decorators": [],
+          "fields": [
+            {
+              "name": "code",
+              "annotation": "str",
+              "value_repr": null,
+              "lineno": 65
+            }
+          ],
+          "methods": [],
+          "lineno": 64,
+          "end_lineno": 65
+        },
+        {
+          "name": "TutorAskRequest",
+          "signature": "TutorAskRequest(BaseModel)",
+          "docstring": "Запрос тьютора к ИИ-помощнику. task_context/student_code опциональны —\nможно спросить и без них. question обязателен.",
+          "summary": "Запрос тьютора к ИИ-помощнику. task_context/student_code опциональны —",
+          "kind": "class",
+          "bases": [
+            "BaseModel"
+          ],
+          "decorators": [],
+          "fields": [
+            {
+              "name": "task_context",
+              "annotation": "str | None",
+              "value_repr": "None",
+              "lineno": 71
+            },
+            {
+              "name": "student_code",
+              "annotation": "str | None",
+              "value_repr": "None",
+              "lineno": 72
+            },
+            {
+              "name": "question",
+              "annotation": "str",
+              "value_repr": null,
+              "lineno": 73
+            }
+          ],
+          "methods": [],
+          "lineno": 68,
+          "end_lineno": 73
+        },
+        {
+          "name": "CreateStudentRequest",
+          "signature": "CreateStudentRequest(BaseModel)",
+          "docstring": null,
+          "summary": null,
+          "kind": "class",
+          "bases": [
+            "BaseModel"
+          ],
+          "decorators": [],
+          "fields": [
+            {
+              "name": "username",
+              "annotation": "str",
+              "value_repr": null,
+              "lineno": 316
+            },
+            {
+              "name": "password",
+              "annotation": "str",
+              "value_repr": null,
+              "lineno": 317
+            }
+          ],
+          "methods": [],
+          "lineno": 315,
+          "end_lineno": 317
+        },
+        {
+          "name": "SetPasswordRequest",
+          "signature": "SetPasswordRequest(BaseModel)",
+          "docstring": null,
+          "summary": null,
+          "kind": "class",
+          "bases": [
+            "BaseModel"
+          ],
+          "decorators": [],
+          "fields": [
+            {
+              "name": "password",
+              "annotation": "str",
+              "value_repr": null,
+              "lineno": 338
+            }
+          ],
+          "methods": [],
+          "lineno": 337,
+          "end_lineno": 338
         }
       ],
       "functions": [
         {
+          "name": "create_tables",
+          "signature": "create_tables()",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [
+            "app.on_event('startup')"
+          ],
+          "lineno": 55,
+          "end_lineno": 56
+        },
+        {
+          "name": "login_page",
+          "signature": "login_page()",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [
+            "app.get('/login')"
+          ],
+          "lineno": 77,
+          "end_lineno": 78
+        },
+        {
+          "name": "login_submit",
+          "signature": "login_submit(request: Request, username: str = Form(...), password: str = Form(...), db: Session = Depends(get_db))",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [
+            "app.post('/login')"
+          ],
+          "lineno": 82,
+          "end_lineno": 89
+        },
+        {
+          "name": "logout",
+          "signature": "logout(request: Request)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [
+            "app.post('/logout')"
+          ],
+          "lineno": 93,
+          "end_lineno": 95
+        },
+        {
           "name": "index",
-          "signature": "index()",
+          "signature": "index(request: Request, db: Session = Depends(get_db))",
           "docstring": null,
           "summary": null,
           "kind": "function",
           "decorators": [
             "app.get('/')"
           ],
-          "lineno": 27,
-          "end_lineno": 28
+          "lineno": 99,
+          "end_lineno": 108
+        },
+        {
+          "name": "tutor_page",
+          "signature": "tutor_page(request: Request)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [
+            "app.get('/tutor')"
+          ],
+          "lineno": 112,
+          "end_lineno": 115
+        },
+        {
+          "name": "tutor_student_page",
+          "signature": "tutor_student_page(student_id: int, request: Request)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [
+            "app.get('/tutor/student/{student_id}')"
+          ],
+          "lineno": 119,
+          "end_lineno": 124
+        },
+        {
+          "name": "start_impersonation",
+          "signature": "start_impersonation(student_id: int, request: Request, db: Session = Depends(get_db))",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [
+            "app.post('/tutor/student/{student_id}/impersonate')"
+          ],
+          "lineno": 128,
+          "end_lineno": 139
+        },
+        {
+          "name": "stop_impersonation",
+          "signature": "stop_impersonation(request: Request)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [
+            "app.post('/impersonate/stop')"
+          ],
+          "lineno": 143,
+          "end_lineno": 147
+        },
+        {
+          "name": "materials_page",
+          "signature": "materials_page(module: str, lesson: str, request: Request)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [
+            "app.get('/materials/{module}/{lesson}')"
+          ],
+          "lineno": 151,
+          "end_lineno": 156
+        },
+        {
+          "name": "effective_identity",
+          "signature": "effective_identity(request: Request, db: Session)",
+          "docstring": "Для тьютора в режиме \"посмотреть как ученик\" подменяет личность только\nдля student-facing данных (список заданий/свои попытки) — НЕ для\nавторизации, та остаётся на реальной роли из сессии.",
+          "summary": "Для тьютора в режиме \"посмотреть как ученик\" подменяет личность только",
+          "kind": "function",
+          "decorators": [],
+          "lineno": 159,
+          "end_lineno": 169
         },
         {
           "name": "list_tasks",
-          "signature": "list_tasks()",
+          "signature": "list_tasks(request: Request)",
           "docstring": null,
           "summary": null,
           "kind": "function",
           "decorators": [
             "app.get('/api/tasks')"
           ],
-          "lineno": 32,
-          "end_lineno": 36
+          "lineno": 173,
+          "end_lineno": 179
+        },
+        {
+          "name": "list_materials",
+          "signature": "list_materials(request: Request)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [
+            "app.get('/api/materials')"
+          ],
+          "lineno": 183,
+          "end_lineno": 186
+        },
+        {
+          "name": "get_material",
+          "signature": "get_material(module: str, lesson: str, request: Request)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [
+            "app.get('/api/materials/{module}/{lesson}')"
+          ],
+          "lineno": 190,
+          "end_lineno": 196
+        },
+        {
+          "name": "get_solution",
+          "signature": "get_solution(task_id: int, request: Request)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [
+            "app.get('/api/solution/{task_id}')"
+          ],
+          "lineno": 200,
+          "end_lineno": 208
+        },
+        {
+          "name": "turn_credentials",
+          "signature": "turn_credentials(request: Request)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [
+            "app.get('/api/turn-credentials')"
+          ],
+          "lineno": 212,
+          "end_lineno": 229
+        },
+        {
+          "name": "me",
+          "signature": "me(request: Request, db: Session = Depends(get_db))",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [
+            "app.get('/api/me')"
+          ],
+          "lineno": 233,
+          "end_lineno": 243
+        },
+        {
+          "name": "_task_status_map",
+          "signature": "_task_status_map(db: Session, user_id: int) -> dict",
+          "docstring": "task_id -> 'pass'/'fail' по всей истории попыток пользователя — 'pass'\nесли хоть одна попытка когда-либо прошла. Общий код для своей истории\n(эффективная личность) и истории конкретного ученика (вид тьютора).",
+          "summary": "task_id -> 'pass'/'fail' по всей истории попыток пользователя — 'pass'",
+          "kind": "function",
+          "decorators": [],
+          "lineno": 246,
+          "end_lineno": 254
+        },
+        {
+          "name": "_task_attempts",
+          "signature": "_task_attempts(db: Session, user_id: int, task_id: int) -> list",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 257,
+          "end_lineno": 271
+        },
+        {
+          "name": "my_attempts",
+          "signature": "my_attempts(request: Request, db: Session = Depends(get_db))",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [
+            "app.get('/api/attempts/mine')"
+          ],
+          "lineno": 275,
+          "end_lineno": 279
+        },
+        {
+          "name": "my_task_attempts",
+          "signature": "my_task_attempts(task_id: int, request: Request, db: Session = Depends(get_db))",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [
+            "app.get('/api/attempts/mine/{task_id}')"
+          ],
+          "lineno": 283,
+          "end_lineno": 287
+        },
+        {
+          "name": "list_students",
+          "signature": "list_students(request: Request, db: Session = Depends(get_db))",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [
+            "app.get('/api/students')"
+          ],
+          "lineno": 291,
+          "end_lineno": 312
+        },
+        {
+          "name": "create_student",
+          "signature": "create_student(payload: CreateStudentRequest, request: Request, db: Session = Depends(get_db))",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [
+            "app.post('/api/students')"
+          ],
+          "lineno": 321,
+          "end_lineno": 334
+        },
+        {
+          "name": "set_student_password",
+          "signature": "set_student_password(student_id: int, payload: SetPasswordRequest, request: Request, db: Session = Depends(get_db))",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [
+            "app.post('/api/students/{student_id}/password')"
+          ],
+          "lineno": 342,
+          "end_lineno": 354
+        },
+        {
+          "name": "_require_student",
+          "signature": "_require_student(db: Session, student_id: int)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 357,
+          "end_lineno": 358
+        },
+        {
+          "name": "student_task_status",
+          "signature": "student_task_status(student_id: int, request: Request, db: Session = Depends(get_db))",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [
+            "app.get('/api/students/{student_id}/attempts/status')"
+          ],
+          "lineno": 362,
+          "end_lineno": 369
+        },
+        {
+          "name": "student_task_attempts",
+          "signature": "student_task_attempts(student_id: int, task_id: int, request: Request, db: Session = Depends(get_db))",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [
+            "app.get('/api/students/{student_id}/attempts/{task_id}')"
+          ],
+          "lineno": 373,
+          "end_lineno": 380
+        },
+        {
+          "name": "session_ws",
+          "signature": "session_ws(websocket: WebSocket, student_id: int)",
+          "docstring": "Живая комната одного ученика: сам ученик + один или несколько тьюторов,\nкоторые сейчас смотрят его экран. Тьютор пишет — ученик видит подсказку,\nученик печатает — тьютор видит код в реальном времени.",
+          "summary": "Живая комната одного ученика: сам ученик + один или несколько тьюторов,",
+          "kind": "async_function",
+          "decorators": [
+            "app.websocket('/ws/session/{student_id}')"
+          ],
+          "lineno": 384,
+          "end_lineno": 496
+        },
+        {
+          "name": "run_solve_code_free",
+          "signature": "run_solve_code_free(payload: HintFreeRunRequest, request: Request)",
+          "docstring": "Свободный запуск кода ученика в его собственном редакторе — без сверки\nс эталоном, чтобы можно было просто написать print(...) и посмотреть вывод.",
+          "summary": "Свободный запуск кода ученика в его собственном редакторе — без сверки",
+          "kind": "function",
+          "decorators": [
+            "app.post('/api/solve/run_free')"
+          ],
+          "lineno": 500,
+          "end_lineno": 505
         },
         {
           "name": "submit",
-          "signature": "submit(payload: SubmissionRequest)",
+          "signature": "submit(payload: SubmissionRequest, request: Request, db: Session = Depends(get_db))",
           "docstring": null,
           "summary": null,
           "kind": "function",
           "decorators": [
             "app.post('/api/submit')"
           ],
-          "lineno": 40,
-          "end_lineno": 41
+          "lineno": 509,
+          "end_lineno": 529
+        },
+        {
+          "name": "run_hint_code",
+          "signature": "run_hint_code(payload: SubmissionRequest, request: Request)",
+          "docstring": "Тьютор проверяет код прямо в редакторе подсказки — тот же grade(),\nно без записи Attempt: это демонстрация ученику, а не его попытка.",
+          "summary": "Тьютор проверяет код прямо в редакторе подсказки — тот же grade(),",
+          "kind": "function",
+          "decorators": [
+            "app.post('/api/hint/run')"
+          ],
+          "lineno": 533,
+          "end_lineno": 540
+        },
+        {
+          "name": "run_hint_code_free",
+          "signature": "run_hint_code_free(payload: HintFreeRunRequest, request: Request)",
+          "docstring": "Свободный запуск кода в подсказке — без сверки с эталоном, просто\nисполняет код как есть (print() и любые операторы отрабатывают).",
+          "summary": "Свободный запуск кода в подсказке — без сверки с эталоном, просто",
+          "kind": "function",
+          "decorators": [
+            "app.post('/api/hint/run_free')"
+          ],
+          "lineno": 544,
+          "end_lineno": 551
+        },
+        {
+          "name": "tutor_ask",
+          "signature": "tutor_ask(payload: TutorAskRequest, request: Request)",
+          "docstring": "Тьютор спрашивает ИИ-помощника (DeepSeek через микросервис tutor-llm\nна роутере). Прокси: webapp не знает ключ DeepSeek, он только пересылает\nструктурированный запрос в tutor-llm по внутренней сети (как executor).\nТолько для роли tutor.",
+          "summary": "Тьютор спрашивает ИИ-помощника (DeepSeek через микросервис tutor-llm",
+          "kind": "function",
+          "decorators": [
+            "app.post('/api/tutor/ask')"
+          ],
+          "lineno": 555,
+          "end_lineno": 584
         }
       ],
       "constants": [
         {
+          "name": "SESSION_SECRET",
+          "annotation": null,
+          "value_repr": "os.environ.get('SESSION_SECRET')",
+          "lineno": 31
+        },
+        {
+          "name": "TURN_SECRET",
+          "annotation": null,
+          "value_repr": "os.environ.get('TURN_SECRET')",
+          "lineno": 38
+        },
+        {
+          "name": "TURN_URLS",
+          "annotation": null,
+          "value_repr": "os.environ.get('TURN_URLS')",
+          "lineno": 39
+        },
+        {
+          "name": "STUN_URLS",
+          "annotation": null,
+          "value_repr": "os.environ.get('STUN_URLS', 'stun:informatika.meteopavel.space:3478')",
+          "lineno": 40
+        },
+        {
+          "name": "TUTOR_LLM_URL",
+          "annotation": null,
+          "value_repr": "os.environ.get('TUTOR_LLM_URL', 'http://10.0.0.1:8011')",
+          "lineno": 45
+        },
+        {
           "name": "STATIC_DIR",
           "annotation": null,
           "value_repr": "Path(__file__).resolve().parent / 'static'",
-          "lineno": 17
+          "lineno": 50
         }
       ],
       "stats": {
+        "classes": 5,
+        "dataclasses": 0,
+        "functions": 33,
+        "methods": 0,
+        "constants": 6
+      }
+    },
+    {
+      "path": "webapp/materials.py",
+      "module_docstring": "Справочные материалы — те же учебные ноутбуки (1_introduction/,\n2_loops_and_conditions/ и т.д. в корне репозитория), что и раньше лежали\nтолько как Jupyter-тетрадки. Здесь не БД и не отдельный конвертированный\nформат — .ipynb читается напрямую (это просто JSON), один раз при старте\nприложения, и держится в памяти. Ноутбуки маленькие (~470KB на все 36),\nбез картинок/attachments — только code-ячейки, объяснение зашито в них\nкак строки-докстринги. Собственный парсер вместо nbconvert: контента\nслишком мало и однообразно, чтобы тащить чужой шаблон/CSS, который потом\nпришлось бы перекраивать под дизайн-систему сайта.",
+      "module_summary": "Справочные материалы — те же учебные ноутбуки (1_introduction/,",
+      "classes": [],
+      "functions": [
+        {
+          "name": "_sort_key",
+          "signature": "_sort_key(filename: str) -> tuple",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 41,
+          "end_lineno": 43
+        },
+        {
+          "name": "_extract_title",
+          "signature": "_extract_title(module: str, slug: str, first_cell_source: str) -> str",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 46,
+          "end_lineno": 54
+        },
+        {
+          "name": "_load_notebook",
+          "signature": "_load_notebook(path: Path) -> list",
+          "docstring": "Возвращает список ячеек: [{\"code\": str, \"output\": str|None, \"is_error\": bool}].",
+          "summary": "Возвращает список ячеек: [{\"code\": str, \"output\": str|None, \"is_error\": bool}].",
+          "kind": "function",
+          "decorators": [],
+          "lineno": 57,
+          "end_lineno": 81
+        },
+        {
+          "name": "_build_manifest",
+          "signature": "_build_manifest()",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 84,
+          "end_lineno": 103
+        },
+        {
+          "name": "get_lesson",
+          "signature": "get_lesson(module: str, slug: str)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 109,
+          "end_lineno": 110
+        }
+      ],
+      "constants": [
+        {
+          "name": "_ROOT",
+          "annotation": null,
+          "value_repr": "Path(__file__).resolve().parent.parent",
+          "lineno": 15
+        },
+        {
+          "name": "_MODULE_TITLES",
+          "annotation": null,
+          "value_repr": "{'1_introduction': 'Введение', '2_loops_and_conditions': 'Циклы и условия', '3_functions': 'Функции', '4_dicts_and_sets': 'Словари и множества', '5_strings': 'Строки'}",
+          "lineno": 18
+        },
+        {
+          "name": "_TITLE_OVERRIDES",
+          "annotation": null,
+          "value_repr": "{('1_introduction', '0_venv_install'): 'Установка и работа с venv', ('1_introduction', '1_intro'): 'Дзен Python', ('1_introduction', '2_exercise_0'): 'Разбор первой программы', ('1_introduction', '3_first_code'): 'Первая программа', ('1_introduction', '13_lists_(extended_version)'): 'Списки (расширенная версия)', ('3_functions', '25_func_exercises'): 'Задачи на функции'}",
+          "lineno": 29
+        },
+        {
+          "name": "_NUM_PREFIX",
+          "annotation": null,
+          "value_repr": "re.compile('^(\\\\d+)_')",
+          "lineno": 38
+        }
+      ],
+      "stats": {
+        "classes": 0,
+        "dataclasses": 0,
+        "functions": 5,
+        "methods": 0,
+        "constants": 4
+      }
+    },
+    {
+      "path": "webapp/models.py",
+      "module_docstring": "Модели: пользователи (ученики и репетитор, заводятся вручную) и попытки решения.",
+      "module_summary": "Модели: пользователи (ученики и репетитор, заводятся вручную) и попытки решения.",
+      "classes": [
+        {
+          "name": "User",
+          "signature": "User(Base)",
+          "docstring": null,
+          "summary": null,
+          "kind": "class",
+          "bases": [
+            "Base"
+          ],
+          "decorators": [],
+          "fields": [],
+          "methods": [],
+          "lineno": 12,
+          "end_lineno": 19
+        },
+        {
+          "name": "Attempt",
+          "signature": "Attempt(Base)",
+          "docstring": null,
+          "summary": null,
+          "kind": "class",
+          "bases": [
+            "Base"
+          ],
+          "decorators": [],
+          "fields": [],
+          "methods": [],
+          "lineno": 22,
+          "end_lineno": 30
+        }
+      ],
+      "functions": [],
+      "constants": [
+        {
+          "name": "ROLE_STUDENT",
+          "annotation": null,
+          "value_repr": "'student'",
+          "lineno": 8
+        },
+        {
+          "name": "ROLE_TUTOR",
+          "annotation": null,
+          "value_repr": "'tutor'",
+          "lineno": 9
+        }
+      ],
+      "stats": {
+        "classes": 2,
+        "dataclasses": 0,
+        "functions": 0,
+        "methods": 0,
+        "constants": 2
+      }
+    },
+    {
+      "path": "webapp/realtime.py",
+      "module_docstring": "In-memory realtime-комнаты для живых сессий тьютор-ученик.\n\nКомната = один ученик. Состояние живёт, пока жив процесс приложения — рестарт\nконтейнера просто обнуляет текущие live-сессии, и это ожидаемо: это сиюминутное\nсостояние (кто сейчас печатает), а не история попыток (та в БД).",
+      "module_summary": "In-memory realtime-комнаты для живых сессий тьютор-ученик.",
+      "classes": [
+        {
+          "name": "Room",
+          "signature": "Room",
+          "docstring": null,
+          "summary": null,
+          "kind": "class",
+          "bases": [],
+          "decorators": [],
+          "fields": [],
+          "methods": [
+            {
+              "name": "__init__",
+              "signature": "__init__(self)",
+              "docstring": null,
+              "summary": null,
+              "kind": "method",
+              "decorators": [],
+              "lineno": 11,
+              "end_lineno": 16
+            }
+          ],
+          "lineno": 10,
+          "end_lineno": 16
+        }
+      ],
+      "functions": [
+        {
+          "name": "get_room",
+          "signature": "get_room(student_id: int) -> Room",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 22,
+          "end_lineno": 25
+        },
+        {
+          "name": "safe_send",
+          "signature": "safe_send(websocket: WebSocket, payload: dict) -> None",
+          "docstring": "Отправка соседу по комнате не должна ронять цикл отправителя, если\nсосед уже отвалился, а disconnect ещё не долетел до finally.",
+          "summary": "Отправка соседу по комнате не должна ронять цикл отправителя, если",
+          "kind": "async_function",
+          "decorators": [],
+          "lineno": 28,
+          "end_lineno": 34
+        }
+      ],
+      "constants": [],
+      "stats": {
         "classes": 1,
         "dataclasses": 0,
-        "functions": 3,
-        "methods": 0,
-        "constants": 1
+        "functions": 2,
+        "methods": 1,
+        "constants": 0
       }
     },
     {
       "path": "webapp/test_cases.py",
-      "module_docstring": "Курированные тестовые входы для веб-грейдера.\n\nКлюч — номер задания (совпадает с TASKS в bot/constants.py), значение —\nсписок входов, на которых код ученика сверяется с эталонным решением\n(solve_task_N из bot/solvers.py). Задание доступно в веб-грейдере тогда\nи только тогда, когда для него здесь заведены тестовые входы — это и есть\nкурируемая база, а не автогенерация вслепую.",
+      "module_docstring": "Курированные тестовые входы для веб-грейдера.\n\nКлюч — номер задания (совпадает с TASKS в bot/constants.py), значение —\nсписок входов, на которых код ученика сверяется с эталонным решением\n(solve_task_N из bot/solvers.py). Задание доступно в веб-грейдере тогда\nи только тогда, когда для него здесь заведены тестовые входы — это и есть\nкурируемая база, а не автогенерация вслепую.\n\nЗадание 47 (НОК) до 2026-07-21 было исключено отсюда: в bot/solvers.py у\nsolve_task_47 было перепутано сравнение (data[0] % max_delim вместо\nmax_delim % data[0]) — цикл while True никогда не завершался для двух\nразных положительных чисел, без таймаута на стороне эталона это вешало\nпроцесс приложения насмерть при первой же проверке. Исправлено, задание\nвключено обратно.",
       "module_summary": "Курированные тестовые входы для веб-грейдера.",
       "classes": [],
       "functions": [],
@@ -211,8 +1072,8 @@
         {
           "name": "TEST_CASES",
           "annotation": null,
-          "value_repr": "{79: [[1, 1, 1, 2, 2, 3], [1, 1, 2, 2, 1, 1, 3], [4, 4, 4, 4], [1, 2, 3]], 80: [[(1, 3), (2, 2), (3, 1)], [(5, 1)], [(2, 4), (7, 2), (1, 1)]]}",
-          "lineno": 10
+          "value_repr": "{1: [[3, 2, 2, 1, 5, 3], [1, 1, 1], [4, 4, 4, 2, 1, 2]], 2: [[1, 2, 3, 4, 5, 6], [1, 3, 5], [0, -2, -3]], 3: [[1, 2, 3, 4, 5], [1, 2], [1], []], 4: [[10, 3, 5, 6, 9, 8], [1], [-5, -1, -10]], 5: [[[1, 2, 3], [3, 4, 5]], [[1, 1, 2], [2, 3]], [[], [1, 2, 3]]], 6: [[1, 2, 3], [3, 2, 1], [1, 1, 2, 2], [5]], 7: [[[10, 20, 30], 2], [[1, 2, 3, 4, 5], 10], [[7], 5]], 8: [[5, 3, 2, 8, 2, 10], [1, 1, 1], [7]], 9: [[1, 2, 3, 4], [1, 2], [100, 200, 300, 400, 500]], 10: [[0, 1, 0, 3, 12], [0, 0, 0], [1, 2, 3], []], 11: [[['Alice', 'Bob'], [25, 30]], [['X'], [1]], [['a', 'b', 'c'], [1, 2, 3]]], 12: [['apple', 'banana', 'apple', 'orange', 'banana', 'apple'], ['x'], ['a', 'a', 'b']], 13: [[[1, 2, 3, 4, 5, 6, 7], 3], [[1, 2, 3], 1], [[1, 2, 3, 4], 2]], 14: [[1, 2, 3, 2], [1, 2, 3], [], [5, 5, 5]], 15: [[1, 2, 3, 4, 5], [10], [2, 2, 2, 2]], 16: [[5, 2, 8, 2, 1], [3], [10, 10, 10]], 17: [[[1, 2, 3, 4, 5], 6], [[1, 2, 3], 1], [[5, 10], 7]], 18: [[1, 2, 2, 3, 4, 4, 4, 5], [], [7, 7, 7]], 19: [['radar'], ['hello'], ['level']], 20: [[[1, 2, 3, 4, 5], 5], [[1, 1, 1], 2], [[10, 20, 30], 50]], 21: [['apple', 'bat', 'car', 'ant', 'orange'], ['a', 'bb', 'cc'], ['x']], 22: [[[3, 2, 1], [2, 4, 5], [5, 6, 3]], [[1, 2], [2, 3]], [[5], [5], [5]]], 23: [[1, 1, 2, 2, 2, 3, 3, 1, 1, 1, 1], [5, 5, 5], [1, 2, 3]], 24: [[4, 3, 2, 4, 1, 3, 2], [1, 1, 2, 2, 3], [5]], 25: [['a', 'b', 'c', 'a', 'b', 'a'], ['x', 'x', 'y'], ['z']], 26: [[1, 3, 2, 4, 1], [1, 2], [5], [1, 1, 1]], 27: [[1, 2, 3, 4, 5, 6], [], [2, 4, 6]], 28: [[[10, 3, 8, 15], 7], [[1], 5], [[100, 200], 150]], 29: [[[1, 3, 5, 7], 2], [[10, 20, 30], 10], [[1, 2, 3], 5]], 30: [['apple', 'ant', 'banana', 'bee', 'cat'], ['x'], ['aa', 'ab', 'ba']], 31: [[1, 2, 3, 4, 5, 6], [], [1, 3, 5]], 32: [[1, 2, 3], [-1, 2, 3], [5, -2]], 33: [['cat', 'elephant', 'dog'], ['a'], ['xx', 'yy', 'zzzz']], 34: [[1, 2, 3, 4], [], [-2, 3, -4]], 35: [[[1, 2, 3], [10, 20]], [[1], [2, 3, 4]], [[], [1, 2]]], 36: ['hello', 'sky', 'aeiou'], 37: [7, 8, 13, 15], 38: [['banana', 'apple', 'cherry'], ['z', 'a', 'm'], ['single']], 39: [[1, [2, 3], [4, [5]]], [[1, 2], [3, [4, 5]]], [1, 2, 3]], 40: [[-1, 2, -3, 4, 0], [-5, -6], [1, 2, 3]], 41: [['hello'], ['sky'], ['aeiou']], 42: [['listen', 'silent'], ['hello', 'world'], ['abc', 'cab']], 43: [[5], [0], [7]], 44: [['programming'], ['aeiou'], ['xyz']], 45: [[48, 18], [17, 5], [100, 25]], 46: [['12345'], ['abc123'], ['007']], 47: [[12, 18], [4, 6], [7, 5]], 48: ['Hello world from Python', 'one', 'a b c d e'], 49: [[1, [2, 2], [3, [1, 1]]], [[1, 1], [2, 2]], [1, 2, 3]], 50: [[1, 2, 3, 2, 1], [1, 2, 3, 4], [5]], 51: [['Apple', 'Banana', 'Cherry'], ['apple', 'Banana'], ['X']], 52: [[2, -3, 4, 0, 5], [1, 2, 3], [-1, -2]], 53: [[[1, 2], [10, 20, 30, 40]], [[1, 2, 3], [9]], [[], [1, 2]]], 54: [[-1, 2, -3, 4], [0, 0], [-5]], 55: [[1, 2, 3, 4, 6], [1, 2, 2, 3], [5]], 56: [[10, 5, 8, 12, 3], [1, 2], [7, 7, 9]], 57: [[1, 2, 2, 3, 1, 1], [5], []], 58: [[4, 1, 7, 3], [5], [2, 2, 2]], 59: [[1, 2, 2, 3, 4, 4, 5], [1, 1, 1], [7]], 60: [[[1, 2, 3, 4], [3, 4, 4, 5, 6]], [[1, 2], [3, 4]], [[1, 1, 2], [1, 2, 2]]], 61: [[10, 20, 30, 40, 50], [1, 2], [5]], 62: [[3, 1, 4, 2, 1, 5, 3], [1, 2, 3], [5, 5]], 63: [[10, 13, 15, 20], [5], []], 64: [['listen', 'silent'], ['cat', 'cast'], ['abc', 'ab']], 65: [['apple', 'sky', 'orange'], ['xyz'], ['aeiou']], 66: [['Hello, world!'], ['abc-123!'], ['NoPunctHere']], 67: [[[3, 5, 10, 12, 15], 5], [[1, 2, 3, 4], 2], [[7, 11, 13], 1]], 68: [[1, 2, 3, 4], [5], [1, 2, 3, 4, 5, 6]], 69: [['python'], ['ab'], ['abcde']], 70: [[12, 305, 47], [9], [100, 200]], 71: [[2, 3, 4, 5, 6], [2, 4, 5, 7], [1]], 72: [[[1, 2, 3, 2, 4], 2], [[5, 5, 5], 5], [[1, 2, 3], 3]], 73: [[1, 2, 3, 4], [5], [1, 2]], 74: [[[1, 5, 2, 8, 3], 4], [[10, 20], 15], [[1, 1, 1], 5]], 75: [['elephant', 'cat', 'dog', 'a'], ['same', 'size'], ['single']], 76: [['letter'], ['dog'], ['aabbcc']], 77: [[1, 2, 1, 3, 2, 2], [1, 1, 1], [5, 6, 7]], 78: [['hi', 'python', 'cat', 'elephant'], ['a', 'bb', 'ccc', 'dddd'], ['x', 'y']], 79: [[1, 1, 1, 2, 2, 3], [1, 1, 2, 2, 1, 1, 3], [4, 4, 4, 4], [1, 2, 3]], 80: [[(1, 3), (2, 2), (3, 1)], [(5, 1)], [(2, 4), (7, 2), (1, 1)]], 81: [[1, 2, 3, 4], [7, 7, 7, 7], [-3, -1, 2, 5, 5]], 82: [[2, 4, 6, 8], [1, 2, 4, 8], [10, 7, 4, 1]], 83: [['sky', 'banana', 'apple'], ['xyz', 'aeiou'], ['a']], 84: [[10, 20, 30, 40, 50, 60], [1, 2, 3], []], 85: [['cat', 'python'], ['a'], ['ab', 'cd', 'ef']], 86: [[12, 99, 123, 40], [5], [19, 91]], 87: [[1, 2, 3, 4], [1, 2, 4, 6], []], 88: [[1, 2, 3, 4, 5, 6, 7], [3, 6, 9], [1]], 89: [['code'], ['a'], ['ab']], 90: [['code'], ['a'], ['ab']], 91: [[1, 2, 3, 4], [1, 2, 3, 5], [2, 2]], 92: [[1, 2, 3, 2, 1], [1, 2, 2, 1], [5]], 93: [['cat', 'elephant', 'dog'], ['a'], ['x', 'xx']], 94: [[1, 5, 2, 7, 3, 6, 1], [1, 2, 3], [5, 1, 5]], 95: [['apple', 'banana', 'cat'], ['a'], ['ab']], 96: [[1, 1, 2, 2, 2, 3, 1, 1], [1, 1, 1], []], 97: [[1, 1, 2, 2, 2, 3, 3], [1], []], 98: [[1, 2, 5, 3, 4], [5, 1, 2, 0], [1, 2, 3]], 99: [[1, 2, 3, 4, 5, 6], [1], [1, 2, 3, 4, 5]], 100: [[1, 2, 3, 2, 4, 1, 1], [1, 2, 3], []]}",
+          "lineno": 17
         }
       ],
       "stats": {
