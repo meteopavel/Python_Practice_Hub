@@ -700,3 +700,96 @@ pre.block {
 .between { justify-content: space-between; }
 .wrap { flex-wrap: wrap; }
 .grow { flex: 1; }
+
+/* --------------------------------------------------------------------------
+   14. ПАНЕЛЬ ПОДСКАЗОК (задания 81..100) — 3-я колонка справа
+   -------------------------------------------------------------------------- */
+.hints-panel {
+  position: sticky;
+  top: 68px;
+  max-height: calc(100vh - 84px);
+  overflow-y: auto;
+}
+.hints-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+.hints-panel-empty { color: var(--c-text-faint); font-size: var(--fs-sm); }
+
+/* Ступень подсказки: card с цветной левой границей по статусу.
+   Переиспользуем семантические токены pass/warn/neutral, новые цвета не вводим. */
+.hint-step {
+  border: 1px solid var(--c-border);
+  border-left-width: 3px;
+  border-radius: var(--radius-md);
+  background: var(--c-surface);
+  padding: var(--space-3);
+  transition: opacity var(--transition);
+}
+.hint-step-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+.hint-step-title { font-weight: var(--fw-semibold); font-size: var(--fs-sm); }
+.hint-step-meta { margin-left: auto; font-size: var(--fs-xs); color: var(--c-text-muted); }
+.hint-step.is-ready    { border-left-color: var(--c-primary); }
+.hint-step.is-waiting  { border-left-color: var(--c-warn); }
+.hint-step.is-revealed { border-left-color: var(--c-pass-solid); }
+.hint-step.is-locked   { opacity: 0.6; }
+
+/* Иконка-маркер состояния ступени */
+.hint-marker {
+  display: inline-grid;
+  place-items: center;
+  width: 20px; height: 20px;
+  font-size: 13px;
+  line-height: 1;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.hint-marker.is-ready    { background: var(--c-primary-soft); color: var(--c-primary); }
+.hint-marker.is-waiting  { background: var(--c-warn-bg); color: var(--c-warn); }
+.hint-marker.is-revealed { background: var(--c-pass-bg); color: var(--c-pass); }
+.hint-marker.is-locked   { background: var(--c-surface-2); color: var(--c-text-faint); }
+
+/* Обратный отсчёт до разблокировки — моноширинный, чтобы цифры не плясали */
+.hint-timer {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-sm);
+  color: var(--c-warn);
+}
+.hint-step-note { font-size: var(--fs-sm); color: var(--c-text-muted); margin: 0; }
+
+/* Отрендеренный markdown-контент подсказки */
+.hint-content { font-size: var(--fs-sm); line-height: var(--lh-base); }
+.hint-content > *:first-child { margin-top: 0; }
+.hint-content > *:last-child  { margin-bottom: 0; }
+.hint-content p { margin: 0 0 var(--space-2); }
+.hint-content ul { margin: 0 0 var(--space-2); padding-left: var(--space-4); }
+.hint-content li { margin-bottom: 2px; }
+.hint-content a { color: var(--c-primary); text-decoration: underline; text-underline-offset: 2px; }
+.hint-content strong { font-weight: var(--fw-semibold); }
+.hint-content .inline {  /* переиспользуем существующий code.inline */
+  font-size: 0.9em;
+}
+.hint-content pre.block { font-size: 12px; margin: 0 0 var(--space-2); }
+.hint-content pre.block code { font-family: var(--font-mono); color: inherit; }
+
+.hint-reveal-btn { margin-top: var(--space-2); }
+.hint-collapse-btn {
+  margin-top: var(--space-2);
+  background: transparent;
+  border: none;
+  color: var(--c-text-muted);
+  font-size: var(--fs-xs);
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}

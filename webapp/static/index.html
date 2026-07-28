@@ -9,14 +9,15 @@
 <style>
   .student-layout {
     display: grid;
-    grid-template-columns: 300px 1fr;
+    grid-template-columns: 300px 1fr 320px;
     gap: var(--space-4);
     align-items: start;
     padding-block: var(--space-4);
   }
-  @media (max-width: 900px) {
+  @media (max-width: 1100px) {
     .student-layout { grid-template-columns: 1fr; }
     .task-sidebar { position: static; }
+    .hints-panel { position: static; max-height: none; }
   }
   .code-mount { min-height: 200px; }
   .code-mount .cm-editor { height: 100%; }
@@ -143,6 +144,14 @@
       <div class="test-list" id="results"></div>
     </section>
   </main>
+
+  <aside class="hints-panel" id="hints-panel" style="display: none">
+    <div class="hints-panel-head">
+      <span class="panel-title">Подсказки</span>
+      <span class="hint-step-meta" id="hints-panel-sub"></span>
+    </div>
+    <div class="stack stack-3" id="hints-steps"></div>
+  </aside>
 </div>
 
 <script src="/static/codemirror.bundle.js"></script>
@@ -716,6 +725,7 @@ async function loadTasks() {
 
   renderTaskList();
   showDescription();
+  loadHints(tasks.length ? tasks[0].id : null);
 }
 
 const TASK_PAGE_SIZE = 7;
@@ -812,6 +822,7 @@ function switchToTask(taskId) {
   results.innerHTML = '';
   document.getElementById('hint-result').innerHTML = '';
   document.getElementById('free-run-result').innerHTML = '';
+  loadHints(taskId);
   sendMessage({code: codeEditor.getValue(), task_id: currentTaskId});
 }
 
@@ -970,6 +981,149 @@ async function loadMaterials() {
       </div>
     </details>
   `).join('');
+}
+
+// --- Многоступенчатые подсказки (задания 81..100) --------------------------
+// Три уровня: 1 — абстракция, 2 — конкретика со ссылками (через 7 мин после 1),
+// 3 — почти решение (ещё через 15 мин). Тайминг считает сервер по HintReveal,
+// клиентскому таймеру не верим — он только для обратного отсчёта на UI; по
+// обнулению мы переспрашиваем состояние у сервера (только он решает waiting→ready).
+const HINTED_TASK_IDS = new Set();
+for (let i = 81; i <= 100; i++) HINTED_TASK_IDS.add(i);
+const hintsPanel = document.getElementById('hints-panel');
+const hintsStepsEl = document.getElementById('hints-steps');
+const hintsPanelSub = document.getElementById('hints-panel-sub');
+let hintState = { taskId: null, levels: [] };
+let hintPollTimer = null;          // периодический опрос при waiting-уровне
+let hintCountdownTimer = null;     // точный setTimeout до ближайшей разблокировки
+
+const HINT_LEVEL_TITLES = {
+  1: 'Шаг 1 · куда двигаться',
+  2: 'Шаг 2 · конкретика со ссылками',
+  3: 'Шаг 3 · почти решение',
+};
+const HINT_MARKERS = {
+  ready: '🔓', waiting: '⏳', revealed: '✓', locked: '🔒',
+};
+
+function fmtCountdown(ms) {
+  if (ms <= 0) return '00:00';
+  const totalSec = Math.ceil(ms / 1000);
+  const m = Math.floor(totalSec / 60);
+  const s = totalSec % 60;
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+}
+
+function renderHints() {
+  if (!hintState.taskId || !HINTED_TASK_IDS.has(hintState.taskId)) {
+    hintsPanel.style.display = 'none';
+    return;
+  }
+  hintsPanel.style.display = '';
+  hintsStepsEl.innerHTML = hintState.levels.map(lv => {
+    const st = lv.status;
+    const cls = `hint-step is-${st}`;
+    const marker = `<span class="hint-marker is-${st}">${HINT_MARKERS[st]}</span>`;
+    let body = '';
+    if (st === 'locked') {
+      body = `<p class="hint-step-note">Откроется после предыдущей ступени.</p>`;
+    } else if (st === 'waiting') {
+      // available_at приходит с сервера; обратный отсчёт — только на UI.
+      const avail = lv.available_at ? new Date(lv.available_at).getTime() : 0;
+      body = `<p class="hint-step-note">Доступно через <span class="hint-timer" data-avail="${avail}">…</span></p>`;
+    } else if (st === 'ready') {
+      body = `<button class="btn btn-sm btn-primary hint-reveal-btn" data-level="${lv.level}">Показать подсказку</button>`;
+    } else if (st === 'revealed') {
+      const html = lv.content_html || '<p class="hint-step-note">Текст этой ступени ещё не добавлен тьютором.</p>';
+      body = `<div class="hint-content">${html}</div>`;
+    }
+    return `<div class="${cls}">
+      <div class="hint-step-head">
+        ${marker}
+        <span class="hint-step-title">${HINT_LEVEL_TITLES[lv.level]}</span>
+      </div>
+      ${body}
+    </div>`;
+  }).join('');
+
+  // Кнопки раскрытия.
+  hintsStepsEl.querySelectorAll('.hint-reveal-btn').forEach(btn => {
+    btn.addEventListener('click', () => revealHint(Number(btn.dataset.level)));
+  });
+
+  setupHintCountdown();
+}
+
+// Обратный отсчёт до ближайшей разблокировки (waiting-уровень). Сервер —
+// источник правды: по достижении нуля переспрашиваем состояние, а не
+// «превращаем» waiting в ready локально.
+function setupHintCountdown() {
+  if (hintCountdownTimer) { clearTimeout(hintCountdownTimer); hintCountdownTimer = null; }
+  let nextAvail = null;
+  hintsStepsEl.querySelectorAll('.hint-timer').forEach(el => {
+    const avail = Number(el.dataset.avail);
+    if (!avail) return;
+    const update = () => { el.textContent = fmtCountdown(avail - Date.now()); };
+    update();
+    nextAvail = nextAvail === null ? avail : Math.min(nextAvail, avail);
+  });
+  if (nextAvail !== null) {
+    const delay = Math.max(0, nextAvail - Date.now());
+    hintCountdownTimer = setTimeout(() => loadHints(hintState.taskId), delay + 500);
+  }
+}
+
+async function loadHints(taskId) {
+  if (taskId === null || !HINTED_TASK_IDS.has(taskId)) {
+    hintState = { taskId, levels: [] };
+    hintsPanel.style.display = 'none';
+    return;
+  }
+  try {
+    const res = await fetch(`/api/hints/${taskId}`);
+    if (!res.ok) { hintsPanel.style.display = 'none'; return; }
+    const data = await res.json();
+    hintState = { taskId, levels: data.levels };
+    hintsPanelSub.textContent = data.levels.some(l => l.status === 'waiting')
+      ? 'открытие по таймеру'
+      : '';
+    renderHints();
+    scheduleHintPoll();
+  } catch (e) {
+    hintsPanel.style.display = 'none';
+  }
+}
+
+// На случай если вкладка заснула и setTimeout не сработал вовремя —
+// раз в 30 сек перепроверяем, не пришло ли время разблокировки.
+function scheduleHintPoll() {
+  if (hintPollTimer) clearInterval(hintPollTimer);
+  const hasWaiting = hintState.levels.some(l => l.status === 'waiting');
+  if (!hasWaiting) return;
+  hintPollTimer = setInterval(() => loadHints(hintState.taskId), 30000);
+}
+
+async function revealHint(level) {
+  if (!hintState.taskId) return;
+  try {
+    const res = await fetch(`/api/hints/${hintState.taskId}/reveal`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({level}),
+    });
+    if (res.status === 401) { window.location.href = '/login'; return; }
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      // 409 — уровень ещё не доступен; покажем причину без перезагрузки состояния.
+      if (res.status === 409) alert(data.error || 'Уровень пока недоступен');
+      return;
+    }
+    const data = await res.json();
+    hintState = { taskId: hintState.taskId, levels: data.levels };
+    hintsPanelSub.textContent = data.levels.some(l => l.status === 'waiting') ? 'открытие по таймеру' : '';
+    renderHints();
+    scheduleHintPoll();
+  } catch (e) { /* сеть — молча, состояние не меняем */ }
 }
 
 renderHintVisibility();

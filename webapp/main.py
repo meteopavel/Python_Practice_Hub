@@ -23,8 +23,9 @@ from auth import authenticate, current_user_id, current_user_role, forbidden, ha
 from bot_bridge import TASKS, get_solver
 from db import Base, SessionLocal, engine, get_db
 from grading import grade, run_free
+from hints import HINTED_TASK_IDS, LEVELS, available_levels, can_reveal, has_hints, record_reveal, render_markdown
 from materials import MATERIALS_MANIFEST, get_lesson
-from models import ROLE_STUDENT, ROLE_TUTOR, Attempt, User
+from models import ROLE_STUDENT, ROLE_TUTOR, Attempt, Hint, HintReveal, User
 from realtime import get_room, safe_send
 from test_cases import TEST_CASES
 
@@ -71,6 +72,16 @@ class TutorAskRequest(BaseModel):
     task_context: str | None = None   # текст задания / условие
     student_code: str | None = None   # код ученика (если есть)
     question: str
+
+
+class HintRevealRequest(BaseModel):
+    """Ученик запрашивает раскрытие уровня подсказки. level — 1|2|3."""
+    level: int
+
+
+class HintContentRequest(BaseModel):
+    """Тьютор сохраняет текст уровня (markdown)."""
+    content: str = ""
 
 
 @app.get("/login")
@@ -122,6 +133,16 @@ def tutor_student_page(student_id: int, request: Request):
     if current_user_role(request) != ROLE_TUTOR:
         return RedirectResponse(url="/", status_code=303)
     return FileResponse(STATIC_DIR / "tutor_student.html")
+
+
+@app.get("/tutor/hints")
+def tutor_hints_page(request: Request):
+    """Админка подсказок для заданий 81..100 — тьютор правит тексты уровней."""
+    if current_user_id(request) is None:
+        return RedirectResponse(url="/login", status_code=303)
+    if current_user_role(request) != ROLE_TUTOR:
+        return RedirectResponse(url="/", status_code=303)
+    return FileResponse(STATIC_DIR / "tutor_hints.html")
 
 
 @app.post("/tutor/student/{student_id}/impersonate")
@@ -582,3 +603,114 @@ def tutor_ask(payload: TutorAskRequest, request: Request):
             status_code=502,
             content={"error": f"tutor-llm недоступен ({TUTOR_LLM_URL}): {exc}"},
         )
+
+
+# --- Многоступенчатые подсказки (задания 81..100) --------------------------
+# Механика независима от live-сессии тьютора: это курированные подсказки,
+# которые ученик открывает по таймеру, а не то, что тьютор пишет ему вживую.
+# Логика тайминга и доступа — в hints.py, эндпоинты здесь только проверяют
+# авторизацию и валидируют task_id/level.
+
+
+def _hints_response(db: Session, user_id: int, task_id: int) -> dict:
+    """Общий вид ответа с состоянием подсказок для ученика — используется и в
+    GET, и в POST /reveal, чтобы контракт был единый. Контент рендерим в HTML
+    только для revealed (ученик видит готовый текст, не сырой markdown)."""
+    levels = available_levels(db, user_id, task_id)
+    for item in levels:
+        if item.get("status") == "revealed":
+            item["content_html"] = render_markdown(item.get("content", ""))
+            item.pop("content", None)
+    return {"task_id": task_id, "levels": levels}
+
+
+@app.get("/api/hints/{task_id}")
+def get_hints(task_id: int, request: Request, db: Session = Depends(get_db)):
+    """Состояние подсказок задания для ученика: по уровню — статус (locked /
+    waiting / ready / revealed), для revealed — отрендеренный HTML контента,
+    для waiting — available_at (когда станет ready, сервер считает тайминг).
+
+    Контент отдаётся только для уже раскрытых уровней; для waiting сервер
+    остаётся источником правды о готовности — фронт по обнулении таймера
+    перезапрашивает это состояние."""
+    if current_user_id(request) is None:
+        return unauthorized()
+    if not has_hints(task_id):
+        return JSONResponse(status_code=404, content={"error": "Подсказки для этого задания не предусмотрены"})
+    user_id, _, _, _ = effective_identity(request, db)
+    return _hints_response(db, user_id, task_id)
+
+
+@app.post("/api/hints/{task_id}/reveal")
+def reveal_hint(task_id: int, payload: HintRevealRequest, request: Request, db: Session = Depends(get_db)):
+    """Ученик раскрывает уровень подсказки. Сервер решает, можно ли сейчас
+    раскрыть (предыдущий уровень раскрыт И его задержка прошла), иначе 409.
+    Повторный запрос на уже раскрытый уровень — идемпотентен (не создаёт
+    дубль и не сдвигает revealed_at)."""
+    if current_user_id(request) is None:
+        return unauthorized()
+    if not has_hints(task_id):
+        return JSONResponse(status_code=404, content={"error": "Подсказки для этого задания не предусмотрены"})
+    if payload.level not in LEVELS:
+        return JSONResponse(status_code=400, content={"error": "Уровень должен быть 1, 2 или 3"})
+    user_id, _, _, _ = effective_identity(request, db)
+    if not can_reveal(db, user_id, task_id, payload.level):
+        return JSONResponse(
+            status_code=409,
+            content={"error": "Уровень пока недоступен — подождите или раскройте предыдущую ступень"},
+        )
+    record_reveal(db, user_id, task_id, payload.level)
+    return _hints_response(db, user_id, task_id)
+
+
+# --- Админка подсказок (только тьютор) -------------------------------------
+
+
+@app.get("/api/admin/hints")
+def admin_list_hints(request: Request, task_id: int, db: Session = Depends(get_db)):
+    """Текст всех трёх уровней задания (включая пустые) — для редактора
+    тьютора. Отдаём сырой markdown, не HTML: в форме его правят как текст."""
+    if current_user_id(request) is None:
+        return unauthorized()
+    if current_user_role(request) != ROLE_TUTOR:
+        return forbidden()
+    if not has_hints(task_id):
+        return JSONResponse(status_code=404, content={"error": "Подсказки для этого задания не предусмотрены"})
+    rows = db.query(Hint).filter(Hint.task_id == task_id).all()
+    by_level = {r.level: r.content for r in rows}
+    return {"task_id": task_id, "levels": [{"level": lvl, "content": by_level.get(lvl, "")} for lvl in LEVELS]}
+
+
+@app.put("/api/admin/hints/{task_id}/{level}")
+def admin_save_hint(task_id: int, level: int, payload: HintContentRequest, request: Request, db: Session = Depends(get_db)):
+    """Сохранить (upsert) текст уровня подсказки. Контент — markdown,
+    правит тьютор. Создание/обновление одной записью на (task_id, level)."""
+    if current_user_id(request) is None:
+        return unauthorized()
+    if current_user_role(request) != ROLE_TUTOR:
+        return forbidden()
+    if not has_hints(task_id):
+        return JSONResponse(status_code=404, content={"error": "Подсказки для этого задания не предусмотрены"})
+    if level not in LEVELS:
+        return JSONResponse(status_code=400, content={"error": "Уровень должен быть 1, 2 или 3"})
+    row = db.query(Hint).filter(Hint.task_id == task_id, Hint.level == level).first()
+    if row is None:
+        db.add(Hint(task_id=task_id, level=level, content=payload.content))
+    else:
+        row.content = payload.content
+    db.commit()
+    return {"task_id": task_id, "level": level, "content": payload.content}
+
+
+# Список заданий с подсказками — для селектора в админке (номер + описание,
+# чтобы тьютору было понятно, какое задание он правит).
+@app.get("/api/admin/hints/tasks")
+def admin_hinted_tasks(request: Request):
+    if current_user_id(request) is None:
+        return unauthorized()
+    if current_user_role(request) != ROLE_TUTOR:
+        return forbidden()
+    return [
+        {"id": task_id, "description": TASKS[task_id]["description"]}
+        for task_id in sorted(HINTED_TASK_IDS)
+    ]
