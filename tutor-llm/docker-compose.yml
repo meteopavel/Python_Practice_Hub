@@ -21,6 +21,14 @@ services:
       - no-new-privileges:true
     pids_limit: 100
     mem_limit: 256m
+    # DNS задаём явно: на роутере-хосте нет /etc/resolv.conf (systemd-resolved
+    # на ::1), поэтому Docker Engine отдаёт контейнерам пустой список nameservers
+    # и те не могут резолвить api.deepseek.com._executor'у это не мешает (ему
+    # сеть запрещена в принципе), а нам — обязательно. Cloudflare (1.1.1.1) +
+    # Google (8.8.8.8) как fallback.
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
     environment:
       - PYTHONDONTWRITEBYTECODE=1
       - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
