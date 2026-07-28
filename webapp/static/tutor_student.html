@@ -7,6 +7,11 @@
 <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
 <link rel="stylesheet" href="/static/styles.css">
 <style>
+  /* На широком экране базовый .container (max-width: 1320px) оставляет большие
+     пустые поля по бокам — на странице работы с учеником места нужно больше
+     (три колонки + код), поэтому снимаем ограничение ширины. padding-inline
+     оставляем, чтобы контент не прилипал к краям окна. */
+  .session-main.container { max-width: none; }
   .session-main { padding-block: var(--space-4); }
   .session-layout {
     display: grid;

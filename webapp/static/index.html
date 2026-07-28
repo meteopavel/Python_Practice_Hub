@@ -7,6 +7,11 @@
 <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
 <link rel="stylesheet" href="/static/styles.css">
 <style>
+  /* На широком экране базовый .container (max-width: 1320px) оставляет большие
+     пустые поля по бокам — на странице ученика места нужно больше (список,
+     редактор кода, подсказки), поэтому снимаем ограничение ширины.
+     padding-inline оставляем, чтобы контент не прилипал к краям окна. */
+  .student-layout.container { max-width: none; }
   .student-layout {
     display: grid;
     grid-template-columns: 300px 1fr 320px;
