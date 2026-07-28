@@ -136,7 +136,7 @@ else
 fi
 
 log "----------------------------------------"
-log "🖥️ Этап 3/4: роутер (executor)"
+log "🖥️ Этап 3/4: роутер (executor + tutor-llm)"
 
 run_router() {
     ssh "$DEPLOY_ROUTER_ALIAS" bash -s <<EOF
@@ -149,6 +149,10 @@ cd executor
 docker compose up -d --build
 docker compose ps
 echo "✅ Router (executor) deploy completed"
+cd ../tutor-llm
+docker compose up -d --build
+docker compose ps
+echo "✅ Router (tutor-llm) deploy completed"
 EOF
 }
 

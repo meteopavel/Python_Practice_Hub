@@ -1,0 +1,33 @@
+services:
+  tutor-llm:
+    build: .
+    restart: unless-stopped
+    # Публикуем ТОЛЬКО на адрес тоннеля (awg0, 10.0.0.1) — снаружи (LAN,
+    # интернет) этот порт не виден вообще, достучаться можно только со
+    # стороны Frankfurt через WireGuard. Тот же приём, что у executor.
+    ports:
+      - "10.0.0.1:8011:8011"
+    # Фиксированная подсеть — отдельная от executor'а, чтобы правила
+    # DOCKER-USER (исходящий запрет для executor'а) на нас не влияли.
+    # Этому контейнеру исходящая сеть НУЖНА — он ходит в DeepSeek API.
+    networks:
+      default:
+        ipv4_address: 172.28.56.2
+    # Ресурсы: сервис лёгкий (прокси к DeepSeek, сама модель крутится
+    # у DeepSeek), но httpx + uvicorn хотят немного памяти.
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 100
+    mem_limit: 256m
+    environment:
+      - PYTHONDONTWRITEBYTECODE=1
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+      - DEEPSEEK_MODEL=${DEEPSEEK_MODEL:-deepseek-chat}
+
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 172.28.56.0/24

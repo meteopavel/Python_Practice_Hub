@@ -10,6 +10,8 @@ import os
 import time
 from pathlib import Path
 
+import httpx
+
 from fastapi import Depends, FastAPI, Form, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
@@ -37,6 +39,11 @@ TURN_SECRET = os.environ.get("TURN_SECRET")
 TURN_URLS = os.environ.get("TURN_URLS")
 STUN_URLS = os.environ.get("STUN_URLS", "stun:informatika.meteopavel.space:3478")
 
+# tutor-llm — отдельный микросервис на роутере (как executor, см.
+# tutor-llm/). Проксирует запросы тьютора в DeepSeek API. Ключ DeepSeek
+# живёт только в контейнере tutor-llm, сюда не пробрасывается.
+TUTOR_LLM_URL = os.environ.get("TUTOR_LLM_URL", "http://10.0.0.1:8011")
+
 app = FastAPI(title="Python Practice Hub — веб-грейдер")
 app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET)
 
@@ -56,6 +63,14 @@ class SubmissionRequest(BaseModel):
 
 class HintFreeRunRequest(BaseModel):
     code: str
+
+
+class TutorAskRequest(BaseModel):
+    """Запрос тьютора к ИИ-помощнику. task_context/student_code опциональны —
+    можно спросить и без них. question обязателен."""
+    task_context: str | None = None   # текст задания / условие
+    student_code: str | None = None   # код ученика (если есть)
+    question: str
 
 
 @app.get("/login")
@@ -534,3 +549,36 @@ def run_hint_code_free(payload: HintFreeRunRequest, request: Request):
     if current_user_role(request) != ROLE_TUTOR:
         return forbidden()
     return run_free(payload.code)
+
+
+@app.post("/api/tutor/ask")
+def tutor_ask(payload: TutorAskRequest, request: Request):
+    """Тьютор спрашивает ИИ-помощника (DeepSeek через микросервис tutor-llm
+    на роутере). Прокси: webapp не знает ключ DeepSeek, он только пересылает
+    структурированный запрос в tutor-llm по внутренней сети (как executor).
+    Только для роли tutor."""
+    if current_user_id(request) is None:
+        return unauthorized()
+    if current_user_role(request) != ROLE_TUTOR:
+        return forbidden()
+
+    try:
+        response = httpx.post(
+            f"{TUTOR_LLM_URL}/ask",
+            json=payload.model_dump(),
+            timeout=70.0,  # чуть больше, чем 60-секундный таймаут tutor-llm → DeepSeek
+        )
+        response.raise_for_status()
+        return response.json()
+    except httpx.HTTPStatusError as exc:
+        # tutor-llm ответил ошибкой (скорее всего 502 от DeepSeek или 500 — нет ключа)
+        return JSONResponse(
+            status_code=exc.response.status_code,
+            content={"error": f"tutor-llm: {exc.response.text[:300]}"},
+        )
+    except httpx.HTTPError as exc:
+        # tutor-llm недоступен (контейнер не поднят / тоннель упал)
+        return JSONResponse(
+            status_code=502,
+            content={"error": f"tutor-llm недоступен ({TUTOR_LLM_URL}): {exc}"},
+        )

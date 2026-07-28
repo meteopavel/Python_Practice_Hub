@@ -119,6 +119,35 @@
         </div>
         <div id="hint-result"></div>
       </section>
+
+      <section class="card card-pad stack stack-3" id="ai-ask-card">
+        <div class="row between">
+          <span class="panel-title">Спросить ИИ</span>
+          <span class="muted" style="font-size: var(--fs-sm)" id="ai-ask-model-label"></span>
+        </div>
+        <p class="muted" style="font-size: var(--fs-sm); margin: 0">
+          ИИ-помощник (DeepSeek через tutor-llm). Контекст текущего задания и кода ученика
+          подставляются автоматически — снимите галочки, если нужен общий вопрос.
+        </p>
+        <div class="row wrap" style="gap: var(--space-3)">
+          <label class="row" style="gap: 6px; align-items: center; font-size: var(--fs-sm)">
+            <input type="checkbox" id="ai-attach-task" checked>
+            прикрепить задание <span id="ai-attach-task-num">—</span>
+          </label>
+          <label class="row" style="gap: 6px; align-items: center; font-size: var(--fs-sm)">
+            <input type="checkbox" id="ai-attach-code" checked>
+            прикрепить код ученика
+          </label>
+        </div>
+        <div class="field">
+          <label class="label" for="ai-question">Вопрос</label>
+          <textarea class="input" id="ai-question" rows="3" placeholder="Например: почему этот код падает на тесте с повторами?"></textarea>
+        </div>
+        <div class="row" style="gap: 8px">
+          <button class="btn btn-sm btn-primary" id="ai-ask-btn">Спросить ИИ</button>
+        </div>
+        <div id="ai-ask-result"></div>
+      </section>
     </main>
   </div>
 </div>
@@ -290,6 +319,7 @@ function showTask() {
   if (!editingStudentCode) mirrorEditor.setValue(codeByTask[currentTaskId] || '');
   document.getElementById('student-submit-result').innerHTML = '';
   document.getElementById('hint-result').innerHTML = '';
+  if (typeof refreshAiTaskLabel === 'function') refreshAiTaskLabel();
 }
 
 async function loadStudentAttempts(taskId) {
@@ -413,6 +443,71 @@ async function runFreeHintCode() {
   }
 }
 document.getElementById('run-hint-free-btn').addEventListener('click', runFreeHintCode);
+
+// --- Спросить ИИ (DeepSeek через tutor-llm) --------------------------------
+// Автоподстановка контекста: при смене задания обновляем номер в чекбоксе.
+// Код ученика берём из live-редактора (mirrorEditor), как и при проверке.
+const aiAttachTask = document.getElementById('ai-attach-task');
+const aiAttachTaskNum = document.getElementById('ai-attach-task-num');
+const aiAttachCode = document.getElementById('ai-attach-code');
+const aiQuestion = document.getElementById('ai-question');
+const aiAskBtn = document.getElementById('ai-ask-btn');
+const aiAskResult = document.getElementById('ai-ask-result');
+const aiModelLabel = document.getElementById('ai-ask-model-label');
+
+function refreshAiTaskLabel() {
+  aiAttachTaskNum.textContent = currentTaskId ? `№${currentTaskId}` : '—';
+}
+
+async function askAi() {
+  const question = aiQuestion.value.trim();
+  if (!question) { aiAskResult.innerHTML = '<p class="field-error" style="margin:0">Введите вопрос</p>'; return; }
+
+  const body = {question};
+  if (aiAttachTask.checked && currentTaskId !== null) {
+    const task = tasks.find(t => t.id === currentTaskId);
+    if (task) body.task_context = `Задание ${task.id}: ${task.description}\nПример: ${task.example}`;
+  }
+  if (aiAttachCode.checked) {
+    const code = mirrorEditor.getValue();
+    if (code.trim()) body.student_code = code;
+  }
+
+  aiAskBtn.disabled = true;
+  aiAskBtn.textContent = 'Думаю...';
+  aiAskResult.innerHTML = '<p class="muted" style="margin:0">Запрос ушёл в DeepSeek, ждём ответ...</p>';
+  try {
+    const res = await fetch('/api/tutor/ask', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      aiAskResult.innerHTML = `<div class="result-summary is-fail"><span>${escapeHtml(data.error || 'Ошибка')}</span></div>`;
+      return;
+    }
+    // Сохраняем имя модели для подписи в шапке карточки.
+    if (data.model) aiModelLabel.textContent = data.model;
+    // Токены — мелкая статистика под ответом, помогает ловить расходы.
+    const usageHtml = data.usage && data.usage.total_tokens
+      ? `<span class="muted" style="font-size: var(--fs-sm)">${data.usage.total_tokens} токенов</span>`
+      : '';
+    aiAskResult.innerHTML = `
+      <pre class="block" style="white-space: pre-wrap; margin: 0">${escapeHtml(data.answer || '(пустой ответ)')}</pre>
+      ${usageHtml}`;
+  } catch (e) {
+    aiAskResult.innerHTML = `<div class="result-summary is-fail"><span>Сеть/сервер: ${escapeHtml(String(e))}</span></div>`;
+  } finally {
+    aiAskBtn.disabled = false;
+    aiAskBtn.textContent = 'Спросить ИИ';
+  }
+}
+aiAskBtn.addEventListener('click', askAi);
+aiQuestion.addEventListener('keydown', (e) => {
+  // Ctrl/Cmd+Enter — быстрый отправить, как в редакторах кода выше.
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); askAi(); }
+});
 
 let ws = null;
 let studentTypingTimer = null;
