@@ -1113,8 +1113,9 @@ document.addEventListener('click', (e) => {
 // текст раскрытых уровней. Это мониторинг (read-only): reveal-кнопок нет,
 // уровни открывает сам ученик на своей странице. Источник правды о тайминге —
 // сервер, здесь только отображение и обратный отсчёт до разблокировки.
-const HINTED_TASK_IDS = new Set();
-for (let i = 81; i <= 100; i++) HINTED_TASK_IDS.add(i);
+// Источник правды о наличии подсказок у задания — сам сервер (GET /api/students/
+// {id}/hints/{task} вернёт 200/404); отдельной константы диапазона на фронте
+// нет, чтобы не рассинхрониться с HINTED_TASK_IDS на бэке.
 const hintsPanel = document.getElementById('hints-panel');
 const hintsStepsEl = document.getElementById('hints-steps');
 const hintsPanelSub = document.getElementById('hints-panel-sub');
@@ -1137,7 +1138,9 @@ function fmtCountdown(ms) {
 }
 
 function renderHintsPanel() {
-  if (!hintState.taskId || !HINTED_TASK_IDS.has(hintState.taskId)) {
+  // Панель показываем, только если сервер вернул данные (см. loadHintsPanel:
+  // при 404 hintState остаётся пустым и панель скрывается).
+  if (!hintState.taskId || !hintState.levels.length) {
     hintsPanel.style.display = 'none';
     return;
   }
@@ -1191,7 +1194,7 @@ function setupHintCountdown() {
 
 async function loadHintsPanel(taskId) {
   if (hintCountdownTimer) { clearInterval(hintCountdownTimer); hintCountdownTimer = null; }
-  if (taskId === null || !HINTED_TASK_IDS.has(taskId)) {
+  if (taskId === null) {
     hintState = { taskId, levels: [] };
     hintsPanel.style.display = 'none';
     return;

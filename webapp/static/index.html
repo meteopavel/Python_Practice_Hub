@@ -1015,13 +1015,14 @@ async function loadMaterials() {
   `).join('');
 }
 
-// --- Многоступенчатые подсказки (задания 81..100) --------------------------
+// --- Многоступенчатые подсказки ---------------------------------------------
 // Три уровня: 1 — абстракция, 2 — конкретика со ссылками (через 7 мин после 1),
 // 3 — почти решение (ещё через 15 мин). Тайминг считает сервер по HintReveal,
 // клиентскому таймеру не верим — он только для обратного отсчёта на UI; по
 // обнулению мы переспрашиваем состояние у сервера (только он решает waiting→ready).
-const HINTED_TASK_IDS = new Set();
-for (let i = 81; i <= 100; i++) HINTED_TASK_IDS.add(i);
+// Источник правды о том, есть ли у задания подсказки — сам сервер (GET /api/hints
+// вернёт 200 или 404), отдельной константы диапазона на фронте НЕ держим, чтобы
+// не было рассинхрона с HINTED_TASK_IDS на бэке (такой баг уже был).
 const hintsPanel = document.getElementById('hints-panel');
 const hintsStepsEl = document.getElementById('hints-steps');
 const hintsPanelSub = document.getElementById('hints-panel-sub');
@@ -1047,7 +1048,9 @@ function fmtCountdown(ms) {
 }
 
 function renderHints() {
-  if (!hintState.taskId || !HINTED_TASK_IDS.has(hintState.taskId)) {
+  // Панель показываем, только если сервер вернул данные (см. loadHints: при
+  // 404 hintState остаётся пустым и панель скрывается).
+  if (!hintState.taskId || !hintState.levels.length) {
     hintsPanel.style.display = 'none';
     return;
   }
@@ -1126,7 +1129,7 @@ async function loadHints(taskId) {
   if (hintCountdownTimer) { clearInterval(hintCountdownTimer); hintCountdownTimer = null; }
   if (hintPollTimer) { clearInterval(hintPollTimer); hintPollTimer = null; }
 
-  if (taskId === null || !HINTED_TASK_IDS.has(taskId)) {
+  if (taskId === null) {
     hintState = { taskId, levels: [] };
     hintsPanel.style.display = 'none';
     return;
