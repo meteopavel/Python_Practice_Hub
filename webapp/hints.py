@@ -21,7 +21,7 @@ import re
 from datetime import datetime, timedelta, timezone
 from typing import Iterable
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from models import Hint, HintReveal
@@ -45,15 +45,14 @@ def has_hints(task_id: int) -> bool:
     return task_id in HINTED_TASK_IDS
 
 
-def _to_utc(value):
-    """Приводим datetime к UTC-aware: server_default=func.now() на MySQL
-    отдаёт naive, на SQLite — тоже; сравнивать с aware-«сейчас» напрямую
-    нельзя (TypeError), поэтому нормализуем."""
-    if value is None:
-        return None
-    if value.tzinfo is None:
-        return value.replace(tzinfo=timezone.utc)
-    return value.astimezone(timezone.utc)
+def _now(db: Session) -> datetime:
+    """«Сейчас» берём ИЗ БД (SELECT NOW()), а не из Python. БД хостинга
+    работает в локальной зоне (MSK), её func.now() — локальное время; и
+    revealed_at пишется тоже func.now()-сервером. Сравнивая обе стороны в
+    зоне БД, мы независимы от того, в какой именно зоне работает инстанс:
+    разность корректна всегда. datetime.now(utc) тут использовать нельзя —
+    получили бы сдвиг в 3 часа против локального revealed_at."""
+    return db.execute(select(func.now())).scalar()
 
 
 def get_hint_content(db: Session, task_id: int) -> dict[int, str]:
@@ -66,23 +65,29 @@ def get_hint_content(db: Session, task_id: int) -> dict[int, str]:
 
 
 def get_revealed_levels(db: Session, user_id: int, task_id: int) -> dict[int, datetime]:
-    """{level: revealed_at(utc)} для уже раскрытых учеником уровней."""
+    """{level: revealed_at} для уже раскрытых учеником уровней. Время — в
+    зоне БД (как есть, без приведения к UTC): сравниваем с _now(db) тоже в
+    зоне БД, так обе стороны в одной шкале."""
     rows = db.execute(
         select(HintReveal.level, HintReveal.revealed_at).where(
             HintReveal.user_id == user_id, HintReveal.task_id == task_id
         )
     ).all()
-    return {level: _to_utc(revealed_at) for level, revealed_at in rows}
+    return {level: revealed_at for level, revealed_at in rows}
 
 
-def _level_state(level, revealed: dict[int, datetime]):
+def _level_state(level, revealed: dict[int, datetime], now: datetime):
     """Внутренняя: статус одного уровня без контента.
 
     Возвращает (status, available_at):
       locked   — предыдущий уровень ещё не раскрыт, этот недоступен.
       ready    — доступен к раскрытию учеником (задержка прошла / её нет).
       revealed — уже раскрыт.
-      waiting  — задержка ещё не прошла, ждём; available_at — когда станет ready.
+      waiting  — задержка ещё не прошла, ждём; available_at — когда станет ready
+                 (в зоне БД; для API переводится в UTC отдельно).
+
+    now — «сейчас» в зоне БД (из _now), revealed — тоже в зоне БД: сравнение
+    корректно при любой зоне инстанса.
     """
     if level in revealed:
         return "revealed", None
@@ -93,9 +98,24 @@ def _level_state(level, revealed: dict[int, datetime]):
     if prev not in revealed:
         return "locked", None
     available_at = revealed[prev] + HINT_DELAYS[level]
-    if datetime.now(timezone.utc) >= available_at:
+    if now >= available_at:
         return "ready", None
     return "waiting", available_at
+
+
+def _available_at_utc(db: Session, available_at_local: datetime) -> str:
+    """Перевод available_at (зона БД, naive) в UTC ISO-строку для API.
+
+    Таймзону инстанса из приложения надёжно не узнать, поэтому вычисляем
+    смещение эмпирически: db_offset = NOW(БД) − utcnow(). Для MSK это +3ч.
+    Вычитая его из локальной метки, получаем честный абсолютный момент в UTC,
+    и фронт рисует корректный обратный отсчёт при любой зоне инстанса."""
+    if available_at_local is None:
+        return None
+    utc_now = datetime.now(timezone.utc).replace(tzinfo=None)
+    db_now = _now(db)
+    db_offset = db_now - utc_now  # на сколько зона БД «впереди» UTC
+    return (available_at_local - db_offset).replace(tzinfo=timezone.utc).isoformat()
 
 
 def available_levels(db: Session, user_id: int, task_id: int) -> list[dict]:
@@ -103,20 +123,21 @@ def available_levels(db: Session, user_id: int, task_id: int) -> list[dict]:
 
     Контент отдаётся ТОЛЬКО для revealed — остальные уровни ученик не должен
     видеть даже пустыми (статус готовности не должен раскрывать суть).
-    available_at (ISO-строка) отдаётся для waiting, чтобы фронт нарисовал
+    available_at (ISO-строка UTC) отдаётся для waiting, чтобы фронт нарисовал
     обратный отсчёт; для waiting сервер — источник правды о готовности,
     фронт по достижении нуля перезапрашивает состояние.
     """
+    now = _now(db)
     revealed = get_revealed_levels(db, user_id, task_id)
     content_by_level = get_hint_content(db, task_id)
     result = []
     for level in LEVELS:
-        status, available_at = _level_state(level, revealed)
+        status, available_at = _level_state(level, revealed, now)
         item: dict = {"level": level, "status": status}
         if status == "revealed":
             item["content"] = content_by_level.get(level, "")
         if status == "waiting" and available_at is not None:
-            item["available_at"] = available_at.isoformat()
+            item["available_at"] = _available_at_utc(db, available_at)
         result.append(item)
     return result
 
@@ -124,14 +145,21 @@ def available_levels(db: Session, user_id: int, task_id: int) -> list[dict]:
 def can_reveal(db: Session, user_id: int, task_id: int, level: int) -> bool:
     """Можно ли раскрыть уровень сейчас: не заблокирован предыдущим и
     задержка прошла (или её нет). Уже раскрытый тоже «можно» — идемпотентно."""
-    status, _ = _level_state(level, get_revealed_levels(db, user_id, task_id))
+    now = _now(db)
+    revealed = get_revealed_levels(db, user_id, task_id)
+    status, _ = _level_state(level, revealed, now)
     return status in ("ready", "revealed")
 
 
 def record_reveal(db: Session, user_id: int, task_id: int, level: int) -> None:
     """Фиксируем раскрытие уровня. Идемпотентно: повторный клик по уже
     раскрытому не создаёт дубль (UNIQUE-ограничение) и НЕ сдвигает
-    revealed_at — иначе можно было бы обнулить таймер следующего уровня."""
+    revealed_at — иначе можно было бы обнулить таймер следующего уровня.
+
+    revealed_at НЕ задаём явно — пусть ставит server_default=func.now(),
+    то есть локальное время БД. Сравниваем затем с _now(db) (тоже зона БД),
+    так обе стороны в одной шкале и зона инстанса не имеет значения.
+    Раньше писали datetime.now(utc) и сравнивали с локальным — был сдвиг 3ч."""
     existing = db.execute(
         select(HintReveal).where(
             HintReveal.user_id == user_id,

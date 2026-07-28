@@ -995,7 +995,7 @@ const hintsStepsEl = document.getElementById('hints-steps');
 const hintsPanelSub = document.getElementById('hints-panel-sub');
 let hintState = { taskId: null, levels: [] };
 let hintPollTimer = null;          // периодический опрос при waiting-уровне
-let hintCountdownTimer = null;     // точный setTimeout до ближайшей разблокировки
+let hintCountdownTimer = null;     // тикающий каждую секунду setInterval отсчёта
 
 const HINT_LEVEL_TITLES = {
   1: 'Шаг 1 · куда двигаться',
@@ -1056,24 +1056,44 @@ function renderHints() {
 
 // Обратный отсчёт до ближайшей разблокировки (waiting-уровень). Сервер —
 // источник правды: по достижении нуля переспрашиваем состояние, а не
-// «превращаем» waiting в ready локально.
+// «превращаем» waiting в ready локально. Таймер ТИКАЕТ каждую секунду
+// (setInterval), а не стоит — иначе ученик видит застывшее число.
 function setupHintCountdown() {
-  if (hintCountdownTimer) { clearTimeout(hintCountdownTimer); hintCountdownTimer = null; }
+  if (hintCountdownTimer) { clearInterval(hintCountdownTimer); hintCountdownTimer = null; }
   let nextAvail = null;
-  hintsStepsEl.querySelectorAll('.hint-timer').forEach(el => {
+  const timers = hintsStepsEl.querySelectorAll('.hint-timer');
+  timers.forEach(el => {
     const avail = Number(el.dataset.avail);
     if (!avail) return;
-    const update = () => { el.textContent = fmtCountdown(avail - Date.now()); };
-    update();
     nextAvail = nextAvail === null ? avail : Math.min(nextAvail, avail);
   });
-  if (nextAvail !== null) {
-    const delay = Math.max(0, nextAvail - Date.now());
-    hintCountdownTimer = setTimeout(() => loadHints(hintState.taskId), delay + 500);
-  }
+  if (!timers.length) return;
+
+  const tick = () => {
+    timers.forEach(el => {
+      const avail = Number(el.dataset.avail);
+      if (!avail) return;
+      const remaining = avail - Date.now();
+      el.textContent = fmtCountdown(remaining);
+    });
+    // Сервер — источник правды о готовности: по достижении нуля не превращаем
+    // waiting в ready сами, а переспрашиваем состояние.
+    if (nextAvail !== null && Date.now() >= nextAvail) {
+      clearInterval(hintCountdownTimer);
+      hintCountdownTimer = null;
+      loadHints(hintState.taskId);
+    }
+  };
+  tick();
+  hintCountdownTimer = setInterval(tick, 1000);
 }
 
 async function loadHints(taskId) {
+  // При любой перезагрузке состояния гасим тикающий таймер и поллинг — иначе
+  // интервал от предыдущей задачи продолжит тикать поверх нового состояния.
+  if (hintCountdownTimer) { clearInterval(hintCountdownTimer); hintCountdownTimer = null; }
+  if (hintPollTimer) { clearInterval(hintPollTimer); hintPollTimer = null; }
+
   if (taskId === null || !HINTED_TASK_IDS.has(taskId)) {
     hintState = { taskId, levels: [] };
     hintsPanel.style.display = 'none';
