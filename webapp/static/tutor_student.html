@@ -10,12 +10,14 @@
   .session-main { padding-block: var(--space-4); }
   .session-layout {
     display: grid;
-    grid-template-columns: 300px 1fr;
+    grid-template-columns: 300px 1fr 320px;
     gap: var(--space-4);
     align-items: start;
   }
-  @media (max-width: 900px) {
+  @media (max-width: 1100px) {
     .session-layout { grid-template-columns: 1fr; }
+    .task-sidebar { position: static; }
+    .hints-panel { position: static; max-height: none; }
   }
   .live-mount { min-height: 180px; }
   .live-mount .cm-editor { height: 100%; }
@@ -25,6 +27,7 @@
 <body>
 <header class="app-header">
   <div class="brand"><span class="brand-mark">&lt;/&gt;</span> Python Practice Hub</div>
+  <a class="btn btn-sm btn-ghost" href="/tutor/hints">Подсказки</a>
   <details class="account-menu">
     <summary class="chip account-trigger" style="background: var(--c-primary-soft); color: var(--c-primary)">
       <span id="switcher-current-name">…</span>
@@ -149,6 +152,14 @@
         <div id="ai-ask-result"></div>
       </section>
     </main>
+
+    <aside class="hints-panel" id="hints-panel" style="display: none">
+      <div class="hints-panel-head">
+        <span class="panel-title">Подсказки ученика</span>
+        <span class="hint-step-meta" id="hints-panel-sub"></span>
+      </div>
+      <div class="stack stack-3" id="hints-steps"></div>
+    </aside>
   </div>
 </div>
 
@@ -252,11 +263,29 @@ let tasks = [];
 let currentTaskId = null;
 const taskStatus = {};
 
+// Запоминаем последнее открытое задание и страницу списка ПРИВЯЗАННО к
+// ученику: тьютор переключается между учениками, и у каждого свой прогресс
+// по заданиям — выбор не должен «прыгать» за тьютором при смене ученика.
+function lastTaskKey(suffix) { return `pph:tutor:${studentId}:${suffix}`; }
+function saveLastTask() {
+  if (currentTaskId !== null) {
+    localStorage.setItem(lastTaskKey('taskId'), String(currentTaskId));
+    localStorage.setItem(lastTaskKey('page'), String(taskPage));
+  }
+}
+
 async function loadTasks() {
   const res = await fetch('/api/tasks');
   if (res.status === 401) { window.location.href = '/login'; return; }
   tasks = await res.json();
-  currentTaskId = tasks.length ? tasks[0].id : null;
+
+  // Восстанавливаем последнее открытое задание этого ученика, если оно
+  // доступно (задание могло быть скрыто из грейдера).
+  const savedId = Number(localStorage.getItem(lastTaskKey('taskId')));
+  const savedPage = Number(localStorage.getItem(lastTaskKey('page')));
+  const savedTaskExists = tasks.some(t => t.id === savedId);
+  currentTaskId = savedTaskExists ? savedId : (tasks.length ? tasks[0].id : null);
+  if (savedTaskExists && Number.isFinite(savedPage)) taskPage = savedPage;
 
   const statusRes = await fetch(`/api/students/${studentId}/attempts/status`);
   if (statusRes.status === 403 || statusRes.status === 404) { window.location.href = '/'; return; }
@@ -292,8 +321,12 @@ function renderTaskList() {
   document.querySelectorAll('#task-list .task-item').forEach(btn => {
     btn.addEventListener('click', () => {
       currentTaskId = Number(btn.dataset.id);
+      // Активное задание должно быть видно в списке — перейдём на его страницу.
+      const idx = tasks.findIndex(t => t.id === currentTaskId);
+      if (idx !== -1) taskPage = Math.floor(idx / TASK_PAGE_SIZE);
       renderTaskList();
       showTask();
+      saveLastTask();
     });
   });
 
@@ -319,6 +352,7 @@ function showTask() {
   if (!editingStudentCode) mirrorEditor.setValue(codeByTask[currentTaskId] || '');
   document.getElementById('student-submit-result').innerHTML = '';
   document.getElementById('hint-result').innerHTML = '';
+  loadHintsPanel(currentTaskId);
   if (typeof refreshAiTaskLabel === 'function') refreshAiTaskLabel();
 }
 
@@ -1068,6 +1102,106 @@ document.addEventListener('click', (e) => {
     if (!d.contains(e.target)) d.removeAttribute('open');
   });
 });
+
+// --- Мониторинг подсказок ученика (задания 81..100) -------------------------
+// Тьютор видит, какие ступени ученик уже раскрыл, что осталось ждать, и сам
+// текст раскрытых уровней. Это мониторинг (read-only): reveal-кнопок нет,
+// уровни открывает сам ученик на своей странице. Источник правды о тайминге —
+// сервер, здесь только отображение и обратный отсчёт до разблокировки.
+const HINTED_TASK_IDS = new Set();
+for (let i = 81; i <= 100; i++) HINTED_TASK_IDS.add(i);
+const hintsPanel = document.getElementById('hints-panel');
+const hintsStepsEl = document.getElementById('hints-steps');
+const hintsPanelSub = document.getElementById('hints-panel-sub');
+let hintState = { taskId: null, levels: [] };
+let hintCountdownTimer = null;
+
+const HINT_LEVEL_TITLES = {
+  1: 'Шаг 1 · куда двигаться',
+  2: 'Шаг 2 · конкретика со ссылками',
+  3: 'Шаг 3 · почти решение',
+};
+const HINT_MARKERS = { ready: '🔓', waiting: '⏳', revealed: '✓', locked: '🔒' };
+
+function fmtCountdown(ms) {
+  if (ms <= 0) return '00:00';
+  const totalSec = Math.ceil(ms / 1000);
+  const m = Math.floor(totalSec / 60);
+  const s = totalSec % 60;
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+}
+
+function renderHintsPanel() {
+  if (!hintState.taskId || !HINTED_TASK_IDS.has(hintState.taskId)) {
+    hintsPanel.style.display = 'none';
+    return;
+  }
+  hintsPanel.style.display = '';
+  hintsStepsEl.innerHTML = hintState.levels.map(lv => {
+    const st = lv.status;
+    // Тьютор видит «готов открыть» как «доступно», а «locked» — как «не открыл»:
+    // со стороны тьютора важен прогресс ученика, а не готовность к действию.
+    const note =
+      st === 'locked'   ? 'Ученик ещё не открыл предыдущую ступень.' :
+      st === 'waiting'  ? `Откроется ученику через <span class="hint-timer" data-avail="${lv.available_at ? new Date(lv.available_at).getTime() : 0}">…</span>` :
+      st === 'ready'    ? 'Доступна ученику — он ещё не открыл.' :
+      '';
+    const body = st === 'revealed'
+      ? `<div class="hint-content">${lv.content_html || '<p class="hint-step-note">Текст этой ступени ещё не добавлен.</p>'}</div>`
+      : `<p class="hint-step-note">${note}</p>`;
+    return `<div class="hint-step is-${st}">
+      <div class="hint-step-head">
+        <span class="hint-marker is-${st}">${HINT_MARKERS[st]}</span>
+        <span class="hint-step-title">${HINT_LEVEL_TITLES[lv.level]}</span>
+      </div>
+      ${body}
+    </div>`;
+  }).join('');
+  setupHintCountdown();
+}
+
+function setupHintCountdown() {
+  if (hintCountdownTimer) { clearInterval(hintCountdownTimer); hintCountdownTimer = null; }
+  const timers = hintsStepsEl.querySelectorAll('.hint-timer');
+  let nextAvail = null;
+  timers.forEach(el => {
+    const avail = Number(el.dataset.avail);
+    if (avail) nextAvail = nextAvail === null ? avail : Math.min(nextAvail, avail);
+  });
+  if (!timers.length) return;
+  const tick = () => {
+    timers.forEach(el => {
+      const avail = Number(el.dataset.avail);
+      if (avail) el.textContent = fmtCountdown(avail - Date.now());
+    });
+    if (nextAvail !== null && Date.now() >= nextAvail) {
+      clearInterval(hintCountdownTimer);
+      hintCountdownTimer = null;
+      loadHintsPanel(hintState.taskId);
+    }
+  };
+  tick();
+  hintCountdownTimer = setInterval(tick, 1000);
+}
+
+async function loadHintsPanel(taskId) {
+  if (hintCountdownTimer) { clearInterval(hintCountdownTimer); hintCountdownTimer = null; }
+  if (taskId === null || !HINTED_TASK_IDS.has(taskId)) {
+    hintState = { taskId, levels: [] };
+    hintsPanel.style.display = 'none';
+    return;
+  }
+  try {
+    const res = await fetch(`/api/students/${studentId}/hints/${taskId}`);
+    if (!res.ok) { hintsPanel.style.display = 'none'; return; }
+    const data = await res.json();
+    hintState = { taskId, levels: data.levels };
+    hintsPanelSub.textContent = data.levels.some(l => l.status === 'waiting') ? 'открытие по таймеру' : '';
+    renderHintsPanel();
+  } catch (e) {
+    hintsPanel.style.display = 'none';
+  }
+}
 
 loadMe();
 loadStudentSwitcher();

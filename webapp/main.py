@@ -401,6 +401,24 @@ def student_task_attempts(student_id: int, task_id: int, request: Request, db: S
     return _task_attempts(db, student_id, task_id)
 
 
+@app.get("/api/students/{student_id}/hints/{task_id}")
+def student_hints(student_id: int, task_id: int, request: Request, db: Session = Depends(get_db)):
+    """Состояние подсказок задания для конкретного ученика — глазами тьютора
+    (мониторинг прогресса раскрытия, без reveal-кнопок). Та же логика, что у
+    ученического GET /api/hints, но user_id берётся явно из student_id, а не
+    из effective_identity. Контент отдаётся для revealed (тьютор видит, что
+    именно ученик уже прочитал)."""
+    if current_user_id(request) is None:
+        return unauthorized()
+    if current_user_role(request) != ROLE_TUTOR:
+        return forbidden()
+    if _require_student(db, student_id) is None:
+        return JSONResponse(status_code=404, content={"error": "Ученик не найден"})
+    if not has_hints(task_id):
+        return JSONResponse(status_code=404, content={"error": "Подсказки для этого задания не предусмотрены"})
+    return _hints_response(db, student_id, task_id)
+
+
 @app.websocket("/ws/session/{student_id}")
 async def session_ws(websocket: WebSocket, student_id: int):
     """Живая комната одного ученика: сам ученик + один или несколько тьюторов,
