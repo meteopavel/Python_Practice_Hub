@@ -711,11 +711,32 @@ async function loadMe() {
   }
 }
 
+// Запоминаем последнее открытое задание и страницу списка, чтобы при
+// перезагрузке страницы открываться там же, где ученик/тьютор остановился,
+// а не всегда на первом задании. Ключ без user-id: на практике устройство
+// принадлежит одному человеку (ученик на своём, тьютор на своём).
+const LAST_TASK_KEY = 'pph:lastTaskId';
+const LAST_PAGE_KEY = 'pph:lastTaskPage';
+
+function saveLastTask() {
+  if (currentTaskId !== null) {
+    localStorage.setItem(LAST_TASK_KEY, String(currentTaskId));
+    localStorage.setItem(LAST_PAGE_KEY, String(taskPage));
+  }
+}
+
 async function loadTasks() {
   const res = await fetch('/api/tasks');
   if (redirectToLoginIfUnauthorized(res)) return;
   tasks = await res.json();
-  currentTaskId = tasks.length ? tasks[0].id : null;
+
+  // Восстанавливаем последнее открытое задание, если оно ещё доступно
+  // (задание могло быть скрыто из веб-грейдера — нет тестовых входов и т.п.).
+  const savedId = Number(localStorage.getItem(LAST_TASK_KEY));
+  const savedPage = Number(localStorage.getItem(LAST_PAGE_KEY));
+  const savedTaskExists = tasks.some(t => t.id === savedId);
+  currentTaskId = savedTaskExists ? savedId : (tasks.length ? tasks[0].id : null);
+  if (savedTaskExists && Number.isFinite(savedPage)) taskPage = savedPage;
 
   const historyRes = await fetch('/api/attempts/mine');
   if (historyRes.ok) {
@@ -725,7 +746,7 @@ async function loadTasks() {
 
   renderTaskList();
   showDescription();
-  loadHints(tasks.length ? tasks[0].id : null);
+  loadHints(currentTaskId);
 }
 
 const TASK_PAGE_SIZE = 7;
@@ -814,6 +835,11 @@ function updateSolveVisibility() {
 function switchToTask(taskId) {
   if (currentTaskId !== null) codeByTask[currentTaskId] = codeEditor.getValue();
   currentTaskId = taskId;
+  // Активное задание должно быть видно в списке — если оно на другой странице
+  // пагинации, перейдём туда. Иначе после restore задача откроется, но в
+  // боковом списке её не видно.
+  const idx = tasks.findIndex(t => t.id === taskId);
+  if (idx !== -1) taskPage = Math.floor(idx / TASK_PAGE_SIZE);
   renderTaskList();
   showDescription();
   codeEditor.setValue(codeByTask[currentTaskId] || DEFAULT_SOLVE_CODE);
@@ -823,6 +849,7 @@ function switchToTask(taskId) {
   document.getElementById('hint-result').innerHTML = '';
   document.getElementById('free-run-result').innerHTML = '';
   loadHints(taskId);
+  saveLastTask();
   sendMessage({code: codeEditor.getValue(), task_id: currentTaskId});
 }
 
