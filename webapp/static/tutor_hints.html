@@ -94,13 +94,8 @@
   <div class="stack stack-4" id="editors" style="margin-top: var(--space-4)"></div>
 </div>
 
+<script src="/static/dom-utils.js"></script>
 <script>
-function escapeHtml(value) {
-  const div = document.createElement('div');
-  div.textContent = value === undefined ? '' : String(value);
-  return div.innerHTML;
-}
-
 // --- Минимальный клиентский markdown-рендерер (повторяет серверный из hints.py).
 // Только для live-превью; финальный рендер при показе ученику — серверный.
 function renderMarkdown(text) {

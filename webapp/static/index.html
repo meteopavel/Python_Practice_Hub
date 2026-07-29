@@ -148,6 +148,10 @@
 
 <script src="/static/codemirror.bundle.js"></script>
 <script src="/static/attempts.js"></script>
+<script src="/static/dom-utils.js"></script>
+<script src="/static/grade-render.js"></script>
+<script src="/static/call-audio.js"></script>
+<script src="/static/task-nav.js"></script>
 <script src="/static/noise-suppressor.bundle.js"></script>
 <script>
 // Приборные SVG-иконки на currentColor — монохром, stroke-стиль, цвет берётся
@@ -205,12 +209,6 @@ const solveSection = document.getElementById('solve-section');
 const solvedNote = document.getElementById('solved-note');
 
 let ws = null;
-
-function sendMessage(payload) {
-  if (ws && ws.readyState === WebSocket.OPEN) {
-    ws.send(JSON.stringify(payload));
-  }
-}
 
 function connectWs(ownId) {
   const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -317,29 +315,8 @@ document.getElementById('solved-note-icon').innerHTML = ICON('checkCircle');
 let ringAudioCtx = null;
 let ringInterval = null;
 
-function unlockRingAudio() {
-  if (!ringAudioCtx) ringAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  if (ringAudioCtx.state === 'suspended') ringAudioCtx.resume();
-}
 document.addEventListener('pointerdown', unlockRingAudio, {once: true});
 document.addEventListener('keydown', unlockRingAudio, {once: true});
-
-function playRingTone(freqs, duration) {
-  if (!ringAudioCtx) return;
-  const now = ringAudioCtx.currentTime;
-  freqs.forEach(freq => {
-    const osc = ringAudioCtx.createOscillator();
-    const gain = ringAudioCtx.createGain();
-    osc.frequency.value = freq;
-    osc.connect(gain).connect(ringAudioCtx.destination);
-    gain.gain.setValueAtTime(0, now);
-    gain.gain.linearRampToValueAtTime(0.12, now + 0.02);
-    gain.gain.setValueAtTime(0.12, now + duration - 0.03);
-    gain.gain.linearRampToValueAtTime(0, now + duration);
-    osc.start(now);
-    osc.stop(now + duration);
-  });
-}
 
 // Двойной короткий гудок — сторона принимающего (ученик), входящий звонок.
 function startRingtone() {
@@ -353,118 +330,12 @@ function startRingtone() {
   ringInterval = setInterval(cycle, 1800);
 }
 
-function stopRingSound() {
-  if (ringInterval) { clearInterval(ringInterval); ringInterval = null; }
-}
-
 // Прогоняет сырой поток микрофона через RNNoise (WASM, AudioWorklet) —
 // шумоподавление сверх штатного echoCancellation/noiseSuppression браузера,
 // которое на телефонах особенно слабое. При любой ошибке (нет AudioWorklet,
 // не загрузился WASM) — тихо откатываемся на необработанный поток: рабочий
 // звонок без шумодава лучше сорванного звонка.
-// Ручное усиление микрофона поверх автоматического AGC браузера — хранится
-// в localStorage, чтобы не крутить заново на каждом звонке. 1.0 = без
-// изменений (текущее поведение по умолчанию).
 let micGainNode = null;
-
-function getMicGain() {
-  const saved = parseFloat(localStorage.getItem('micGain'));
-  return Number.isFinite(saved) ? saved : 1;
-}
-
-function setMicGain(value) {
-  localStorage.setItem('micGain', value);
-  if (micGainNode) micGainNode.gain.value = value;
-}
-
-// RNNoise иногда режет слишком агрессивно (голос звучит приглушённо/рвано) —
-// даём возможность отключить его и остаться только на встроенном шумодаве
-// браузера + ручном усилении.
-function getNoiseSuppressionEnabled() {
-  return localStorage.getItem('noiseSuppressionEnabled') !== '0';
-}
-
-function setNoiseSuppressionEnabled(value) {
-  localStorage.setItem('noiseSuppressionEnabled', value ? '1' : '0');
-}
-
-// Выбор конкретного микрофона — на устройствах с несколькими устройствами
-// захвата (веб-камера со своим микрофоном, USB-гарнитура и т.п.) браузер по
-// умолчанию не всегда берёт тот, что реально нужен. '' = системный дефолт.
-function getMicDeviceId() {
-  return localStorage.getItem('micDeviceId') || '';
-}
-
-function setMicDeviceId(value) {
-  localStorage.setItem('micDeviceId', value || '');
-}
-
-// Названия устройств доступны только после того, как на этот источник хоть
-// раз выдавали разрешение на микрофон (иначе label пустой) — для уже
-// звонившего тьютора/ученика это не проблема, для самого первого раза
-// в списке будут просто "Микрофон 1/2/...".
-async function populateMicSelect(selectEl) {
-  try {
-    const devices = await navigator.mediaDevices.enumerateDevices();
-    const mics = devices.filter(d => d.kind === 'audioinput');
-    const current = getMicDeviceId();
-    selectEl.innerHTML = '<option value="">Микрофон по умолчанию</option>' + mics.map((d, i) =>
-      `<option value="${d.deviceId}">${d.label || ('Микрофон ' + (i + 1))}</option>`
-    ).join('');
-    selectEl.value = mics.some(d => d.deviceId === current) ? current : '';
-    selectEl.onchange = () => setMicDeviceId(selectEl.value);
-  } catch (e) {
-    selectEl.style.display = 'none';
-  }
-}
-
-async function applyPlainGain(rawStream) {
-  const audioCtx = new AudioContext();
-  const source = audioCtx.createMediaStreamSource(rawStream);
-  const gainNode = audioCtx.createGain();
-  gainNode.gain.value = getMicGain();
-  const destination = audioCtx.createMediaStreamDestination();
-  source.connect(gainNode).connect(destination);
-  noiseSuppressionCtx = audioCtx;
-  micGainNode = gainNode;
-  return destination.stream;
-}
-
-// DeepFilterNet3 (WASM) — точнее отделяет речь от посторонних звуков, чем
-// RNNoise (не давит всё подряд). RNNoise оставлен как fallback на случай,
-// если DeepFilterNet3 не проинициализировался (старый браузер, урезанный
-// wasm-бюджет на слабом устройстве).
-async function applyDeepFilterNet(rawStream, audioCtx) {
-  const wasmResp = await fetch('/static/deepfilternet3.wasm');
-  const wasmBinary = await wasmResp.arrayBuffer();
-  await audioCtx.audioWorklet.addModule('/static/deepfilternet-worklet.js');
-  const source = audioCtx.createMediaStreamSource(rawStream);
-  const dfnNode = new AudioWorkletNode(audioCtx, 'deepfilternet-processor', {
-    processorOptions: {wasmBinary},
-  });
-  const gainNode = audioCtx.createGain();
-  gainNode.gain.value = getMicGain();
-  const destination = audioCtx.createMediaStreamDestination();
-  source.connect(dfnNode).connect(gainNode).connect(destination);
-  micGainNode = gainNode;
-  return destination.stream;
-}
-
-async function applyRnnoise(rawStream, audioCtx) {
-  await audioCtx.audioWorklet.addModule('/static/rnnoise-worklet.js');
-  const wasmBinary = await NoiseSuppressor.loadRnnoise({
-    url: '/static/rnnoise.wasm',
-    simdUrl: '/static/rnnoise_simd.wasm',
-  });
-  const source = audioCtx.createMediaStreamSource(rawStream);
-  const rnnoiseNode = new NoiseSuppressor.RnnoiseWorkletNode(audioCtx, {maxChannels: 1, wasmBinary});
-  const gainNode = audioCtx.createGain();
-  gainNode.gain.value = getMicGain();
-  const destination = audioCtx.createMediaStreamDestination();
-  source.connect(rnnoiseNode).connect(gainNode).connect(destination);
-  micGainNode = gainNode;
-  return destination.stream;
-}
 
 async function applyNoiseSuppression(rawStream) {
   if (!getNoiseSuppressionEnabled()) {
@@ -525,16 +396,10 @@ function renderCallBar() {
       <input type="range" class="mic-gain-slider" id="mic-gain-slider" min="0.5" max="3" step="0.1" title="Громкость микрофона" value="${getMicGain()}">
       <button class="call-icon-btn is-hangup" id="hangup-btn" title="Завершить звонок">${ICON_PHONE}</button>
     `;
-    document.getElementById('mute-btn').addEventListener('click', toggleMute);
+    document.getElementById('mute-btn').addEventListener('click', () => toggleMute(renderCallBar));
     document.getElementById('hangup-btn').addEventListener('click', () => endCall(true));
     document.getElementById('mic-gain-slider').addEventListener('input', (e) => setMicGain(parseFloat(e.target.value)));
   }
-}
-
-async function fetchIceServers() {
-  const res = await fetch('/api/turn-credentials');
-  const data = await res.json();
-  return data.iceServers;
 }
 
 // Явно просим у браузера подавление эха/шума и автогейн — без этого
@@ -549,42 +414,6 @@ const AUDIO_CONSTRAINTS = {
   sampleRate: 48000,
   sampleSize: 16,
 };
-
-function buildAudioConstraints() {
-  const deviceId = getMicDeviceId();
-  return deviceId ? {...AUDIO_CONSTRAINTS, deviceId: {exact: deviceId}} : AUDIO_CONSTRAINTS;
-}
-
-// Дефолтный битрейт Opus в "голосовом" профиле довольно низкий — поднимаем
-// потолок, качество звонка это заметно улучшает.
-function boostAudioBitrate(peerConnection) {
-  const sender = peerConnection.getSenders().find(s => s.track && s.track.kind === 'audio');
-  if (!sender) return;
-  const params = sender.getParameters();
-  if (!params.encodings || !params.encodings.length) params.encodings = [{}];
-  params.encodings[0].maxBitrate = 128000;
-  sender.setParameters(params).catch(() => {});
-}
-
-// setParameters() выше не всегда доезжает до энкодера так же надёжно, как
-// явные fmtp-параметры в самом SDP — здесь же включаем FEC (восстановление
-// потерянных пакетов без переспроса, слышно как меньше "заикания" на плохой
-// сети) и явно выключаем DTX (экономит трафик на паузах ценой лёгких
-// щелчков/провалов на входе-выходе из тишины — для качества это того не стоит).
-function tuneOpusSdp(sdp) {
-  const rtpmap = sdp.match(/a=rtpmap:(\d+) opus\/48000/);
-  if (!rtpmap) return sdp;
-  const pt = rtpmap[1];
-  const desired = ['minptime=10', 'useinbandfec=1', 'usedtx=0', 'maxaveragebitrate=128000'];
-  const fmtpRe = new RegExp(`a=fmtp:${pt} ([^\r\n]*)`);
-  if (fmtpRe.test(sdp)) {
-    return sdp.replace(fmtpRe, (line, params) => {
-      const kept = params.split(';').filter(p => p && !/^(minptime|useinbandfec|usedtx|maxaveragebitrate)=/.test(p));
-      return `a=fmtp:${pt} ${kept.concat(desired).join(';')}`;
-    });
-  }
-  return sdp.replace(rtpmap[0], `${rtpmap[0]}\r\na=fmtp:${pt} ${desired.join(';')}`);
-}
 
 function setupPeerConnection(iceServers) {
   // iceTransportPolicy: 'relay' — форсируем всегда через свой TURN (coturn),
@@ -652,22 +481,6 @@ async function acceptCall() {
   }
 }
 
-async function handleRemoteIce(msg) {
-  if (pc && pc.remoteDescription) {
-    await pc.addIceCandidate(msg.candidate);
-  } else {
-    pendingRemoteIce.push(msg.candidate);
-  }
-}
-
-function toggleMute() {
-  if (!localStream) return;
-  const track = localStream.getAudioTracks()[0];
-  track.enabled = !track.enabled;
-  sendMessage({type: 'mute_status', muted: !track.enabled});
-  renderCallBar();
-}
-
 function renderRemoteMuteStatus(muted) {
   const el = document.getElementById('remote-mute-status');
   el.innerHTML = muted ? `${ICON('bellOff')} у репетитора выключен микрофон` : '';
@@ -691,20 +504,6 @@ function endCall(notify) {
 let tasks = [];
 let currentTaskId = null;
 const taskStatus = {}; // id -> 'pass' | 'fail'; seeded from history on load, updated live after each submit
-
-function escapeHtml(value) {
-  const div = document.createElement('div');
-  div.textContent = value === undefined ? '' : String(value);
-  return div.innerHTML;
-}
-
-function redirectToLoginIfUnauthorized(res) {
-  if (res.status === 401) {
-    window.location.href = '/login';
-    return true;
-  }
-  return false;
-}
 
 let impersonating = false;
 
@@ -736,15 +535,7 @@ async function loadMe() {
 // перезагрузке страницы открываться там же, где ученик/тьютор остановился,
 // а не всегда на первом задании. Ключ без user-id: на практике устройство
 // принадлежит одному человеку (ученик на своём, тьютор на своём).
-const LAST_TASK_KEY = 'pph:lastTaskId';
-const LAST_PAGE_KEY = 'pph:lastTaskPage';
-
-function saveLastTask() {
-  if (currentTaskId !== null) {
-    localStorage.setItem(LAST_TASK_KEY, String(currentTaskId));
-    localStorage.setItem(LAST_PAGE_KEY, String(taskPage));
-  }
-}
+function lastTaskKey(suffix) { return suffix === 'taskId' ? 'pph:lastTaskId' : 'pph:lastTaskPage'; }
 
 async function loadTasks() {
   const res = await fetch('/api/tasks');
@@ -753,8 +544,8 @@ async function loadTasks() {
 
   // Восстанавливаем последнее открытое задание, если оно ещё доступно
   // (задание могло быть скрыто из веб-грейдера — нет тестовых входов и т.п.).
-  const savedId = Number(localStorage.getItem(LAST_TASK_KEY));
-  const savedPage = Number(localStorage.getItem(LAST_PAGE_KEY));
+  const savedId = Number(localStorage.getItem(lastTaskKey('taskId')));
+  const savedPage = Number(localStorage.getItem(lastTaskKey('page')));
   const savedTaskExists = tasks.some(t => t.id === savedId);
   currentTaskId = savedTaskExists ? savedId : (tasks.length ? tasks[0].id : null);
   if (savedTaskExists && Number.isFinite(savedPage)) taskPage = savedPage;
@@ -903,56 +694,6 @@ runFreeBtn.addEventListener('click', async () => {
   }
 });
 
-function renderGradeResult(container, data) {
-  if (data.error) {
-    container.innerHTML = `<div class="result-summary is-fail"><span>${escapeHtml(data.error)}</span></div>`;
-    return;
-  }
-  const summaryHtml = `<div class="result-summary ${data.all_passed ? 'is-pass' : 'is-fail'}">
-    <span class="count">${data.passed} / ${data.total}</span>
-    <span>${data.all_passed ? 'Все тесты пройдены' : 'Есть ошибки'}</span>
-  </div>`;
-  const casesHtml = data.results.map((r, i) => {
-    const input = escapeHtml(JSON.stringify(r.input));
-    if (!r.passed && r.error) {
-      return `<div class="test-case is-fail">
-        <div class="test-case-head">
-          <span class="test-case-name">Тест ${i + 1}</span>
-          <span class="badge badge-fail">Ошибка</span>
-        </div>
-        <dl class="test-io">
-          <dt>Вход</dt><dd>${input}</dd>
-          <dt>Ошибка</dt><dd class="diff-got">${escapeHtml(r.error)}</dd>
-        </dl>
-      </div>`;
-    }
-    return `<div class="test-case ${r.passed ? 'is-pass' : 'is-fail'}">
-      <div class="test-case-head">
-        <span class="test-case-name">Тест ${i + 1}</span>
-        <span class="badge ${r.passed ? 'badge-pass' : 'badge-fail'}">${r.passed ? 'Пройден' : 'Не пройден'}</span>
-      </div>
-      <dl class="test-io">
-        <dt>Вход</dt><dd>${input}</dd>
-        <dt>Ожидалось</dt><dd>${escapeHtml(JSON.stringify(r.expected))}</dd>
-        <dt>Получено</dt><dd class="${r.passed ? '' : 'diff-got'}">${escapeHtml(JSON.stringify(r.actual))}</dd>
-      </dl>
-    </div>`;
-  }).join('');
-  container.innerHTML = `<div class="stack stack-3">${summaryHtml}<div class="test-list">${casesHtml}</div></div>`;
-}
-
-function renderFreeRunResult(container, data) {
-  if (!data.ok) {
-    container.innerHTML = `<div class="result-summary is-fail"><span>${escapeHtml(data.error || 'Ошибка выполнения')}</span></div>`;
-    return;
-  }
-  const output = data.stdout ? escapeHtml(data.stdout) : '(нет вывода)';
-  container.innerHTML = `<div class="stack stack-3">
-    <div class="result-summary is-pass"><span>Код выполнен</span></div>
-    <pre class="block" style="white-space: pre-wrap; margin: 0">${output}</pre>
-  </div>`;
-}
-
 function render(data) {
   resultsSection.style.display = 'block';
 
@@ -1000,19 +741,6 @@ function render(data) {
   }).join('');
 }
 
-async function loadMaterials() {
-  const res = await fetch('/api/materials');
-  if (!res.ok) return;
-  const manifest = await res.json();
-  const list = document.getElementById('materials-list');
-  list.innerHTML = Object.entries(manifest).map(([module, data]) => `
-    <details class="materials-module"${data.lessons.length ? '' : ''}>
-      <summary>${escapeHtml(data.title)}</summary>
-      ${data.lessons.map(l => `<a class="material-link" target="_blank" rel="noopener" href="/materials/${encodeURIComponent(module)}/${encodeURIComponent(l.slug)}">${escapeHtml(l.title)}</a>`).join('')}
-    </details>
-  `).join('');
-}
-
 // --- Многоступенчатые подсказки ---------------------------------------------
 // Три уровня: 1 — абстракция, 2 — конкретика со ссылками (через 7 мин после 1),
 // 3 — почти решение (ещё через 15 мин). Тайминг считает сервер по HintReveal,
@@ -1034,14 +762,6 @@ const HINT_LEVEL_TITLES = {
   3: 'Шаг 3 · почти решение',
 };
 // HINT_MARKERS и ICON определены в начале скрипта (используются при старте).
-
-function fmtCountdown(ms) {
-  if (ms <= 0) return '00:00';
-  const totalSec = Math.ceil(ms / 1000);
-  const m = Math.floor(totalSec / 60);
-  const s = totalSec % 60;
-  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-}
 
 function renderHints() {
   // Панель показываем, только если сервер вернул данные (см. loadHints: при
