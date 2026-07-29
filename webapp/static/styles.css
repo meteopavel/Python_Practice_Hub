@@ -170,7 +170,10 @@ h3 {
 h4 { font-size: var(--fs-md); font-weight: var(--fw-semibold); }
 
 a { color: var(--c-signal); text-decoration: none; }
-a:hover { color: var(--c-signal-hover); text-decoration: underline; text-underline-offset: 2px; }
+a:hover { color: var(--c-signal-hover); }
+/* Подчёркивание ссылок — только там, где это осознанно задано (контент
+   подсказок .hint-content a). Кнопки и навигация (.btn, material-link) при
+   hover НЕ подчёркиваются — подчёркивание там кринж, как сказал заказчик. */
 
 :focus-visible {
   outline: 2px solid var(--c-focus);
@@ -1016,20 +1019,50 @@ pre.block {
   text-underline-offset: 2px;
 }
 
-/* Ссылки на справочные материалы — full hairline, не left-accent-bar */
+/* Справочные материалы — компактный список как у заданий: без делителей,
+   плотная строка, hover-подсветка строки (без подчёркивания и без бордюра). */
+.materials-module { border: 0; background: none; }
+.materials-module + .materials-module { margin-top: var(--space-1); }
+.materials-module > summary {
+  display: flex;
+  align-items: center;
+  padding: 6px var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--c-text-muted);
+  cursor: pointer;
+  list-style: none;
+  border-radius: var(--radius-sm);
+}
+.materials-module > summary::-webkit-details-marker { display: none; }
+.materials-module > summary::before {
+  content: "▸";
+  display: inline-block;
+  margin-right: var(--space-2);
+  color: var(--c-text-faint);
+  transition: transform var(--transition);
+}
+.materials-module[open] > summary::before { transform: rotate(90deg); }
+.materials-module > summary:hover { color: var(--c-text); background: var(--c-surface-2); }
+
 .material-link {
   display: block;
-  padding: 6px 10px;
+  padding: 5px 8px 5px 22px;  /* отступ слева — под стрелку раскрытия */
   border-radius: var(--radius-sm);
   color: var(--c-text-muted);
   text-decoration: none;
   font-size: var(--fs-sm);
-  border: 1px solid transparent;
 }
 .material-link:hover {
   background: var(--c-surface-2);
   color: var(--c-signal);
-  border-color: var(--c-signal-dim);
+  text-decoration: none;
+}
+
+/* Устаревшие классы (details-based) — оставлены, но новая полоса их не использует */
 }
 
 /* --------------------------------------------------------------------------

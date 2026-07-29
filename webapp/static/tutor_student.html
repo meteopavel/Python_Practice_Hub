@@ -27,15 +27,6 @@
   .live-mount { min-height: 180px; }
   .live-mount .cm-editor { height: 100%; }
   .live-mount .cm-scroller { min-height: 180px; }
-  .material-link {
-    display: block;
-    padding: 6px 8px;
-    border-radius: var(--radius-sm);
-    color: var(--c-text);
-    text-decoration: none;
-    font-size: var(--fs-sm);
-  }
-  .material-link:hover { background: var(--c-surface-2); }
 </style>
 </head>
 <body>
@@ -1275,11 +1266,9 @@ async function loadMaterials() {
   const manifest = await res.json();
   const list = document.getElementById('materials-list');
   list.innerHTML = Object.entries(manifest).map(([module, data]) => `
-    <details class="attempt-item">
-      <summary class="attempt-row">${escapeHtml(data.title)}</summary>
-      <div class="stack stack-1">
-        ${data.lessons.map(l => `<a class="material-link" target="_blank" rel="noopener" href="/materials/${encodeURIComponent(module)}/${encodeURIComponent(l.slug)}">${escapeHtml(l.title)}</a>`).join('')}
-      </div>
+    <details class="materials-module">
+      <summary>${escapeHtml(data.title)}</summary>
+      ${data.lessons.map(l => `<a class="material-link" target="_blank" rel="noopener" href="/materials/${encodeURIComponent(module)}/${encodeURIComponent(l.slug)}">${escapeHtml(l.title)}</a>`).join('')}
     </details>
   `).join('');
 }
