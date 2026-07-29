@@ -836,20 +836,38 @@ pre.block {
 .hint-step-title { font-family: var(--font-mono); font-weight: var(--fw-bold); font-size: var(--fs-sm); }
 .hint-step-meta { margin-left: auto; font-size: var(--fs-xs); color: var(--c-text-muted); font-family: var(--font-mono); }
 
-/* Маркер состояния ступени — квадрат (мир остроугольный) */
+/* Маркер состояния ступени — квадрат (мир остроугольный). Внутри SVG-иконка
+   на currentColor, цвет берётся из класса состояния ниже. */
 .hint-marker {
   display: inline-grid;
   place-items: center;
   width: 20px; height: 20px;
-  font-size: 12px;
-  line-height: 1;
+  line-height: 0;
   border-radius: var(--radius-sm);
   flex-shrink: 0;
 }
+.hint-marker svg { width: 12px; height: 12px; }
 .hint-marker.is-ready    { background: var(--c-signal-soft); color: var(--c-signal); }
 .hint-marker.is-waiting  { background: var(--c-warn-bg); color: var(--c-warn); }
 .hint-marker.is-revealed { background: var(--c-pass-bg); color: var(--c-pass); }
 .hint-marker.is-locked   { background: var(--c-surface-2); color: var(--c-text-faint); }
+
+/* Универсальная приборная inline-иконка — stroke-монохром на currentColor.
+   Используется в кнопках (hint-lock-btn), статустных подписях (mute/solved) —
+   везде, где раньше были эмодзи. */
+.ico {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.125em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+}
+.ico--sm { width: 0.9em; height: 0.9em; }
 
 .hint-timer {
   font-family: var(--font-mono);

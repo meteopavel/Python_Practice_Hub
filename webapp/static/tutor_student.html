@@ -52,7 +52,7 @@
   <form id="call-link-form" class="row" style="margin: 0; gap: 4px; align-items: center">
     <input type="url" class="btn btn-sm" id="call-link-input" placeholder="Ссылка на звонок (Телемост и т.п.)" style="width: 220px" required>
     <button class="btn btn-sm btn-primary" type="submit">Отправить</button>
-    <span class="muted" id="call-link-status" style="font-size: var(--fs-sm); display: none; white-space: nowrap">✅ Ученик получил</span>
+    <span class="muted" id="call-link-status" style="font-size: var(--fs-sm); display: none; white-space: nowrap"></span>
   </form>
   <button class="call-icon-btn is-mute is-sm" id="header-mute-btn" title="Микрофон" style="display: none"></button>
   <input type="range" class="mic-gain-slider" id="mic-gain-slider" min="0.5" max="3" step="0.1" title="Громкость микрофона" style="display: none">
@@ -60,7 +60,7 @@
     <input type="checkbox" id="noise-suppression-toggle"> шумодав
   </label>
   <select class="btn btn-sm" id="mic-select" style="max-width: 160px; display: none" title="Микрофон"></select>
-  <span class="muted" id="remote-mute-status" style="font-size: var(--fs-sm); display: none">🔇 у ученика микрофон выключен</span>
+  <span class="muted" id="remote-mute-status" style="font-size: var(--fs-sm); display: none"></span>
   <form id="impersonate-form" method="post" style="margin: 0">
     <button class="call-icon-btn is-mute is-sm" id="impersonate-btn" type="submit" title="Посмотреть как ученик"></button>
   </form>
@@ -128,7 +128,7 @@
       <section class="stack stack-3">
         <div class="row between">
           <span class="panel-title">Ваша подсказка ученику</span>
-          <button class="btn btn-sm" id="hint-lock-btn">🔒 Скрыто от ученика</button>
+          <button class="btn btn-sm" id="hint-lock-btn">Скрыто от ученика</button>
         </div>
         <div class="code-editor bench-grid">
           <div class="code-editor-bar"><span>hint.py</span></div>
@@ -264,7 +264,8 @@ document.getElementById('edit-student-code-btn').addEventListener('click', () =>
 let hintVisible = false;
 function setHintVisible(visible) {
   hintVisible = visible;
-  document.getElementById('hint-lock-btn').textContent = visible ? '🔓 Видно ученику' : '🔒 Скрыто от ученика';
+  const btn = document.getElementById('hint-lock-btn');
+  btn.innerHTML = (visible ? ICON('unlock') : ICON('lock')) + ' ' + (visible ? 'Видно ученику' : 'Скрыто от ученика');
   sendMessage({type: 'hint_visibility', visible});
   if (visible) sendMessage({code: hintEditor.getValue()});
 }
@@ -595,7 +596,9 @@ function connectWs() {
       renderSubmitResult(msg);
       loadStudentAttempts(currentTaskId);
     } else if (msg.type === 'mute_status') {
-      document.getElementById('remote-mute-status').style.display = msg.muted ? 'inline' : 'none';
+      const muteEl = document.getElementById('remote-mute-status');
+      muteEl.innerHTML = ICON('bellOff') + ' у ученика микрофон выключен';
+      muteEl.style.display = msg.muted ? 'inline' : 'none';
     } else if (msg.type === 'call_answer') {
       handleCallAnswer(msg);
     } else if (msg.type === 'call_ice') {
@@ -675,6 +678,7 @@ document.getElementById('call-link-form').addEventListener('submit', (e) => {
 // Ученик подтверждает получение ссылки сообщением call_link_ack — иначе
 // тьютор не видит, реально ли приглашение дошло и отрендерилось у ученика.
 function showCallLinkAck() {
+  callLinkStatus.innerHTML = ICON('checkCircle') + ' Ученик получил';
   callLinkStatus.style.display = 'inline';
 }
 
@@ -1138,12 +1142,26 @@ const hintsPanelSub = document.getElementById('hints-panel-sub');
 let hintState = { taskId: null, levels: [] };
 let hintCountdownTimer = null;
 
+// Приборные SVG-иконки состояний — монохром stroke на currentColor, единый
+// стиль с иконками звонка выше. Заменяют эмодзи (🔒🔓⏳🔇✅).
+const ICON = (name) => {
+  const p = {
+    lock:    '<rect x="5" y="11" width="14" height="10" rx="1"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+    unlock:  '<rect x="5" y="11" width="14" height="10" rx="1"/><path d="M8 11V7a4 4 0 0 1 7.5-2"/>',
+    clock:   '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    check:   '<path d="M20 6 9 17l-5-5"/>',
+    bellOff: '<path d="M18.66 15A2 2 0 0 1 18 13.7V10a6 6 0 0 0-9.33-5"/><path d="M6 8a6 6 0 0 0 0 6v1.7A2 2 0 0 1 7.34 18H10m0 0a2 2 0 0 0 4 0"/><path d="M3 3l18 18"/><path d="M14 10a2 2 0 0 0-2-2"/>',
+    checkCircle: '<circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/>',
+  };
+  return `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${p[name] || ''}</svg>`;
+};
+
 const HINT_LEVEL_TITLES = {
   1: 'Шаг 1 · куда двигаться',
   2: 'Шаг 2 · конкретика со ссылками',
   3: 'Шаг 3 · почти решение',
 };
-const HINT_MARKERS = { ready: '🔓', waiting: '⏳', revealed: '✓', locked: '🔒' };
+const HINT_MARKERS = { ready: ICON('unlock'), waiting: ICON('clock'), revealed: ICON('check'), locked: ICON('lock') };
 
 function fmtCountdown(ms) {
   if (ms <= 0) return '00:00';

@@ -95,7 +95,7 @@
       <div class="stack stack-2">
         <span class="panel-title">Аудиозвонок</span>
         <span class="muted" id="call-status"></span>
-        <span class="muted" id="remote-mute-status" style="font-size: var(--fs-sm); display: none">🔇 у репетитора выключен микрофон</span>
+        <span class="muted" id="remote-mute-status" style="font-size: var(--fs-sm); display: none"></span>
       </div>
       <div class="row" id="call-actions"></div>
     </div>
@@ -141,7 +141,7 @@
       </div>
       <div id="free-run-result"></div>
     </section>
-    <p class="muted" id="solved-note" style="display: none">Задание уже решено ✅ — код можно посмотреть в «Мои попытки» выше.</p>
+    <p class="muted" id="solved-note" style="display: none"><span id="solved-note-icon"></span> Задание уже решено — код можно посмотреть в «Мои попытки» выше.</p>
 
     <section class="stack stack-4 bench-grid" id="results-section" style="display: none; padding: var(--space-4); border: 1px solid var(--c-border); border-radius: var(--radius-md)">
       <span class="panel-title">Результаты проверки</span>
@@ -295,6 +295,7 @@ const ICON_MIC_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
 const ICON_EYE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
 document.getElementById('impersonation-call-link').innerHTML = ICON_PHONE;
 document.getElementById('impersonation-eye-btn').innerHTML = ICON_EYE;
+document.getElementById('solved-note-icon').innerHTML = ICON('checkCircle');
 
 // --- Звук звонка (Web Audio, без внешних файлов) ---------------------------
 // AudioContext нельзя запустить без жеста пользователя — "разблокируем" его
@@ -655,7 +656,9 @@ function toggleMute() {
 }
 
 function renderRemoteMuteStatus(muted) {
-  document.getElementById('remote-mute-status').style.display = muted ? 'block' : 'none';
+  const el = document.getElementById('remote-mute-status');
+  el.innerHTML = muted ? `${ICON('bellOff')} у репетитора выключен микрофон` : '';
+  el.style.display = muted ? 'block' : 'none';
 }
 
 function endCall(notify) {
@@ -1035,8 +1038,21 @@ const HINT_LEVEL_TITLES = {
   2: 'Шаг 2 · конкретика со ссылками',
   3: 'Шаг 3 · почти решение',
 };
+// Приборные SVG-иконки на currentColor — монохром, stroke-стиль, цвет берётся
+// из CSS-класса состояния (.hint-marker.is-*). Никаких эмодзи: единый набор.
+const ICON = (name) => {
+  const p = {
+    lock:    '<rect x="5" y="11" width="14" height="10" rx="1"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+    unlock:  '<rect x="5" y="11" width="14" height="10" rx="1"/><path d="M8 11V7a4 4 0 0 1 7.5-2"/>',
+    clock:   '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    check:   '<path d="M20 6 9 17l-5-5"/>',
+    bellOff: '<path d="M18.66 15A2 2 0 0 1 18 13.7V10a6 6 0 0 0-9.33-5"/><path d="M6 8a6 6 0 0 0 0 6v1.7A2 2 0 0 1 7.34 18H10m0 0a2 2 0 0 0 4 0"/><path d="M3 3l18 18"/><path d="M14 10a2 2 0 0 0-2-2"/>',
+    checkCircle: '<circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/>',
+  };
+  return `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${p[name] || ''}</svg>`;
+};
 const HINT_MARKERS = {
-  ready: '🔓', waiting: '⏳', revealed: '✓', locked: '🔒',
+  ready: ICON('unlock'), waiting: ICON('clock'), revealed: ICON('check'), locked: ICON('lock'),
 };
 
 function fmtCountdown(ms) {
