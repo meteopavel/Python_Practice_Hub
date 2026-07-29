@@ -638,6 +638,117 @@ pre.block {
   border: 1px solid var(--c-code-border);
   border-radius: var(--radius-sm);
 }
+/* --------------------------------------------------------------------------
+   9.1 ИСТОРИЯ ПОПЫТОК — полоса индикаторов-показаний (мини-осциллограмма)
+   Каждая попытка = квадрат-лампа: зелёный pass / красный с диагональю fail
+   (диагональ — для дальтоников, не только цвет). Hover → превью-модалка
+   с кодом+датой. Клик → раскрытие кода инлайн.
+   -------------------------------------------------------------------------- */
+.attempt-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+.attempt-chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--c-border-strong);
+  background: var(--c-surface-2);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform var(--transition), border-color var(--transition);
+  padding: 0;
+}
+.attempt-chip:hover { transform: translateY(-1px); border-color: var(--c-signal-dim); z-index: 5; }
+.attempt-chip:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 2px; }
+/* лампы состояния */
+.attempt-chip::after {
+  content: "";
+  width: 10px; height: 10px;
+  background: var(--c-border-strong);
+}
+.attempt-chip.is-pass { border-color: var(--c-pass-border); background: var(--c-pass-bg); }
+.attempt-chip.is-pass::after { background: var(--c-pass-solid); }
+.attempt-chip.is-fail { border-color: var(--c-fail-border); background: var(--c-fail-bg); }
+.attempt-chip.is-fail::after {
+  background: var(--c-fail-solid);
+  /* диагональная риска для дальтоников — fail отличается не только цветом */
+  background-image: linear-gradient(45deg, rgba(0,0,0,0.4) 25%, transparent 25%, transparent 50%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.4) 75%, transparent 75%);
+  background-size: 4px 4px;
+}
+.attempt-chip.is-pass.is-latest { border-color: var(--c-pass-solid); }
+.attempt-chip.is-pass.is-latest::after { box-shadow: 0 0 0 2px var(--c-pass-bg); }
+
+/* Раскрытый код под полосой (по клику) */
+.attempt-detail {
+  margin-top: var(--space-3);
+  border-top: 1px solid var(--c-border);
+  padding-top: var(--space-3);
+}
+.attempt-detail-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--c-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.attempt-detail .code-editor { margin-bottom: 0; }
+
+/* Превью-модалка при наведении — всплывающая карточка с кодом + датой */
+.attempt-preview {
+  position: fixed;
+  z-index: 60;
+  width: min(440px, calc(100vw - 32px));
+  max-height: 320px;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border-strong);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity var(--transition), transform var(--transition);
+}
+.attempt-preview.is-open { opacity: 1; transform: translateY(0); }
+.attempt-preview-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--c-border);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--c-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.attempt-preview-body {
+  padding: var(--space-3);
+  overflow: auto;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--c-code-text);
+  background: var(--c-code-bg);
+  white-space: pre;
+}
+@media (hover: none) {
+  /* На тач-устройствах hover нет — превью отключаем, остаётся клик-раскрытие */
+  .attempt-preview { display: none; }
+}
+
+/* Устаревшие классы (details-based) — оставлены, но новая полоса их не использует */
 .attempt-item { border-bottom: 1px solid var(--c-border); }
 .attempt-item:last-child { border-bottom: 0; }
 .attempt-row {

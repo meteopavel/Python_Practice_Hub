@@ -185,6 +185,7 @@
 </div>
 
 <script src="/static/codemirror.bundle.js"></script>
+<script src="/static/attempts.js"></script>
 <script src="/static/noise-suppressor.bundle.js"></script>
 <script>
 const studentId = Number(window.location.pathname.split('/').pop());
@@ -385,24 +386,7 @@ async function loadStudentAttempts(taskId) {
   if (!res.ok) { section.style.display = 'none'; return; }
   const attempts = await res.json();
   section.style.display = attempts.length ? 'block' : 'none';
-  const rows = document.getElementById('student-attempts-rows');
-  rows.innerHTML = attempts.map((a, i) => `
-    <details class="attempt-item">
-      <summary class="attempt-row">
-        <span class="badge ${a.passed ? 'badge-pass' : 'badge-fail'}">${a.passed ? 'Пройдено' : 'Ошибки'}</span>
-        <span class="muted">${a.created_at ? new Date(a.created_at).toLocaleString('ru-RU') : ''}</span>
-      </summary>
-      <div class="code-editor"><div class="attempt-code-mount" data-idx="${i}"></div></div>
-    </details>
-  `).join('');
-  rows.querySelectorAll('details').forEach((details, i) => {
-    details.addEventListener('toggle', () => {
-      if (!details.open || details.dataset.mounted) return;
-      details.dataset.mounted = '1';
-      const mount = details.querySelector('.attempt-code-mount');
-      PracticeHubEditor.create(mount, attempts[i].code, null, {readOnly: true});
-    });
-  });
+  PPHAttempts.render(document.getElementById('student-attempts-rows'), attempts, PracticeHubEditor.create);
 }
 
 function renderGradeResult(container, data) {
