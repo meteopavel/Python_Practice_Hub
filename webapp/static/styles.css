@@ -318,6 +318,25 @@ a:hover { color: var(--c-signal-hover); }
 }
 .btn-ghost:hover { background: var(--c-surface-2); color: var(--c-text); border-color: var(--c-border-strong); }
 
+/* Маленькая квадратная icon-кнопка для второстепенных действий рядом с
+   заголовками панелей — в отличие от .call-icon-btn (круглая, только для
+   звонка) держит остроугольный язык остального интерфейса. */
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--c-border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--c-surface-2);
+  color: var(--c-text-muted);
+  cursor: pointer;
+  transition: var(--transition);
+}
+.icon-btn:hover { background: var(--c-surface-3); color: var(--c-text); }
+.icon-btn svg { width: 14px; height: 14px; }
+
 .btn-sm { padding: 6px 12px; font-size: var(--fs-xs); }
 .btn-lg { padding: 12px 22px; font-size: var(--fs-md); }
 .btn-block { width: 100%; }

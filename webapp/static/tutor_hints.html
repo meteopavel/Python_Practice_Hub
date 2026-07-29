@@ -214,7 +214,14 @@ async function loadTasks() {
   const sel = document.getElementById('task-select');
   sel.innerHTML = tasks.map(t => `<option value="${t.id}">${t.id}. ${escapeHtml(t.description)}</option>`).join('');
   sel.addEventListener('change', () => loadTask(Number(sel.value)));
-  if (tasks.length) loadTask(tasks[0].id);
+  if (!tasks.length) return;
+  // Переход по ссылке "Редактировать подсказки" с карточки ученика
+  // (tutor_student.html) — там уже выбрано конкретное задание, приходим
+  // сразу на него, а не на первое по списку.
+  const requestedTaskId = Number(new URLSearchParams(location.search).get('task'));
+  const initialTaskId = tasks.some(t => t.id === requestedTaskId) ? requestedTaskId : tasks[0].id;
+  sel.value = String(initialTaskId);
+  loadTask(initialTaskId);
 }
 
 async function loadTask(taskId) {

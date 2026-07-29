@@ -30,6 +30,10 @@
   .hint-mount { min-height: 140px; }
   .hint-mount .cm-editor { height: 100%; }
   .hint-mount .cm-scroller { min-height: 140px; }
+  /* Режим "нельзя копировать" (одно из трёх состояний подсказки, см.
+     hint-lock-btn у тьютора) — репетитор просит объяснять решение, а не
+     переносить готовый код в задание. */
+  .hint-mount.is-protected, .hint-mount.is-protected * { user-select: none; -webkit-user-select: none; }
 </style>
 </head>
 <body>
@@ -98,7 +102,6 @@
         <span class="panel-title">Подсказка от репетитора</span>
         <span class="badge badge-pass">Репетитор online</span>
       </div>
-      <p class="muted" id="hint-locked-note" style="margin: 0">Репетитор пока не открыл подсказку.</p>
       <div id="hint-body">
         <div class="code-editor">
           <div class="code-editor-bar"><span>hint.py</span></div>
@@ -188,16 +191,24 @@ const codeEditor = PracticeHubEditor.create(
   }
 );
 const hintSection = document.getElementById('hint-section');
-const hintEditor = PracticeHubEditor.create(
-  document.getElementById('hint-mount'), '', null, {readOnly: true}
-);
-const hintLockedNote = document.getElementById('hint-locked-note');
-const hintBody = document.getElementById('hint-body');
-let hintVisible = false;
+const hintMount = document.getElementById('hint-mount');
+const hintEditor = PracticeHubEditor.create(hintMount, '', null, {readOnly: true});
+// CSS (user-select: none, только в режиме "protected") убирает выделение
+// мышью/тачем, но не блокирует копирование по горячим клавишам или через
+// контекстное меню — добиваем это здесь же, тем же условием на hintMode.
+hintMount.addEventListener('copy', (e) => { if (hintMode === 'protected') e.preventDefault(); });
+hintMount.addEventListener('cut', (e) => { if (hintMode === 'protected') e.preventDefault(); });
+hintMount.addEventListener('contextmenu', (e) => { if (hintMode === 'protected') e.preventDefault(); });
 
-function renderHintVisibility() {
-  hintBody.style.display = hintVisible ? '' : 'none';
-  hintLockedNote.style.display = hintVisible ? 'none' : 'block';
+// Три состояния подсказки (переключает тьютор по кругу, см. hint-lock-btn):
+// hidden — блок вообще не показываем ученику; protected — виден, но не
+// копируется; open — виден и копируется свободно. По умолчанию — hidden.
+let tutorOnline = false;
+let hintMode = 'hidden';
+
+function updateHintSection() {
+  hintSection.style.display = (tutorOnline && hintMode !== 'hidden') ? 'flex' : 'none';
+  hintMount.classList.toggle('is-protected', hintMode === 'protected');
 }
 const submitBtn = document.getElementById('submit-btn');
 const summary = document.getElementById('summary');
@@ -217,7 +228,8 @@ function connectWs(ownId) {
   ws.onmessage = (event) => {
     const msg = JSON.parse(event.data);
     if (msg.type === 'tutor_status') {
-      hintSection.style.display = msg.online ? 'flex' : 'none';
+      tutorOnline = !!msg.online;
+      updateHintSection();
     } else if (msg.type === 'tutor_hint') {
       hintEditor.setValue(msg.code || '');
     } else if (msg.type === 'hint_result') {
@@ -232,8 +244,8 @@ function connectWs(ownId) {
       const container = document.getElementById('hint-result');
       renderFreeRunResult(container, msg.result);
     } else if (msg.type === 'hint_visibility') {
-      hintVisible = !!msg.visible;
-      renderHintVisibility();
+      hintMode = msg.mode === 'protected' || msg.mode === 'open' ? msg.mode : 'hidden';
+      updateHintSection();
     } else if (msg.type === 'tutor_edit_code') {
       if (msg.task_id === currentTaskId) codeEditor.setValue(msg.code || '');
       codeByTask[msg.task_id] = msg.code || '';
@@ -897,7 +909,7 @@ async function revealHint(level) {
   } catch (e) { /* сеть — молча, состояние не меняем */ }
 }
 
-renderHintVisibility();
+updateHintSection();
 loadMe();
 loadTasks();
 loadMaterials();
