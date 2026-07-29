@@ -1,82 +1,92 @@
 /* ==========================================================================
-   ЕГЭ/ОГЭ Информатика — дизайн-система
-   Чистый CSS. Все токены — CSS-переменные. Тёмная тема через
-   @media (prefers-color-scheme: dark). Внешних зависимостей нет.
+   Python Practice Hub — The Engineering Bench
+   Грейдер как измерительный прибор: тёмный фон-стенд, координатная сетка
+   как структурный грунт, моноширинная разметка, один электрический акцент.
+   Глубина — через тональные слои поверхности, не тени. Острые углы.
+   Чистый CSS, токены — CSS-переменные. Внешних зависимостей нет.
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
-   1. ТОКЕНЫ — светлая тема (значения по умолчанию на :root)
+   1. ТОКЕНЫ — приборный тёмный мир (единственный мир, полный commit)
    -------------------------------------------------------------------------- */
 :root {
-  color-scheme: light dark;
+  color-scheme: dark;
 
-  /* --- Палитра: нейтрали (холодный серый — спокойный, «серьёзный edtech») */
-  --c-bg:          #f6f7f9;  /* фон страницы            */
-  --c-surface:     #ffffff;  /* карточки, панели         */
-  --c-surface-2:   #f0f2f5;  /* вложенные блоки, hover   */
-  --c-border:      #e2e5ea;  /* границы 1px              */
-  --c-border-strong: #cdd2da;/* границы полей ввода      */
+  /* --- Приборный грунт: тёмный стенд с координатной сеткой */
+  --c-bg:           #0B0F14;  /* фон-стенд (bench dark)             */
+  --c-surface:      #13181F;  /* панель (один тон вверх)            */
+  --c-surface-2:    #1B2129;  /* поднятая поверхность / hover       */
+  --c-surface-3:    #232A33;  /* ещё выше / активный элемент         */
+
+  /* --- Сетка: структурный грунт */
+  --grid-minor:     rgba(45, 212, 239, 0.04);  /* тонкие линии сетки  */
+  --grid-major:     rgba(45, 212, 239, 0.07);  /* крупные линии сетки  */
+
+  /* --- Hairline-линии (1px по сетке, тихие) */
+  --c-border:       #2A323D;
+  --c-border-strong: #3A4452;
 
   /* --- Текст */
-  --c-text:        #1b1e24;  /* осн. текст ~15:1 на --c-bg */
-  --c-text-muted:  #5b6472;  /* вторичный  ~5.9:1 на --c-bg */
-  --c-text-faint:  #838c9a;  /* подписи, плейсхолдеры */
+  --c-text:         #E6EDF3;  /* основной ~16:1 на --c-bg              */
+  --c-text-muted:   #8B97A6;  /* вторичный ~6:1 на --c-bg              */
+  --c-text-faint:   #5A6675;  /* подписи, плейсхолдеры                 */
 
-  /* --- Основной акцент (спокойный синий = доверие, не «детский») */
-  --c-primary:        #2b5fd9;  /* белый текст = 5.6:1 ✓ AA */
-  --c-primary-hover:  #2350bf;
-  --c-primary-active: #1d449f;
-  --c-primary-soft:   #eaf0fd;  /* мягкий фон-подложка   */
-  --c-primary-text:   #ffffff;  /* текст на акценте      */
-  --c-focus:          #4d84ff;  /* кольцо фокуса         */
+  /* --- Сигнал: единственный электрический акцент (осциллограф/CRT) */
+  --c-signal:        #2DD4EF;  /* акцент «установка активна»           */
+  --c-signal-hover:  #54DEF5;
+  --c-signal-dim:    #16788A;  /* приглушённый (бордюр/фоны)           */
+  --c-signal-soft:   rgba(45, 212, 239, 0.12);  /* мягкая подложка     */
+  --c-signal-text:   #05181C;  /* тёмный текст на ярком сигнале        */
+  --c-focus:         #2DD4EF;
 
-  /* --- Семантика: результаты тестов */
-  --c-pass:        #12693f;  /* тёмно-зелёный текст     */
-  --c-pass-bg:     #e7f4ec;  /* подложка pass           */
-  --c-pass-border: #bce0cb;
-  --c-pass-solid:  #1a8f56;  /* заливка индикатора      */
+  /* --- Совместимость: страницы используют --c-primary* для акцента.
+     Сохраняем стабильный API: primary = signal (единственный акцент мира). */
+  --c-primary:       #2DD4EF;
+  --c-primary-hover: #54DEF5;
+  --c-primary-soft:  rgba(45, 212, 239, 0.12);
 
-  --c-fail:        #b3261e;  /* тёмно-красный текст     */
-  --c-fail-bg:     #fcebe9;
-  --c-fail-border: #f2c4bf;
-  --c-fail-solid:  #d43a30;
+  /* --- Семантика: показания прибора (функция, не настроение) */
+  --c-pass:        #3FB950;  /* тест прошёл — терминальный зелёный    */
+  --c-pass-bg:     rgba(63, 185, 80, 0.10);
+  --c-pass-border: rgba(63, 185, 80, 0.30);
+  --c-pass-solid:  #3FB950;
 
-  --c-warn:        #8a5a00;  /* «выполняется / частично» */
-  --c-warn-bg:     #fdf3e0;
-  --c-warn-border: #f0dcae;
+  --c-fail:        #F85149;  /* тест упал — терминальный красный      */
+  --c-fail-bg:     rgba(248, 81, 73, 0.10);
+  --c-fail-border: rgba(248, 81, 73, 0.32);
+  --c-fail-solid:  #F85149;
 
-  /* --- Блок кода */
-  --c-code-bg:     #0f1420;  /* редактор кода — всегда тёмный */
-  --c-code-text:   #e6e9f0;
-  --c-code-border: #1e2636;
-  --c-code-gutter: #6b7590;
+  --c-warn:        #D29922;  /* вычисляется — янтарный               */
+  --c-warn-bg:     rgba(210, 153, 34, 0.10);
+  --c-warn-border: rgba(210, 153, 34, 0.30);
 
-  /* --- Тени */
-  --shadow-sm: 0 1px 2px rgba(16, 20, 30, 0.06);
-  --shadow-md: 0 4px 14px rgba(16, 20, 30, 0.08);
-  --shadow-lg: 0 12px 32px rgba(16, 20, 30, 0.12);
+  /* --- Блок кода: всегда тёмный «экран прибора» (чуть глубже стенда) */
+  --c-code-bg:     #070A0E;
+  --c-code-text:   #E6EDF3;
+  --c-code-border: #1F2630;
+  --c-code-gutter: #5A6675;
 
-  /* --- Типографика */
-  --font-ui:   system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, Consolas, "Liberation Mono", monospace;
+  /* --- Типографика: моно — голос прибора, sans — беглое чтение */
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, "Liberation Mono", monospace;
+  --font-ui:   "Inter Tight", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
 
-  --fs-xs:  0.75rem;   /* 12 */
-  --fs-sm:  0.8125rem; /* 13 */
-  --fs-md:  0.9375rem; /* 15 — базовый размер интерфейса */
-  --fs-lg:  1.0625rem; /* 17 */
-  --fs-xl:  1.375rem;  /* 22 */
-  --fs-2xl: 1.75rem;   /* 28 */
-  --fs-3xl: 2.25rem;   /* 36 */
+  --fs-xs:  0.6875rem; /* 11 — технические метки/лейблы             */
+  --fs-sm:  0.8125rem; /* 13                                       */
+  --fs-md:  0.9375rem; /* 15 — базовый размер интерфейса            */
+  --fs-lg:  1.0625rem; /* 17                                       */
+  --fs-xl:  1.375rem;  /* 22                                       */
+  --fs-2xl: 1.75rem;   /* 28                                       */
+  --fs-3xl: 2.25rem;   /* 36                                       */
 
-  --lh-tight: 1.25;
+  --lh-tight: 1.2;
   --lh-base:  1.55;
 
   --fw-regular: 400;
-  --fw-medium:  500;
+  --fw-medium: 500;
   --fw-semibold: 600;
   --fw-bold:    700;
 
-  /* --- Отступы (шаг 4px) */
+  /* --- Отступы (шаг 4px, по сетке) */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -86,90 +96,81 @@
   --space-7: 48px;
   --space-8: 64px;
 
-  /* --- Скругления */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --radius-pill: 999px;
+  /* --- Скругления: острые, технические (прибор/плата, не мягкие карточки) */
+  --radius-sm: 2px;
+  --radius-md: 3px;
+  --radius-lg: 4px;
+  --radius-pill: 2px;  /* мир остроугольный — pill не используется */
 
   /* --- Раскладка */
   --container: 1320px;
-  --transition: 140ms ease;
+  --transition: 120ms cubic-bezier(0.4, 0, 0.2, 1);
+  --grid-cell: 24px;  /* шаг координатной сетки */
+
+  /* --- Тени: мир плоский. «Глубина» = тональный подъём + hairline-контур.
+     Теневые токены оставлены как очень тихие акценты для всплывающих меню,
+     но не для покоящихся поверхностей. */
+  --shadow-sm: 0 0 0 1px var(--c-border);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--c-border);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--c-border-strong);
 }
 
 /* --------------------------------------------------------------------------
-   2. ТОКЕНЫ — тёмная тема (переопределяем ТОЛЬКО переменные)
-   -------------------------------------------------------------------------- */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --c-bg:          #0f1216;
-    --c-surface:     #171a21;
-    --c-surface-2:   #1f242d;
-    --c-border:      #2a2f3a;
-    --c-border-strong: #3a4150;
-
-    --c-text:        #e7e9ee;  /* ~14:1 на --c-bg */
-    --c-text-muted:  #a3adbd;  /* ~7:1  на --c-bg */
-    --c-text-faint:  #78828f;
-
-    --c-primary:        #4f7bec;  /* белый текст ≈4.5:1 ✓ */
-    --c-primary-hover:  #6a90f0;
-    --c-primary-active: #3f6ae0;
-    --c-primary-soft:   #1a2540;
-    --c-primary-text:   #ffffff;
-    --c-focus:          #6a90f0;
-
-    --c-pass:        #58d29a;
-    --c-pass-bg:     #12271d;
-    --c-pass-border: #1f4a34;
-    --c-pass-solid:  #2fae70;
-
-    --c-fail:        #ff8a80;
-    --c-fail-bg:     #2a1614;
-    --c-fail-border: #572621;
-    --c-fail-solid:  #e5544a;
-
-    --c-warn:        #e9b968;
-    --c-warn-bg:     #2a2212;
-    --c-warn-border: #4d3f1c;
-
-    --c-code-bg:     #0b0e14;
-    --c-code-text:   #e6e9f0;
-    --c-code-border: #232b3a;
-    --c-code-gutter: #566078;
-
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-    --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.45);
-    --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.55);
-  }
-}
-
-/* --------------------------------------------------------------------------
-   3. СБРОС И БАЗА
+   2. СБРОС И БАЗА
    -------------------------------------------------------------------------- */
 *, *::before, *::after { box-sizing: border-box; }
 
 html { -webkit-text-size-adjust: 100%; }
 
+/* Body — приборный стенд. Сетка НЕ фоновый декор всего body (это AI-slop
+   сигнатура): она живёт только на «экранах прибора» — где он измеряет
+   (результаты тестов, редактор кода) — через .bench-grid. Body — плоская
+   тёмная поверхность, глубина строится тональными слоями поверхностей. */
 body {
   margin: 0;
   font-family: var(--font-ui);
   font-size: var(--fs-md);
   line-height: var(--lh-base);
   color: var(--c-text);
-  background: var(--c-bg);
+  background-color: var(--c-bg);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
-h1, h2, h3, h4, p { margin: 0; }
-h1 { font-size: var(--fs-3xl); line-height: var(--lh-tight); font-weight: var(--fw-bold); letter-spacing: -0.01em; }
-h2 { font-size: var(--fs-2xl); line-height: var(--lh-tight); font-weight: var(--fw-semibold); letter-spacing: -0.01em; }
-h3 { font-size: var(--fs-xl); line-height: var(--lh-tight); font-weight: var(--fw-semibold); }
-h4 { font-size: var(--fs-lg); font-weight: var(--fw-semibold); }
+/* «Экран прибора»: координатная сетка как measurement-surface, не декор.
+   Применяется точечно к зонам, где грейдер показывает измерение/код. */
+.bench-grid {
+  background-image:
+    linear-gradient(var(--grid-minor) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-minor) 1px, transparent 1px);
+  background-size: var(--grid-cell) var(--grid-cell);
+}
 
-a { color: var(--c-primary); text-decoration: none; }
-a:hover { color: var(--c-primary-hover); }
+h1, h2, h3, h4, p { margin: 0; }
+h1 {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xl);
+  line-height: var(--lh-tight);
+  font-weight: var(--fw-bold);
+  letter-spacing: -0.01em;
+}
+h2 {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xl);
+  line-height: var(--lh-tight);
+  font-weight: var(--fw-bold);
+  letter-spacing: -0.01em;
+}
+h3 {
+  font-family: var(--font-mono);
+  font-size: var(--fs-lg);
+  line-height: var(--lh-tight);
+  font-weight: var(--fw-semibold);
+}
+h4 { font-size: var(--fs-md); font-weight: var(--fw-semibold); }
+
+a { color: var(--c-signal); text-decoration: none; }
+a:hover { color: var(--c-signal-hover); text-decoration: underline; text-underline-offset: 2px; }
 
 :focus-visible {
   outline: 2px solid var(--c-focus);
@@ -181,8 +182,10 @@ a:hover { color: var(--c-primary-hover); }
 .faint { color: var(--c-text-faint); }
 .mono  { font-family: var(--font-mono); }
 
+::selection { background: var(--c-signal-soft); color: var(--c-text); }
+
 /* --------------------------------------------------------------------------
-   4. РАСКЛАДКА
+   3. РАСКЛАДКА
    -------------------------------------------------------------------------- */
 .container {
   width: 100%;
@@ -191,17 +194,18 @@ a:hover { color: var(--c-primary-hover); }
   padding-inline: var(--space-5);
 }
 
+/* Хедер-стенд: приборная панель сверху. Hairline снизу, без blur-стекла —
+   мир плоский и материальный, не «стеклянный». */
 .app-header {
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 20;
   display: flex;
   align-items: center;
   gap: var(--space-4);
-  height: 52px;
+  min-height: 56px;
   padding-inline: var(--space-5);
-  background: color-mix(in srgb, var(--c-surface) 88%, transparent);
-  backdrop-filter: saturate(1.4) blur(8px);
+  background: var(--c-bg);
   border-bottom: 1px solid var(--c-border);
 }
 
@@ -209,44 +213,65 @@ a:hover { color: var(--c-primary-hover); }
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  font-weight: var(--fw-semibold);
-  font-size: var(--fs-lg);
+  font-family: var(--font-mono);
+  font-weight: var(--fw-bold);
+  font-size: var(--fs-md);
+  letter-spacing: 0.02em;
   color: var(--c-text);
 }
+/* Знак </> — остаётся (идеален для код-прибора), но перерисован: острые
+   углы, signal-контур на сетке, как индикатор «канал активен». */
 .brand-mark {
   display: grid;
   place-items: center;
   width: 30px; height: 30px;
   border-radius: var(--radius-sm);
-  background: var(--c-primary);
-  color: var(--c-primary-text);
+  background: var(--c-signal-soft);
+  color: var(--c-signal);
   font-family: var(--font-mono);
   font-weight: var(--fw-bold);
-  font-size: 15px;
+  font-size: 14px;
+  border: 1px solid var(--c-signal-dim);
 }
 .header-spacer { flex: 1; }
 
 /* --------------------------------------------------------------------------
-   5. КАРТОЧКА / ПАНЕЛЬ
+   4. КАРТОЧКА / ПАНЕЛЬ — ячейка на сетке, тональный слой
    -------------------------------------------------------------------------- */
 .card {
   background: var(--c-surface);
   border: 1px solid var(--c-border);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
+  /* глубина через hairline, не тень */
+  box-shadow: none;
 }
 .card-pad { padding: var(--space-4); }
 
+/* panel-title — НЕ серый SaaS uppercase-микролейбл (запрещён Design-системой),
+   а техническая метка прибора: моноширинная, с signal-маркером как индикатор
+   канала. Читается как маркировка на приборе, а не как дашборд-клише. */
 .panel-title {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono);
   font-size: var(--fs-xs);
-  font-weight: var(--fw-semibold);
-  letter-spacing: 0.06em;
+  font-weight: var(--fw-bold);
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--c-text-muted);
+  color: var(--c-text);
+}
+.panel-title::before {
+  content: "";
+  display: inline-block;
+  width: 8px; height: 8px;
+  margin-right: var(--space-2);
+  background: var(--c-signal);
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
 }
 
 /* --------------------------------------------------------------------------
-   6. КНОПКИ
+   5. КНОПКИ — органы управления прибора (острые, технические)
    -------------------------------------------------------------------------- */
 .btn {
   display: inline-flex;
@@ -254,67 +279,71 @@ a:hover { color: var(--c-primary-hover); }
   justify-content: center;
   gap: var(--space-2);
   padding: 9px 16px;
-  font-family: inherit;
-  font-size: var(--fs-md);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
   font-weight: var(--fw-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   line-height: 1;
   color: var(--c-text);
-  background: var(--c-surface);
+  background: var(--c-surface-2);
   border: 1px solid var(--c-border-strong);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: background var(--transition), border-color var(--transition), transform var(--transition);
+  transition: background var(--transition), border-color var(--transition), color var(--transition);
   white-space: nowrap;
   user-select: none;
 }
-.btn:hover  { background: var(--c-surface-2); }
-.btn:active { transform: translateY(1px); }
-.btn:disabled { opacity: 0.55; cursor: not-allowed; }
+.btn:hover  { background: var(--c-surface-3); border-color: var(--c-signal-dim); }
+.btn:active { background: var(--c-surface); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
+/* Primary — «взведённый» орган управления: яркий сигнал, тёмный текст.
+   Это рычаг прибора, он должен быть безошибочно-заметным. */
 .btn-primary {
-  color: var(--c-primary-text);
-  background: var(--c-primary);
-  border-color: var(--c-primary);
+  color: var(--c-signal-text);
+  background: var(--c-signal);
+  border-color: var(--c-signal);
 }
-.btn-primary:hover  { background: var(--c-primary-hover); border-color: var(--c-primary-hover); }
-.btn-primary:active { background: var(--c-primary-active); }
+.btn-primary:hover  { background: var(--c-signal-hover); border-color: var(--c-signal-hover); color: var(--c-signal-text); text-decoration: none; }
+.btn-primary:active { background: var(--c-signal-dim); }
 
 .btn-ghost {
   background: transparent;
   border-color: transparent;
   color: var(--c-text-muted);
 }
-.btn-ghost:hover { background: var(--c-surface-2); color: var(--c-text); }
+.btn-ghost:hover { background: var(--c-surface-2); color: var(--c-text); border-color: var(--c-border-strong); }
 
-.btn-sm { padding: 6px 12px; font-size: var(--fs-sm); }
-.btn-lg { padding: 12px 22px; font-size: var(--fs-lg); }
+.btn-sm { padding: 6px 12px; font-size: var(--fs-xs); }
+.btn-lg { padding: 12px 22px; font-size: var(--fs-md); }
 .btn-block { width: 100%; }
 
-/* Круглые icon-кнопки звонка (принять/сбросить/микрофон) — как в звонилках,
-   а не текстовые кнопки. Иконка hangup — тот же svg "телефон", просто
-   повёрнутый на 135° (стандартный приём, не отдельная картинка). */
+/* Круглые icon-кнопки звонка — оставлены круглыми по функции (звонилка),
+   это намеренное исключение из остроугольного мира: орган связи. */
 .call-icon-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 44px;
   height: 44px;
-  border: none;
-  border-radius: var(--radius-pill);
+  border: 1px solid var(--c-border-strong);
+  border-radius: 50%;
   cursor: pointer;
   transition: var(--transition);
   color: #fff;
+  background: var(--c-surface-2);
 }
 .call-icon-btn svg { width: 20px; height: 20px; }
-.call-icon-btn.is-accept { background: var(--c-pass-solid); }
-.call-icon-btn.is-accept:hover { filter: brightness(1.08); }
-.call-icon-btn.is-hangup { background: var(--c-fail-solid); }
-.call-icon-btn.is-hangup:hover { filter: brightness(1.08); }
+.call-icon-btn.is-accept { background: var(--c-pass-solid); border-color: var(--c-pass-solid); }
+.call-icon-btn.is-accept:hover { filter: brightness(1.12); }
+.call-icon-btn.is-hangup { background: var(--c-fail-solid); border-color: var(--c-fail-solid); }
+.call-icon-btn.is-hangup:hover { filter: brightness(1.12); }
 .call-icon-btn.is-hangup svg { transform: rotate(135deg); }
 .call-icon-btn.is-mute {
   background: var(--c-surface-2);
   color: var(--c-text);
-  border: 1px solid var(--c-border-strong);
+  border-color: var(--c-border-strong);
 }
 .call-icon-btn.is-mute.is-active {
   background: var(--c-fail-bg);
@@ -325,6 +354,7 @@ a:hover { color: var(--c-primary-hover); }
 .call-icon-btn.is-sm svg { width: 15px; height: 15px; }
 .call-icon-btn.is-pulsing {
   background: var(--c-pass-solid);
+  border-color: var(--c-pass-solid);
   animation: call-pulse-green 1.6s ease-in-out infinite;
 }
 @keyframes call-pulse-green {
@@ -332,22 +362,24 @@ a:hover { color: var(--c-primary-hover); }
   50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--c-pass-solid) 0%, transparent); }
 }
 
-/* Регулировка усиления микрофона во время звонка */
 .mic-gain-slider {
   width: 80px;
   height: 32px;
-  accent-color: var(--c-primary);
+  accent-color: var(--c-signal);
   cursor: pointer;
 }
 
 /* --------------------------------------------------------------------------
-   7. ПОЛЯ ВВОДА
+   6. ПОЛЯ ВВОДА — клеммы/разъёмы прибора
    -------------------------------------------------------------------------- */
 .field { display: flex; flex-direction: column; gap: var(--space-2); }
 .label {
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-medium);
-  color: var(--c-text);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--c-text-muted);
 }
 .input, .textarea, .select {
   width: 100%;
@@ -355,39 +387,42 @@ a:hover { color: var(--c-primary-hover); }
   font-family: inherit;
   font-size: var(--fs-md);
   color: var(--c-text);
-  background: var(--c-surface);
+  background: var(--c-bg);
   border: 1px solid var(--c-border-strong);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   transition: border-color var(--transition), box-shadow var(--transition);
 }
 .input::placeholder, .textarea::placeholder { color: var(--c-text-faint); }
 .input:focus, .textarea:focus, .select:focus {
   outline: none;
-  border-color: var(--c-primary);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--c-focus) 28%, transparent);
+  border-color: var(--c-signal);
+  box-shadow: 0 0 0 3px var(--c-signal-soft);
 }
 .field-hint { font-size: var(--fs-sm); color: var(--c-text-muted); }
 .field-error { font-size: var(--fs-sm); color: var(--c-fail); }
 
 /* --------------------------------------------------------------------------
-   8. БЕЙДЖИ / ИНДИКАТОРЫ PASS-FAIL
+   7. БЕЙДЖИ / ИНДИКАТОРЫ — показания состояния прибора
    -------------------------------------------------------------------------- */
 .badge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 3px 10px 3px 8px;
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
-  border-radius: var(--radius-pill);
+  padding: 3px 8px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-radius: var(--radius-sm);
   border: 1px solid transparent;
   white-space: nowrap;
 }
 .badge::before {
   content: "";
-  width: 7px; height: 7px;
-  border-radius: 50%;
+  width: 6px; height: 6px;
   background: currentColor;
+  flex-shrink: 0;
 }
 .badge-pass { color: var(--c-pass); background: var(--c-pass-bg); border-color: var(--c-pass-border); }
 .badge-fail { color: var(--c-fail); background: var(--c-fail-bg); border-color: var(--c-fail-border); }
@@ -395,82 +430,103 @@ a:hover { color: var(--c-primary-hover); }
 .badge-neutral { color: var(--c-text-muted); background: var(--c-surface-2); border-color: var(--c-border); }
 .badge-neutral::before { background: var(--c-text-faint); }
 
-/* Крупный итоговый счётчик тестов */
+/* Крупный итоговый счётчик тестов — главное показание прибора */
 .result-summary {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
   border-radius: var(--radius-md);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-bold);
+  border: 1px solid var(--c-border);
+  background: var(--c-surface);
 }
-.result-summary.is-pass { color: var(--c-pass); background: var(--c-pass-bg); border: 1px solid var(--c-pass-border); }
-.result-summary.is-fail { color: var(--c-fail); background: var(--c-fail-bg); border: 1px solid var(--c-fail-border); }
-.result-summary .count { font-family: var(--font-mono); font-size: var(--fs-lg); }
+.result-summary.is-pass {
+  color: var(--c-pass);
+  background: var(--c-pass-bg);
+  border-color: var(--c-pass-border);
+}
+.result-summary.is-fail {
+  color: var(--c-fail);
+  background: var(--c-fail-bg);
+  border-color: var(--c-fail-border);
+}
+.result-summary .count {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xl);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
 
 /* --------------------------------------------------------------------------
-   9. КАРТОЧКА / СПИСОК ЗАДАНИЙ
+   8. КАРТОЧКА / СПИСОК ЗАДАНИЙ
    -------------------------------------------------------------------------- */
-.task-sidebar { position: sticky; top: 68px; }
-.task-list { display: flex; flex-direction: column; gap: 2px; max-height: none; overflow-y: visible; }
+.task-sidebar { position: sticky; top: 72px; }
+.task-list { display: flex; flex-direction: column; gap: 1px; max-height: none; overflow-y: visible; }
 .task-desc p { margin: 0 0 var(--space-3); white-space: pre-wrap; }
 .task-desc p:last-child { margin-bottom: 0; }
+
+/* Задание в списке — ячейка на сетке, активная «встаёт» сигнальным контуром */
 .task-item {
   display: flex;
   align-items: center;
   gap: var(--space-2);
   width: 100%;
-  padding: 6px var(--space-2);
+  padding: 7px var(--space-2);
   text-align: left;
   background: transparent;
   border: 1px solid transparent;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   cursor: pointer;
   font: inherit;
   font-size: var(--fs-sm);
-  color: var(--c-text);
-  transition: background var(--transition);
+  color: var(--c-text-muted);
+  transition: background var(--transition), color var(--transition);
 }
-.task-item:hover { background: var(--c-surface-2); }
+.task-item:hover { background: var(--c-surface-2); color: var(--c-text); }
 .task-item.is-active {
-  background: var(--c-primary-soft);
-  border-color: color-mix(in srgb, var(--c-primary) 35%, transparent);
+  background: var(--c-signal-soft);
+  border-color: var(--c-signal-dim);
+  color: var(--c-text);
 }
 .task-item-num {
   flex-shrink: 0;
   display: grid; place-items: center;
-  width: 20px; height: 20px;
+  min-width: 22px; height: 20px;
+  padding: 0 4px;
   font-family: var(--font-mono);
   font-size: 11px;
-  font-weight: var(--fw-semibold);
-  color: var(--c-text-muted);
+  font-weight: var(--fw-bold);
+  font-variant-numeric: tabular-nums;
+  color: var(--c-text-faint);
   background: var(--c-surface-2);
   border-radius: var(--radius-sm);
 }
-.task-item.is-active .task-item-num { color: var(--c-primary); background: var(--c-surface); }
+.task-item.is-active .task-item-num { color: var(--c-signal-text); background: var(--c-signal); }
 .task-item-body { min-width: 0; flex: 1; }
 .task-item-title { display: block; font-weight: var(--fw-medium); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .task-item-meta  { font-size: var(--fs-sm); color: var(--c-text-muted); }
 .task-item-status { flex-shrink: 0; }
-.task-item-status .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
-.dot-pass { background: var(--c-pass-solid); }
+.task-item-status .dot { width: 8px; height: 8px; display: inline-block; border-radius: 1px; }
+.dot-pass { background: var(--c-pass-solid); box-shadow: 0 0 6px var(--c-pass-bg); }
 .dot-fail { background: var(--c-fail-solid); }
 .dot-none { background: var(--c-border-strong); }
 
-/* Метка сложности */
+/* Метка */
 .chip {
   display: inline-block;
   padding: 2px 8px;
+  font-family: var(--font-mono);
   font-size: var(--fs-xs);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-bold);
+  letter-spacing: 0.04em;
   border-radius: var(--radius-sm);
   background: var(--c-surface-2);
   color: var(--c-text-muted);
+  border: 1px solid var(--c-border);
 }
 
-/* Выпадашка в хедере (аккаунт, переключатель ученика) — <details>, без JS
-   на открытие/закрытие; закрытие по клику вне — маленький общий обработчик
-   на каждой странице (см. скрипты). */
+/* Выпадашка в хедере — <details>, без JS на открытие/закрытие */
 .account-menu { position: relative; list-style: none; }
 .account-trigger {
   display: flex;
@@ -490,11 +546,11 @@ a:hover { color: var(--c-primary-hover); }
   padding: var(--space-2);
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
   background: var(--c-surface);
-  border: 1px solid var(--c-border);
+  border: 1px solid var(--c-border-strong);
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-lg);
   z-index: 30;
 }
 .account-menu-item {
@@ -514,11 +570,11 @@ a:hover { color: var(--c-primary-hover); }
 .account-menu-divider { height: 1px; margin: var(--space-1) 0; background: var(--c-border); }
 
 /* --------------------------------------------------------------------------
-   10. РЕДАКТОР КОДА
+   9. РЕДАКТОР КОДА — экран прибора
    -------------------------------------------------------------------------- */
 .code-editor {
   border: 1px solid var(--c-code-border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   overflow: hidden;
   background: var(--c-code-bg);
 }
@@ -526,12 +582,21 @@ a:hover { color: var(--c-primary-hover); }
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  padding: 8px 12px;
-  background: color-mix(in srgb, var(--c-code-bg) 85%, #fff 4%);
+  padding: 7px 12px;
+  background: var(--c-code-bg);
   border-bottom: 1px solid var(--c-code-border);
-  color: var(--c-code-gutter);
+  color: var(--c-signal);
   font-family: var(--font-mono);
-  font-size: var(--fs-sm);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.code-editor-bar::before {
+  content: "";
+  width: 6px; height: 6px;
+  background: var(--c-signal);
+  flex-shrink: 0;
 }
 .code-textarea {
   display: block;
@@ -546,7 +611,7 @@ a:hover { color: var(--c-primary-hover); }
   tab-size: 4;
   color: var(--c-code-text);
   background: var(--c-code-bg);
-  caret-color: var(--c-focus);
+  caret-color: var(--c-signal);
 }
 .code-textarea:focus { outline: none; }
 .code-textarea::placeholder { color: var(--c-code-gutter); }
@@ -559,6 +624,7 @@ code.inline {
   border-radius: var(--radius-sm);
   background: var(--c-surface-2);
   border: 1px solid var(--c-border);
+  color: var(--c-signal);
 }
 pre.block {
   margin: 0;
@@ -570,7 +636,7 @@ pre.block {
   color: var(--c-code-text);
   background: var(--c-code-bg);
   border: 1px solid var(--c-code-border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
 }
 .attempt-item { border-bottom: 1px solid var(--c-border); }
 .attempt-item:last-child { border-bottom: 0; }
@@ -584,56 +650,81 @@ pre.block {
 .attempt-code-mount .cm-editor { height: 100%; }
 
 /* --------------------------------------------------------------------------
-   11. РЕЗУЛЬТАТЫ ТЕСТОВ
+   10. РЕЗУЛЬТАТЫ ТЕСТОВ — Verdict Readout, показания прибора
+   Сетка-разметка (bench-grid) на зоне результатов = measurement-surface.
    -------------------------------------------------------------------------- */
-.test-list { display: flex; flex-direction: column; gap: var(--space-3); }
+.test-list { display: flex; flex-direction: column; gap: var(--space-2); }
 .test-case {
   border: 1px solid var(--c-border);
-  border-left-width: 3px;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   background: var(--c-surface);
   overflow: hidden;
+  position: relative;
 }
-.test-case.is-pass { border-left-color: var(--c-pass-solid); }
-.test-case.is-fail { border-left-color: var(--c-fail-solid); }
-
+/* Состояние — цветной hairline-контур всего периметра + status-индикатор,
+   не «side-tab» (бордюр с одной стороны = AI-slop tell). */
+.test-case.is-pass { border-color: var(--c-pass-border); }
+.test-case.is-fail { border-color: var(--c-fail-border); }
+/* Status-индикатор: квадрат-маркер перед именем теста, как лампа канала */
 .test-case-head {
   display: flex;
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-3) var(--space-4);
 }
-.test-case-name { font-weight: var(--fw-medium); }
+.test-case-head::before {
+  content: "";
+  width: 8px; height: 8px;
+  flex-shrink: 0;
+  background: var(--c-border-strong);
+}
+.test-case.is-pass .test-case-head::before { background: var(--c-pass-solid); }
+.test-case.is-fail .test-case-head::before { background: var(--c-fail-solid); }
+.test-case-name {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-bold);
+  font-variant-numeric: tabular-nums;
+}
 .test-case-head .badge { margin-left: auto; }
 
 .test-io {
   display: grid;
-  grid-template-columns: 90px 1fr;
+  grid-template-columns: 96px 1fr;
   gap: var(--space-1) var(--space-3);
   padding: 0 var(--space-4) var(--space-4);
   font-size: var(--fs-sm);
 }
-.test-io dt { color: var(--c-text-muted); padding-top: 2px; }
+.test-io dt {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--c-text-faint);
+  padding-top: 3px;
+}
 .test-io dd {
   margin: 0;
   font-family: var(--font-mono);
   font-size: 13px;
   color: var(--c-text);
-  background: var(--c-surface-2);
+  background: var(--c-bg);
   padding: 4px 8px;
   border-radius: var(--radius-sm);
   white-space: pre-wrap;
   word-break: break-word;
+  border: 1px solid var(--c-border);
 }
-.test-io dd.diff-got { color: var(--c-fail); background: var(--c-fail-bg); }
+.test-io dd.diff-got { color: var(--c-fail); background: var(--c-fail-bg); border-color: var(--c-fail-border); }
 
 /* --------------------------------------------------------------------------
-   12. ТАБЛИЦА (экран репетитора)
+   11. ТАБЛИЦА (экран репетитора)
    -------------------------------------------------------------------------- */
 .table-wrap {
   border: 1px solid var(--c-border);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
+  border-radius: var(--radius-md);
+  overflow: auto;
   background: var(--c-surface);
 }
 .table {
@@ -645,13 +736,14 @@ pre.block {
   position: sticky; top: 0;
   text-align: left;
   padding: var(--space-3) var(--space-4);
+  font-family: var(--font-mono);
   font-size: var(--fs-xs);
-  font-weight: var(--fw-semibold);
-  letter-spacing: 0.05em;
+  font-weight: var(--fw-bold);
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--c-text-muted);
-  background: var(--c-surface-2);
-  border-bottom: 1px solid var(--c-border);
+  background: var(--c-surface-3);
+  border-bottom: 1px solid var(--c-border-strong);
   white-space: nowrap;
 }
 .table tbody td {
@@ -667,11 +759,13 @@ pre.block {
 .avatar {
   display: inline-grid; place-items: center;
   width: 28px; height: 28px;
-  border-radius: 50%;
-  background: var(--c-primary-soft);
-  color: var(--c-primary);
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
+  border-radius: var(--radius-sm);
+  background: var(--c-signal-soft);
+  color: var(--c-signal);
+  border: 1px solid var(--c-signal-dim);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
   margin-right: var(--space-3);
   vertical-align: middle;
 }
@@ -681,17 +775,18 @@ pre.block {
   display: inline-flex; align-items: center; gap: var(--space-3);
 }
 .progress-bar {
-  width: 90px; height: 7px;
-  border-radius: var(--radius-pill);
-  background: var(--c-surface-2);
+  width: 90px; height: 6px;
+  border-radius: 0;
+  background: var(--c-surface-3);
   overflow: hidden;
+  border: 1px solid var(--c-border);
 }
-.progress-fill { height: 100%; border-radius: var(--radius-pill); background: var(--c-pass-solid); }
+.progress-fill { height: 100%; background: var(--c-pass-solid); }
 .progress-fill.is-partial { background: var(--c-warn); }
 .progress-fill.is-low { background: var(--c-fail-solid); }
 
 /* --------------------------------------------------------------------------
-   13. УТИЛИТЫ РАСКЛАДКИ
+   12. УТИЛИТЫ РАСКЛАДКИ
    -------------------------------------------------------------------------- */
 .stack   { display: flex; flex-direction: column; }
 .stack-2 { gap: var(--space-2); } .stack-3 { gap: var(--space-3); }
@@ -702,12 +797,12 @@ pre.block {
 .grow { flex: 1; }
 
 /* --------------------------------------------------------------------------
-   14. ПАНЕЛЬ ПОДСКАЗОК (задания 81..100) — 3-я колонка справа
+   13. ПАНЕЛЬ ПОДСКАЗОК (задания 81..100) — 3-я колонка справа
    -------------------------------------------------------------------------- */
 .hints-panel {
   position: sticky;
-  top: 68px;
-  max-height: calc(100vh - 84px);
+  top: 72px;
+  max-height: calc(100vh - 88px);
   overflow-y: auto;
 }
 .hints-panel-head {
@@ -719,45 +814,43 @@ pre.block {
 }
 .hints-panel-empty { color: var(--c-text-faint); font-size: var(--fs-sm); }
 
-/* Ступень подсказки: card с цветной левой границей по статусу.
-   Переиспользуем семантические токены pass/warn/neutral, новые цвета не вводим. */
+/* Ступень подсказки: full hairline-контур, статус — цвет контура + лампы,
+   не «side-tab» бордюр с одной стороны */
 .hint-step {
   border: 1px solid var(--c-border);
-  border-left-width: 3px;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   background: var(--c-surface);
   padding: var(--space-3);
   transition: opacity var(--transition);
 }
+.hint-step.is-ready    { border-color: color-mix(in srgb, var(--c-signal) 45%, var(--c-border)); }
+.hint-step.is-waiting  { border-color: color-mix(in srgb, var(--c-warn) 45%, var(--c-border)); }
+.hint-step.is-revealed { border-color: color-mix(in srgb, var(--c-pass-solid) 45%, var(--c-border)); }
+.hint-step.is-locked   { opacity: 0.5; }
 .hint-step-head {
   display: flex;
   align-items: center;
   gap: var(--space-2);
   margin-bottom: var(--space-2);
 }
-.hint-step-title { font-weight: var(--fw-semibold); font-size: var(--fs-sm); }
-.hint-step-meta { margin-left: auto; font-size: var(--fs-xs); color: var(--c-text-muted); }
-.hint-step.is-ready    { border-left-color: var(--c-primary); }
-.hint-step.is-waiting  { border-left-color: var(--c-warn); }
-.hint-step.is-revealed { border-left-color: var(--c-pass-solid); }
-.hint-step.is-locked   { opacity: 0.6; }
+.hint-step-title { font-family: var(--font-mono); font-weight: var(--fw-bold); font-size: var(--fs-sm); }
+.hint-step-meta { margin-left: auto; font-size: var(--fs-xs); color: var(--c-text-muted); font-family: var(--font-mono); }
 
-/* Иконка-маркер состояния ступени */
+/* Маркер состояния ступени — квадрат (мир остроугольный) */
 .hint-marker {
   display: inline-grid;
   place-items: center;
   width: 20px; height: 20px;
-  font-size: 13px;
+  font-size: 12px;
   line-height: 1;
-  border-radius: 50%;
+  border-radius: var(--radius-sm);
   flex-shrink: 0;
 }
-.hint-marker.is-ready    { background: var(--c-primary-soft); color: var(--c-primary); }
+.hint-marker.is-ready    { background: var(--c-signal-soft); color: var(--c-signal); }
 .hint-marker.is-waiting  { background: var(--c-warn-bg); color: var(--c-warn); }
 .hint-marker.is-revealed { background: var(--c-pass-bg); color: var(--c-pass); }
 .hint-marker.is-locked   { background: var(--c-surface-2); color: var(--c-text-faint); }
 
-/* Обратный отсчёт до разблокировки — моноширинный, чтобы цифры не плясали */
 .hint-timer {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
@@ -766,18 +859,15 @@ pre.block {
 }
 .hint-step-note { font-size: var(--fs-sm); color: var(--c-text-muted); margin: 0; }
 
-/* Отрендеренный markdown-контент подсказки */
 .hint-content { font-size: var(--fs-sm); line-height: var(--lh-base); }
 .hint-content > *:first-child { margin-top: 0; }
 .hint-content > *:last-child  { margin-bottom: 0; }
 .hint-content p { margin: 0 0 var(--space-2); }
 .hint-content ul { margin: 0 0 var(--space-2); padding-left: var(--space-4); }
 .hint-content li { margin-bottom: 2px; }
-.hint-content a { color: var(--c-primary); text-decoration: underline; text-underline-offset: 2px; }
+.hint-content a { color: var(--c-signal); text-decoration: underline; text-underline-offset: 2px; }
 .hint-content strong { font-weight: var(--fw-semibold); }
-.hint-content .inline {  /* переиспользуем существующий code.inline */
-  font-size: 0.9em;
-}
+.hint-content .inline { font-size: 0.9em; }
 .hint-content pre.block { font-size: 12px; margin: 0 0 var(--space-2); }
 .hint-content pre.block code { font-family: var(--font-mono); color: inherit; }
 
@@ -787,9 +877,62 @@ pre.block {
   background: transparent;
   border: none;
   color: var(--c-text-muted);
+  font-family: var(--font-mono);
   font-size: var(--fs-xs);
   cursor: pointer;
   padding: 0;
   text-decoration: underline;
   text-underline-offset: 2px;
+}
+
+/* Ссылки на справочные материалы — full hairline, не left-accent-bar */
+.material-link {
+  display: block;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  color: var(--c-text-muted);
+  text-decoration: none;
+  font-size: var(--fs-sm);
+  border: 1px solid transparent;
+}
+.material-link:hover {
+  background: var(--c-surface-2);
+  color: var(--c-signal);
+  border-color: var(--c-signal-dim);
+}
+
+/* --------------------------------------------------------------------------
+   14. АДАПТИВ — desktop-first, мобилка как страховка (но честная)
+   Хедер сворачивается, рабочее место переходит в одну колонку с табами.
+   -------------------------------------------------------------------------- */
+@media (max-width: 1100px) {
+  .student-layout { grid-template-columns: 1fr !important; }
+  .task-sidebar { position: static; }
+  .hints-panel { position: static; max-height: none; }
+}
+
+@media (max-width: 720px) {
+  /* Хедер: позволяем переноситься, не обрезаем элементы */
+  .app-header {
+    flex-wrap: wrap;
+    min-height: 0;
+    padding-block: var(--space-2);
+    gap: var(--space-2);
+  }
+  .app-header .header-spacer { flex-basis: 100%; height: 0; }
+  .container { padding-inline: var(--space-3); }
+  /* Тест-кейсы: подписи полей поверх значений на узких экранах */
+  .test-io { grid-template-columns: 1fr; }
+  .test-io dt { padding-top: var(--space-2); }
+  .brand { font-size: var(--fs-sm); }
+  .brand-mark { width: 26px; height: 26px; font-size: 12px; }
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }

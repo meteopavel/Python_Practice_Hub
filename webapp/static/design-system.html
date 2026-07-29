@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Дизайн-система — Информатика ОГЭ/ЕГЭ</title>
-  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-  <link rel="stylesheet" href="styles.css" />
-  <style>
+    <title>Дизайн-система — Python Practice Hub</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="stylesheet" href="styles.css" />
+    <style>
     .ds { padding-block: var(--space-6); }
     .ds section { margin-bottom: var(--space-8); }
     .ds h2 { margin-bottom: var(--space-2); }
@@ -19,9 +19,9 @@
     .sw .sw-meta code { font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--c-text-muted); }
     .ratio { font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--c-pass); }
     .type-row { display: flex; align-items: baseline; gap: var(--space-4); padding: var(--space-3) 0; border-bottom: 1px solid var(--c-border); }
-    .type-row .tk { font-family: var(--font-mono); font-size: var(--fs-sm); color: var(--c-text-muted); width: 130px; flex-shrink: 0; }
+    .type-row .tk { font-family: var(--font-mono); font-size: var(--fs-sm); color: var(--c-text-muted); width: 150px; flex-shrink: 0; }
     .space-demo { display: flex; align-items: flex-end; gap: var(--space-3); flex-wrap: wrap; }
-    .space-demo .bar { background: var(--c-primary-soft); border: 1px solid color-mix(in srgb, var(--c-primary) 30%, transparent); border-radius: var(--radius-sm); }
+    .space-demo .bar { background: var(--c-signal-soft); border: 1px solid color-mix(in srgb, var(--c-signal) 30%, transparent); border-radius: var(--radius-sm); }
     .space-demo .cap { font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--c-text-muted); text-align: center; margin-top: 4px; }
     .demo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--space-5); }
   </style>
@@ -30,53 +30,55 @@
   <header class="app-header">
     <div class="brand"><span class="brand-mark">&lt;/&gt;</span> Дизайн-система</div>
     <div class="header-spacer"></div>
-    <span class="muted">Python Practice Hub · v1</span>
+    <span class="muted">Python Practice Hub · Engineering Bench</span>
   </header>
 
   <div class="container ds">
     <section>
       <h1>Дизайн-система</h1>
       <p class="lead" style="margin-top:var(--space-3)">
-        Спокойный, «серьёзный edtech». Холодные нейтрали + один синий акцент.
+        «The Engineering Bench» — грейдер как измерительный прибор. Тёмный стенд,
+        координатная сетка как measurement-surface (только на экранах измерения),
+        моноширинная разметка с signal-лампами, один электрический акцент.
+        Глубина — через тональные слои поверхности, не тени. Острые углы.
         Всё построено на CSS-переменных из <code class="inline">styles.css</code>.
-        Тёмная тема включается автоматически через <code class="inline">prefers-color-scheme</code> —
-        переключите тему ОС, чтобы проверить эту же страницу.
       </p>
     </section>
 
     <!-- ПАЛИТРА -->
     <section>
       <h2>Палитра</h2>
-      <p class="lead">Контраст проверен по WCAG 2.1 на светлой теме. Основной текст и акцент проходят AA (≥4.5:1), крупные элементы — AAA.</p>
+      <p class="lead">Тёмный приборный мир. Контраст текста на фоне проверен по WCAG 2.1 — основной ~16:1, вторичный ~6:1 (оба ≥ AA). Цвет несёт функцию прибора (pass/fail/working), не настроение.</p>
 
-      <h4 style="margin-bottom:var(--space-3)">Нейтрали и текст</h4>
+      <h4 style="margin-bottom:var(--space-3)">Приборный грунт и текст</h4>
       <div class="swatches" style="margin-bottom:var(--space-5)">
-        <div class="sw"><div class="chip-color" style="background:var(--c-bg)"></div><div class="sw-meta"><b>Фон</b><code>--c-bg</code></div></div>
-        <div class="sw"><div class="chip-color" style="background:var(--c-surface)"></div><div class="sw-meta"><b>Поверхность</b><code>--c-surface</code></div></div>
-        <div class="sw"><div class="chip-color" style="background:var(--c-border-strong)"></div><div class="sw-meta"><b>Граница</b><code>--c-border-strong</code></div></div>
-        <div class="sw"><div class="chip-color" style="background:var(--c-text)"></div><div class="sw-meta"><b>Текст</b><code>--c-text</code> · <span class="ratio">15:1</span></div></div>
-        <div class="sw"><div class="chip-color" style="background:var(--c-text-muted)"></div><div class="sw-meta"><b>Текст 2</b><code>--c-text-muted</code> · <span class="ratio">5.9:1</span></div></div>
+        <div class="sw"><div class="chip-color" style="background:var(--c-bg)"></div><div class="sw-meta"><b>Стенд (фон)</b><code>--c-bg</code></div></div>
+        <div class="sw"><div class="chip-color" style="background:var(--c-surface)"></div><div class="sw-meta"><b>Панель</b><code>--c-surface</code></div></div>
+        <div class="sw"><div class="chip-color" style="background:var(--c-surface-2)"></div><div class="sw-meta"><b>Панель ↑</b><code>--c-surface-2</code></div></div>
+        <div class="sw"><div class="chip-color" style="background:var(--c-border)"></div><div class="sw-meta"><b>Hairline</b><code>--c-border</code></div></div>
+        <div class="sw"><div class="chip-color" style="background:var(--c-text)"></div><div class="sw-meta"><b>Текст</b><code>--c-text</code> · <span class="ratio">~16:1</span></div></div>
+        <div class="sw"><div class="chip-color" style="background:var(--c-text-muted)"></div><div class="sw-meta"><b>Текст 2</b><code>--c-text-muted</code> · <span class="ratio">~6:1</span></div></div>
       </div>
 
-      <h4 style="margin-bottom:var(--space-3)">Акцент и семантика</h4>
+      <h4 style="margin-bottom:var(--space-3)">Сигнал и семантика</h4>
       <div class="swatches">
-        <div class="sw"><div class="chip-color" style="background:var(--c-primary)"></div><div class="sw-meta"><b>Акцент</b><code>--c-primary</code> · <span class="ratio">бел. 5.6:1</span></div></div>
+        <div class="sw"><div class="chip-color" style="background:var(--c-signal)"></div><div class="sw-meta"><b>Сигнал (акцент)</b><code>--c-signal</code></div></div>
         <div class="sw"><div class="chip-color" style="background:var(--c-pass-solid)"></div><div class="sw-meta"><b>Pass</b><code>--c-pass-solid</code></div></div>
         <div class="sw"><div class="chip-color" style="background:var(--c-fail-solid)"></div><div class="sw-meta"><b>Fail</b><code>--c-fail-solid</code></div></div>
-        <div class="sw"><div class="chip-color" style="background:var(--c-warn)"></div><div class="sw-meta"><b>Warn</b><code>--c-warn</code></div></div>
-        <div class="sw"><div class="chip-color" style="background:var(--c-code-bg)"></div><div class="sw-meta"><b>Код</b><code>--c-code-bg</code></div></div>
+        <div class="sw"><div class="chip-color" style="background:var(--c-warn)"></div><div class="sw-meta"><b>Working</b><code>--c-warn</code></div></div>
+        <div class="sw"><div class="chip-color" style="background:var(--c-code-bg)"></div><div class="sw-meta"><b>Экран кода</b><code>--c-code-bg</code></div></div>
       </div>
     </section>
 
     <!-- ТИПОГРАФИКА -->
     <section>
       <h2>Типографика</h2>
-      <p class="lead">Системный шрифт (<code class="inline">system-ui</code>) для интерфейса — быстрый, знакомый, без внешних зависимостей. Моноширинный — для кода и чисел.</p>
+      <p class="lead">Пара: <code class="inline">Inter Tight</code> (sans) для беглого текста и <code class="inline">JetBrains Mono</code> (моно) — голос прибора: метки, лейблы, заголовки секций, код, числа. Лейблы — жирные uppercase с signal-лампой.</p>
       <div class="card card-pad">
-        <div class="type-row"><span class="tk">--fs-3xl / bold</span><span style="font-size:var(--fs-3xl);font-weight:700;letter-spacing:-.01em">Наибольший делитель</span></div>
-        <div class="type-row"><span class="tk">--fs-2xl / 600</span><h2 style="margin:0">Успеваемость учеников</h2></div>
-        <div class="type-row"><span class="tk">--fs-xl / 600</span><h3 style="margin:0">Заголовок задания</h3></div>
-        <div class="type-row"><span class="tk">--fs-md / 400</span><span>Базовый текст интерфейса — 15px, высота строки 1.55.</span></div>
+        <div class="type-row"><span class="tk">--fs-2xl / mono bold</span><span style="font-family:var(--font-mono);font-size:var(--fs-2xl);font-weight:700">Заголовок поверхности</span></div>
+        <div class="type-row"><span class="tk">--fs-xl / mono</span><h2 style="margin:0">Заголовок задания</h2></div>
+        <div class="type-row"><span class="tk">label / mono caps</span><span class="panel-title">Метка прибора</span></div>
+        <div class="type-row"><span class="tk">--fs-md / sans</span><span>Беглый текст интерфейса — sans, высота строки 1.55.</span></div>
         <div class="type-row"><span class="tk">--fs-sm / muted</span><span class="muted">Вторичная подпись, мета-информация.</span></div>
         <div class="type-row" style="border:0"><span class="tk">--font-mono</span><span class="mono">n = int(input())  # 12 → 6</span></div>
       </div>
@@ -85,7 +87,7 @@
     <!-- ОТСТУПЫ -->
     <section>
       <h2>Отступы и сетка</h2>
-      <p class="lead">Шаг 4px. Контейнер — максимум 1120px, боковые поля 24px.</p>
+      <p class="lead">Шаг 4px, по координатной сетке. Контейнер — максимум 1320px, боковые поля 24px; рабочие экраны снимают ограничение ширины.</p>
       <div class="space-demo">
         <div><div class="bar" style="width:4px;height:32px"></div><div class="cap">4</div></div>
         <div><div class="bar" style="width:8px;height:32px"></div><div class="cap">8</div></div>
