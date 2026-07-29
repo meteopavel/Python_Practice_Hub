@@ -946,6 +946,8 @@ pre.block {
 }
 .hint-step-title { font-family: var(--font-mono); font-weight: var(--fw-bold); font-size: var(--fs-sm); }
 .hint-step-meta { margin-left: auto; font-size: var(--fs-xs); color: var(--c-text-muted); font-family: var(--font-mono); }
+.hint-reset-btn { margin-left: auto; color: var(--c-text-faint); }
+.hint-reset-btn:hover { color: var(--c-fail); }
 
 /* Маркер состояния ступени — квадрат (мир остроугольный). Внутри SVG-иконка
    на currentColor, цвет берётся из класса состояния ниже. */

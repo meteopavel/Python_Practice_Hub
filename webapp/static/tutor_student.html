@@ -1175,14 +1175,24 @@ function renderHintsPanel() {
     const body = st === 'revealed'
       ? `<div class="hint-content">${lv.content_html || '<p class="hint-step-note">Текст этой ступени ещё не добавлен.</p>'}</div>`
       : `<p class="hint-step-note">${note}</p>`;
+    // Кнопка сброса — только для раскрытых уровней (закрыть как будто ученик
+    // не открывал). Сброс необратим, поэтому с подтверждением в resetHint().
+    const resetBtn = st === 'revealed'
+      ? `<button type="button" class="btn btn-sm btn-ghost hint-reset-btn" data-level="${lv.level}" title="Сбросить раскрытие">${ICON('lock')} Сбросить</button>`
+      : '';
     return `<div class="hint-step is-${st}">
       <div class="hint-step-head">
         <span class="hint-marker is-${st}">${HINT_MARKERS[st]}</span>
         <span class="hint-step-title">${HINT_LEVEL_TITLES[lv.level]}</span>
+        ${resetBtn}
       </div>
       ${body}
     </div>`;
   }).join('');
+  // Привязываем обработчики сброса (панель пере-рендерится, навешиваем заново).
+  hintsStepsEl.querySelectorAll('.hint-reset-btn').forEach(btn => {
+    btn.addEventListener('click', () => resetHint(Number(btn.dataset.level)));
+  });
   setupHintCountdown();
 }
 
@@ -1226,6 +1236,35 @@ async function loadHintsPanel(taskId) {
     renderHintsPanel();
   } catch (e) {
     hintsPanel.style.display = 'none';
+  }
+}
+
+// Сброс раскрытого уровня — тьютор «закрывает» подсказку, как будто ученик её
+// не открывал. Каскад (уровни выше) и таймеры обрабатываются на бэке; здесь —
+// подтвердить, отправить POST, перерисовать панель из ответа сервера.
+async function resetHint(level) {
+  if (!hintState.taskId) return;
+  if (!confirm(`Сбросить подсказку уровня ${level}?` +
+               `\nУченик снова увидит её закрытой, таймер следующего уровня обнулится.` +
+               `\nЭто действие необратимо.`)) return;
+  try {
+    const res = await fetch(`/api/students/${studentId}/hints/${hintState.taskId}/reset`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({level}),
+    });
+    if (res.status === 401) { window.location.href = '/login'; return; }
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      alert(data.error || 'Не удалось сбросить подсказку');
+      return;
+    }
+    const data = await res.json();
+    hintState = { taskId: hintState.taskId, levels: data.levels };
+    hintsPanelSub.textContent = data.levels.some(l => l.status === 'waiting') ? 'открытие по таймеру' : '';
+    renderHintsPanel();
+  } catch (e) {
+    /* сеть — молча, состояние не меняем */
   }
 }
 

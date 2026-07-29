@@ -177,6 +177,41 @@ def record_reveal(db: Session, user_id: int, task_id: int, level: int) -> None:
     db.commit()
 
 
+def reset_reveal(db: Session, user_id: int, task_id: int, level: int) -> None:
+    """Стирает раскрытие уровня (удаляет HintReveal-строку). После удаления
+    статус пересчитывается из оставшихся строк: уровень снова становится
+    locked/ready/waiting, как будто ученик его не открывал. revealed_at живёт
+    на той же строке, поэтому таймер следующего уровня тоже обнуляется.
+
+    Идемпотентно: несуществующей строки нет — DELETE молча ничего не делает."""
+    db.execute(
+        HintReveal.__table__.delete().where(
+            HintReveal.user_id == user_id,
+            HintReveal.task_id == task_id,
+            HintReveal.level == level,
+        )
+    )
+    db.commit()
+
+
+def reset_reveal_cascade(db: Session, user_id: int, task_id: int, level: int) -> None:
+    """Сбрасывает уровень level И все раскрытые уровни выше него по цепочке.
+
+    Зачем каскад: ученик не мог открыть уровень N+1, не открыв N (таков
+    инвариант _level_state). Если тьютор сбрасывает N, оставив N+1 раскрытым,
+    получится невозможное состояние «старший открыт, а его якорь закрыт».
+    Поэтому при сбросе N заодно сбрасываем каждый вышестоящий раскрытый
+    уровень — ровно один проход вверх по LEVELS."""
+    reset_reveal(db, user_id, task_id, level)
+    for higher in LEVELS:
+        if higher <= level:
+            continue
+        # Сбрасываем только реально раскрытые — иначе трогаем БД впустую.
+        revealed = get_revealed_levels(db, user_id, task_id)
+        if higher in revealed:
+            reset_reveal(db, user_id, task_id, higher)
+
+
 # ---------------------------------------------------------------------------
 # Markdown-рендерер
 # ---------------------------------------------------------------------------

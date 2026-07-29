@@ -23,7 +23,7 @@ from auth import authenticate, current_user_id, current_user_role, forbidden, ha
 from bot_bridge import TASKS, get_solver
 from db import Base, SessionLocal, engine, get_db
 from grading import grade, run_free
-from hints import HINTED_TASK_IDS, LEVELS, available_levels, can_reveal, has_hints, record_reveal, render_markdown
+from hints import HINTED_TASK_IDS, LEVELS, available_levels, can_reveal, has_hints, record_reveal, render_markdown, reset_reveal_cascade
 from materials import MATERIALS_MANIFEST, get_lesson
 from models import ROLE_STUDENT, ROLE_TUTOR, Attempt, Hint, HintReveal, User
 from realtime import get_room, safe_send
@@ -76,6 +76,12 @@ class TutorAskRequest(BaseModel):
 
 class HintRevealRequest(BaseModel):
     """Ученик запрашивает раскрытие уровня подсказки. level — 1|2|3."""
+    level: int
+
+
+class HintResetRequest(BaseModel):
+    """Тьютор сбрасывает раскрытый уровень подсказки ученика (level — 1|2|3).
+    Сбрасывается сам уровень и все раскрытые уровни выше него по цепочке."""
     level: int
 
 
@@ -416,6 +422,27 @@ def student_hints(student_id: int, task_id: int, request: Request, db: Session =
         return JSONResponse(status_code=404, content={"error": "Ученик не найден"})
     if not has_hints(task_id):
         return JSONResponse(status_code=404, content={"error": "Подсказки для этого задания не предусмотрены"})
+    return _hints_response(db, student_id, task_id)
+
+
+@app.post("/api/students/{student_id}/hints/{task_id}/reset")
+def reset_student_hint(student_id: int, task_id: int, payload: HintResetRequest, request: Request, db: Session = Depends(get_db)):
+    """Тьютор сбрасывает раскрытый уровень подсказки ученика — ученик снова
+    увидит его закрытым (как будто не открывал). Сбрасывается сам уровень и
+    каскадно все раскрытые уровни выше, чтобы не получить невозможное
+    состояние «старший открыт, а его якорь закрыт». Действие необратимо:
+    истории раскрытия в БД нет. Возвращает свежее состояние подсказок."""
+    if current_user_id(request) is None:
+        return unauthorized()
+    if current_user_role(request) != ROLE_TUTOR:
+        return forbidden()
+    if _require_student(db, student_id) is None:
+        return JSONResponse(status_code=404, content={"error": "Ученик не найден"})
+    if not has_hints(task_id):
+        return JSONResponse(status_code=404, content={"error": "Подсказки для этого задания не предусмотрены"})
+    if payload.level not in LEVELS:
+        return JSONResponse(status_code=400, content={"error": "Неверный уровень подсказки"})
+    reset_reveal_cascade(db, student_id, task_id, payload.level)
     return _hints_response(db, student_id, task_id)
 
 
