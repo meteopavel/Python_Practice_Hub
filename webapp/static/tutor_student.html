@@ -44,6 +44,7 @@
     <input type="url" class="btn btn-sm" id="call-link-input" placeholder="Ссылка на звонок (Телемост и т.п.)" style="width: 220px" required>
     <button class="btn btn-sm btn-primary" type="submit">Отправить</button>
     <span class="muted" id="call-link-status" style="font-size: var(--fs-sm); display: none; white-space: nowrap"></span>
+    <button class="btn btn-sm btn-ghost" type="button" id="call-link-cancel-btn" style="display: none">Отменить</button>
   </form>
   <button class="call-icon-btn is-mute is-sm" id="header-mute-btn" title="Микрофон" style="display: none"></button>
   <input type="range" class="mic-gain-slider" id="mic-gain-slider" min="0.5" max="3" step="0.1" title="Громкость микрофона" style="display: none">
@@ -640,6 +641,7 @@ let autoRedialAttempted = false;
 // "Присоединиться". Без какой-либо интеграции с API — просто передача
 // текста от одного к другому через уже существующий канал сигналинга.
 const callLinkStatus = document.getElementById('call-link-status');
+const callLinkCancelBtn = document.getElementById('call-link-cancel-btn');
 document.getElementById('call-link-form').addEventListener('submit', (e) => {
   e.preventDefault();
   const input = document.getElementById('call-link-input');
@@ -648,6 +650,7 @@ document.getElementById('call-link-form').addEventListener('submit', (e) => {
   callLinkStatus.style.display = 'none';
   sendMessage({type: 'call_link', url});
   input.value = '';
+  callLinkCancelBtn.style.display = 'inline-block';
 });
 
 // Ученик подтверждает получение ссылки сообщением call_link_ack — иначе
@@ -656,6 +659,14 @@ function showCallLinkAck() {
   callLinkStatus.innerHTML = ICON('checkCircle') + ' Ученик получил';
   callLinkStatus.style.display = 'inline';
 }
+
+// Тьютор может отозвать приглашение (например отправил не ту ссылку) — тем же
+// каналом уходит call_link_cancel, ученик прячет кнопку "Присоединиться".
+callLinkCancelBtn.addEventListener('click', () => {
+  sendMessage({type: 'call_link_cancel'});
+  callLinkStatus.style.display = 'none';
+  callLinkCancelBtn.style.display = 'none';
+});
 
 // Онлайн-статус ученика в шапке — тот же чип-переключатель, что и раньше,
 // просто перекрашиваем в зелёные тона (тот же язык, что и badge-pass) вместо

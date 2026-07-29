@@ -498,7 +498,7 @@ async def session_ws(websocket: WebSocket, student_id: int):
             # подтверждает тьютору, что ссылка реально дошла и отрендерилась.
             if data.get("type") in (
                 "call_offer", "call_answer", "call_ice", "call_end", "mute_status",
-                "call_link", "call_link_ack",
+                "call_link", "call_link_ack", "call_link_cancel",
             ):
                 if is_tutor:
                     if room.student_ws is not None:

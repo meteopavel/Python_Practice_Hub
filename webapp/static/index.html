@@ -40,6 +40,7 @@
   <form method="post" action="/impersonate/stop" id="impersonation-exit-form" style="display: none; margin: 0;">
     <button class="call-icon-btn is-sm is-pulsing" type="submit" title="Вернуться к репетитору" id="impersonation-eye-btn"></button>
   </form>
+  <a class="call-icon-btn is-pulsing" id="call-link-icon" href="#" target="_blank" rel="noopener" title="Репетитор зовёт на созвон — нажмите, чтобы присоединиться" style="display: none"></a>
   <div class="header-spacer"></div>
   <span class="muted" id="username"></span>
   <span class="avatar" id="avatar"></span>
@@ -91,11 +92,6 @@
       <div class="row" id="call-actions"></div>
     </div>
     <audio id="remote-audio" autoplay></audio>
-
-    <div class="card card-pad row between wrap" id="call-link-bar" style="display: none">
-      <span class="panel-title">Репетитор зовёт на созвон</span>
-      <a class="btn btn-primary" id="call-link-btn" href="#" target="_blank" rel="noopener">Присоединиться к звонку</a>
-    </div>
 
     <section class="stack stack-3" id="hint-section" style="display: none">
       <div class="row between">
@@ -253,6 +249,8 @@ function connectWs(ownId) {
       endCall(false);
     } else if (msg.type === 'call_link') {
       showCallLink(msg.url);
+    } else if (msg.type === 'call_link_cancel') {
+      hideCallLink();
     }
   };
 
@@ -266,13 +264,17 @@ function connectWs(ownId) {
 // ссылку тем же WS-каналом (`call_link`) — сервер её просто ретранслирует,
 // без хранения. Показываем как есть, без валидации содержимого (ссылку
 // прислал тьютор из своего личного кабинета, не произвольный ввод извне).
-const callLinkBar = document.getElementById('call-link-bar');
-const callLinkBtn = document.getElementById('call-link-btn');
+const callLinkIcon = document.getElementById('call-link-icon');
 
 function showCallLink(url) {
-  callLinkBtn.href = url;
-  callLinkBar.style.display = 'flex';
+  callLinkIcon.href = url;
+  callLinkIcon.style.display = 'inline-flex';
   sendMessage({type: 'call_link_ack'});
+}
+
+// Тьютор может отозвать приглашение — прячем значок обратно.
+function hideCallLink() {
+  callLinkIcon.style.display = 'none';
 }
 
 // --- Аудиозвонок (WebRTC, P2P) ---------------------------------------------
@@ -304,6 +306,7 @@ const ICON_MIC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" str
 const ICON_MIC_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="1" y1="1" x2="23" y2="23"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/><path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>';
 const ICON_EYE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
 document.getElementById('impersonation-call-link').innerHTML = ICON_PHONE;
+callLinkIcon.innerHTML = ICON_PHONE;
 document.getElementById('impersonation-eye-btn').innerHTML = ICON_EYE;
 document.getElementById('solved-note-icon').innerHTML = ICON('checkCircle');
 
