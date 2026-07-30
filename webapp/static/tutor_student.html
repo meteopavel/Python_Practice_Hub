@@ -38,10 +38,12 @@
     </summary>
     <div class="account-menu-panel" id="switcher-list"></div>
   </details>
+  <form id="impersonate-form" method="post" style="margin: 0">
+    <button class="call-icon-btn is-mute is-sm" id="impersonate-btn" type="submit" title="Посмотреть как ученик"></button>
+  </form>
   <button class="call-icon-btn is-mute is-sm" id="header-call-btn" title="Позвонить"></button>
   <form id="call-link-form" class="row" style="margin: 0; gap: 4px; align-items: center">
-    <input type="url" class="btn btn-sm" id="call-link-input" placeholder="Ссылка на звонок (Телемост и т.п.)" style="width: 220px" required>
-    <button class="btn btn-sm btn-primary" type="submit">Отправить</button>
+    <button class="btn btn-sm" type="submit" id="call-link-submit-btn" title="Отправить ученику ссылку из буфера обмена">Отправить</button>
     <span class="muted" id="call-link-status" style="font-size: var(--fs-sm); display: none; white-space: nowrap"></span>
     <button class="btn btn-sm btn-ghost" type="button" id="call-link-cancel-btn" style="display: none">Отменить</button>
   </form>
@@ -52,9 +54,6 @@
   </label>
   <select class="btn btn-sm" id="mic-select" style="max-width: 160px; display: none" title="Микрофон"></select>
   <span class="muted" id="remote-mute-status" style="font-size: var(--fs-sm); display: none"></span>
-  <form id="impersonate-form" method="post" style="margin: 0">
-    <button class="call-icon-btn is-mute is-sm" id="impersonate-btn" type="submit" title="Посмотреть как ученик"></button>
-  </form>
   <div class="header-spacer"></div>
   <details class="account-menu">
     <summary class="account-trigger">
@@ -585,16 +584,51 @@ let autoRedialAttempted = false;
 // присылает готовую ссылку тем же WS-каналом — ученик увидит кнопку
 // "Присоединиться". Без какой-либо интеграции с API — просто передача
 // текста от одного к другому через уже существующий канал сигналинга.
+//
+// 2026-07-30: поле для вставки ссылки убрали — тьютор просто копирует
+// ссылку у себя в сервисе видеосвязи и жмёт "Отправить", а сама ссылка
+// читается прямо из буфера обмена. Кнопка подсвечивается акцентным цветом,
+// когда в буфере лежит распознанная ссылка на видеовстречу, и выглядит как
+// обычная "Запустить" в остальных случаях — так видно, что жать рано.
+const VIDEO_CALL_LINK_RE = /https?:\/\/(?:[\w-]+\.)?(?:telemost\.yandex\.ru|meet\.google\.com|zoom\.us|teams\.microsoft\.com)\/\S+/i;
 const callLinkStatus = document.getElementById('call-link-status');
 const callLinkCancelBtn = document.getElementById('call-link-cancel-btn');
-document.getElementById('call-link-form').addEventListener('submit', (e) => {
+const callLinkSubmitBtn = document.getElementById('call-link-submit-btn');
+
+async function refreshCallLinkButtonState() {
+  let hasLink = false;
+  try {
+    const text = await navigator.clipboard.readText();
+    hasLink = VIDEO_CALL_LINK_RE.test(text || '');
+  } catch (err) {
+    // Доступ к буферу не разрешён (или недоступен вне фокуса вкладки) —
+    // оставляем кнопку в нейтральном виде, ничего страшного.
+  }
+  callLinkSubmitBtn.classList.toggle('btn-primary', hasLink);
+}
+window.addEventListener('focus', refreshCallLinkButtonState);
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) refreshCallLinkButtonState();
+});
+refreshCallLinkButtonState();
+
+document.getElementById('call-link-form').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const input = document.getElementById('call-link-input');
-  const url = input.value.trim();
-  if (!url) return;
+  let url = '';
+  try {
+    url = ((await navigator.clipboard.readText()) || '').trim();
+  } catch (err) {
+    callLinkStatus.textContent = 'Не удалось прочитать буфер обмена';
+    callLinkStatus.style.display = 'inline';
+    return;
+  }
+  if (!VIDEO_CALL_LINK_RE.test(url)) {
+    callLinkStatus.textContent = 'В буфере обмена нет ссылки на видеовстречу';
+    callLinkStatus.style.display = 'inline';
+    return;
+  }
   callLinkStatus.style.display = 'none';
   sendMessage({type: 'call_link', url});
-  input.value = '';
   callLinkCancelBtn.style.display = 'inline-block';
 });
 
