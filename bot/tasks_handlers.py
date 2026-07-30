@@ -1,7 +1,6 @@
 from telegram import Update
 from telegram.ext import ContextTypes
 
-# from constants import INPUT_HINTS, TASKS
 from load_tasks_from_json import INPUT_HINTS, TASKS
 
 

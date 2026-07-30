@@ -118,7 +118,7 @@ def _available_at_utc(db: Session, available_at_local: datetime) -> str:
         return None
     utc_now = datetime.now(timezone.utc).replace(tzinfo=None)
     db_now = _now(db)
-    db_offset = db_now - utc_now  # на сколько зона БД «впереди» UTC
+    db_offset = db_now - utc_now
     return (available_at_local - db_offset).replace(tzinfo=timezone.utc).isoformat()
 
 
@@ -266,7 +266,6 @@ def render_markdown(text: str) -> str:
         raw = lines[i]
         stripped = raw.strip()
 
-        # Пустая строка — разделитель, пропускаем.
         if not stripped:
             i += 1
             continue
@@ -278,7 +277,7 @@ def render_markdown(text: str) -> str:
             while i < n and not lines[i].strip().startswith("```"):
                 code_lines.append(lines[i])
                 i += 1
-            i += 1  # пропускаем закрывающую ограду
+            i += 1
             blocks.append(f'<pre class="block"><code>{_escape(chr(10).join(code_lines))}</code></pre>')
             continue
 

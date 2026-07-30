@@ -19,7 +19,7 @@ TOKEN = os.getenv('TOKEN')
 
 
 def extract_literals(text):
-    text = re.sub(r'\s*;\s*', ';', text)  # Убирает лишние пробелы вокруг ;
+    text = re.sub(r'\s*;\s*', ';', text)
     parts = [part.strip() for part in text.split(';') if part.strip()]
     result = []
     for part in parts:
@@ -27,7 +27,7 @@ def extract_literals(text):
             obj = ast.literal_eval(part)
             result.append(obj)
         except:
-            lists = re.findall(r'(\[[^]]*])', part)  # Находит списки в тексте
+            lists = re.findall(r'(\[[^]]*])', part)
             for lst in lists:
                 try:
                     result.append(ast.literal_eval(lst))

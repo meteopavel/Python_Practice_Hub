@@ -72,8 +72,8 @@ class HintFreeRunRequest(BaseModel):
 class TutorAskRequest(BaseModel):
     """Запрос тьютора к ИИ-помощнику. task_context/student_code опциональны —
     можно спросить и без них. question обязателен."""
-    task_context: str | None = None   # текст задания / условие
-    student_code: str | None = None   # код ученика (если есть)
+    task_context: str | None = None
+    student_code: str | None = None
     question: str
 
 

@@ -38,9 +38,9 @@ app = FastAPI(title="Python Practice Hub — tutor-LLM")
 class AskRequest(BaseModel):
     """Запрос от webapp'а. Все поля опциональны кроме question —
     тьютор может спрашивать и без контекста задачи."""
-    task_context: str | None = None   # текст задания / условие
-    student_code: str | None = None   # код ученика (если есть)
-    question: str                     # что спросил тьютор
+    task_context: str | None = None
+    student_code: str | None = None
+    question: str
 
 
 def _build_user_message(req: AskRequest) -> str:

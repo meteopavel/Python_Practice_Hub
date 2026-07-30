@@ -10,7 +10,7 @@ async function loadMe() {
 }
 
 async function loadLesson() {
-  const parts = window.location.pathname.split('/').filter(Boolean); // ['materials', module, lesson]
+  const parts = window.location.pathname.split('/').filter(Boolean);
   const module = decodeURIComponent(parts[1]);
   const lesson = decodeURIComponent(parts[2]);
 
