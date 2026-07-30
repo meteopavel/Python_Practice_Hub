@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="3" fill="#0B0F14"/>
+  <rect width="32" height="32" rx="3" fill="#222436"/>
   <rect x="0.5" y="0.5" width="31" height="31" rx="2.5" fill="none" stroke="#2DD4EF" stroke-opacity="0.45"/>
   <!-- bracket tick-marks в углах, как разметка прибора -->
   <path d="M5 5 H10 M5 5 V10" stroke="#2DD4EF" stroke-width="1.4" stroke-linecap="square" fill="none"/>

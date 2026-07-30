@@ -50,10 +50,10 @@
 
   /* --- Семантика: показания прибора (функция, не настроение) —
      Moonlight green/red/orange */
-  --c-pass:        #C3E88D;  /* тест прошёл                            */
-  --c-pass-bg:     rgba(195, 232, 141, 0.10);
-  --c-pass-border: rgba(195, 232, 141, 0.30);
-  --c-pass-solid:  #C3E88D;
+  --c-pass:        #6ACC63;  /* тест прошёл                            */
+  --c-pass-bg:     rgba(106, 204, 99, 0.10);
+  --c-pass-border: rgba(106, 204, 99, 0.30);
+  --c-pass-solid:  #6ACC63;
 
   --c-fail:        #FF757F;  /* тест упал                              */
   --c-fail-bg:     rgba(255, 117, 127, 0.10);
@@ -242,6 +242,12 @@ a:hover { color: var(--c-signal-hover); }
 }
 .header-spacer { flex: 1; }
 
+/* Разные отступы внутри правой группы хедера: имя-переключатель — глазик
+   держится пошире (заметная граница между разделами хедера), а глазик —
+   кнопка звонка держится тесной кучкой (одна функциональная группа). */
+#impersonate-form { margin-left: var(--space-2); }
+#call-link-form { margin-left: calc(-1 * var(--space-2)); }
+
 /* --------------------------------------------------------------------------
    4. КАРТОЧКА / ПАНЕЛЬ — ячейка на сетке, тональный слой
    -------------------------------------------------------------------------- */
@@ -346,7 +352,7 @@ a:hover { color: var(--c-signal-hover); }
   padding: 0;
   opacity: 0;
   overflow: hidden;
-  transition: max-width var(--transition), padding var(--transition), opacity var(--transition);
+  transition: max-width 280ms cubic-bezier(0.4, 0, 0.2, 1), padding 280ms cubic-bezier(0.4, 0, 0.2, 1), opacity 280ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 .call-link-input.is-open { max-width: 220px; padding: 0 10px; opacity: 1; }
 .call-link-input:focus { outline: none; border-color: var(--c-signal-dim); }
@@ -410,6 +416,11 @@ a:hover { color: var(--c-signal-hover); }
    controls в хедере; полноразмерная "звонилка" реального разговора крупнее,
    но форма (border-radius) теперь одинаковая — задана в базовом классе. */
 .call-icon-btn.is-sm { width: 25px; height: 25px; }
+
+/* Приглашение на созвон у ученика — того же размера, что brand-mark (30x30),
+   а не полноразмерная 44px "звонилка" (та — для уже идущего разговора). */
+#call-link-icon { width: 30px; height: 30px; }
+#call-link-icon svg { width: 16px; height: 16px; }
 .call-icon-btn.is-sm svg { width: 14px; height: 14px; }
 .call-icon-btn.is-pulsing {
   background: var(--c-pass-solid);
@@ -930,7 +941,7 @@ pre.block {
 
 .avatar {
   display: inline-grid; place-items: center;
-  width: 28px; height: 28px;
+  width: 30px; height: 30px;
   border-radius: var(--radius-sm);
   background: var(--c-signal-soft);
   color: var(--c-signal);
