@@ -12,7 +12,7 @@
      (три колонки + код), поэтому снимаем ограничение ширины. padding-inline
      оставляем, чтобы контент не прилипал к краям окна. */
   .session-main.container { max-width: none; }
-  .session-main { padding-block: var(--space-4); }
+  .session-main { padding: var(--space-4); }
   .session-layout {
     display: grid;
     grid-template-columns: 300px 1fr 320px;
@@ -32,17 +32,19 @@
 <body>
 <header class="app-header">
   <div class="brand"><span class="brand-mark">&lt;/&gt;</span> Python Practice Hub</div>
-  <details class="account-menu">
-    <summary class="chip account-trigger" style="background: var(--c-primary-soft); color: var(--c-primary)">
-      <span id="switcher-current-name">…</span>
-    </summary>
-    <div class="account-menu-panel" id="switcher-list"></div>
-  </details>
-  <form id="impersonate-form" method="post" style="margin: 0; margin-left: var(--space-2)">
-    <button class="call-icon-btn is-mute is-sm" id="impersonate-btn" type="submit" title="Посмотреть как ученик"></button>
-  </form>
+  <div class="row" style="gap: 4px; align-items: center">
+    <details class="account-menu">
+      <summary class="chip account-trigger" style="background: var(--c-primary-soft); color: var(--c-primary)">
+        <span id="switcher-current-name">…</span>
+      </summary>
+      <div class="account-menu-panel" id="switcher-list"></div>
+    </details>
+    <form id="impersonate-form" method="post" style="margin: 0">
+      <button class="call-icon-btn is-mute is-sm" id="impersonate-btn" type="submit" title="Посмотреть как ученик"></button>
+    </form>
+  </div>
   <button class="call-icon-btn is-mute is-sm" id="header-call-btn" title="Позвонить"></button>
-  <form id="call-link-form" class="row" style="margin: 0; margin-left: calc(-1 * var(--space-2)); gap: 4px; align-items: center" autocomplete="off">
+  <form id="call-link-form" class="row" style="margin: 0; gap: 4px; align-items: center" autocomplete="off">
     <input type="text" class="call-link-input" id="call-link-input" placeholder="Вставьте ссылку" autocomplete="off">
     <button class="btn btn-sm" type="submit" id="call-link-main-btn">Созвониться</button>
     <button class="btn btn-sm btn-danger" type="button" id="call-link-cancel-btn" style="display: none">Отменить</button>
