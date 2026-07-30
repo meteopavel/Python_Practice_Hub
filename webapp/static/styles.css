@@ -341,7 +341,7 @@ a:hover { color: var(--c-signal-hover); }
 .icon-btn:hover { background: var(--c-surface-3); color: var(--c-text); }
 .icon-btn svg { width: 14px; height: 14px; }
 
-.btn-sm { padding: 6px 12px; font-size: var(--fs-xs); }
+.btn-sm { height: 25px; padding: 0 12px; font-size: var(--fs-xs); }
 .btn-lg { padding: 12px 22px; font-size: var(--fs-md); }
 .btn-block { width: 100%; }
 
@@ -376,8 +376,11 @@ a:hover { color: var(--c-signal-hover); }
   color: var(--c-fail);
   border-color: var(--c-fail-border);
 }
-.call-icon-btn.is-sm { width: 32px; height: 32px; }
-.call-icon-btn.is-sm svg { width: 15px; height: 15px; }
+/* is-sm — хедерные иконки (звонок/глазик), а не круглая "звонилка" в
+   реальном разговоре (та остаётся полноразмерной и круглой) — почти
+   квадратные, той же высоты, что остальные controls в хедере. */
+.call-icon-btn.is-sm { width: 25px; height: 25px; border-radius: var(--radius-sm); }
+.call-icon-btn.is-sm svg { width: 14px; height: 14px; }
 .call-icon-btn.is-pulsing {
   background: var(--c-pass-solid);
   border-color: var(--c-pass-solid);
@@ -524,7 +527,7 @@ a:hover { color: var(--c-signal-hover); }
   font-size: 11px;
   font-weight: var(--fw-bold);
   font-variant-numeric: tabular-nums;
-  color: var(--c-text-faint);
+  color: var(--c-text);
   background: var(--c-surface-2);
   border-radius: var(--radius-sm);
 }
@@ -540,8 +543,10 @@ a:hover { color: var(--c-signal-hover); }
 
 /* Метка */
 .chip {
-  display: inline-block;
-  padding: 2px 8px;
+  display: inline-flex;
+  align-items: center;
+  height: 25px;
+  padding: 0 8px;
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
   font-weight: var(--fw-bold);
@@ -1065,7 +1070,7 @@ pre.block {
   content: "▸";
   display: inline-block;
   margin-right: var(--space-2);
-  color: var(--c-text-faint);
+  color: var(--c-text);
   transition: transform var(--transition);
 }
 .materials-module[open] > summary::before { transform: rotate(90deg); }
