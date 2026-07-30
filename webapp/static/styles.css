@@ -30,7 +30,7 @@
   --c-border-strong: #444A73;
 
   /* --- Текст */
-  --c-text:         #C8D3F5;  /* Moonlight foreground                  */
+  --c-text:         #DCE3F7;  /* Moonlight foreground                  */
   --c-text-muted:   #828BB8;  /* Moonlight disabledText                */
   --c-text-faint:   #6A7396;  /* подписи, плейсхолдеры                 */
 
@@ -66,7 +66,7 @@
 
   /* --- Блок кода: всегда тёмный «экран прибора» (чуть глубже стенда) */
   --c-code-bg:     #1A1C2C;
-  --c-code-text:   #C8D3F5;
+  --c-code-text:   #DCE3F7;
   --c-code-border: #2B2F47;
   --c-code-gutter: #7E8EDA;
 
