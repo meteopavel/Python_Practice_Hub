@@ -506,7 +506,7 @@ a:hover { color: var(--c-signal-hover); }
   cursor: pointer;
   font: inherit;
   font-size: var(--fs-sm);
-  color: var(--c-text-muted);
+  color: var(--c-text);
   transition: background var(--transition), color var(--transition);
 }
 .task-item:hover { background: var(--c-surface-2); color: var(--c-text); }
@@ -1055,7 +1055,7 @@ pre.block {
   font-weight: var(--fw-bold);
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--c-text-muted);
+  color: var(--c-text);
   cursor: pointer;
   list-style: none;
   border-radius: var(--radius-sm);
@@ -1075,7 +1075,7 @@ pre.block {
   display: block;
   padding: 5px 8px 5px 22px;  /* отступ слева — под стрелку раскрытия */
   border-radius: var(--radius-sm);
-  color: var(--c-text-muted);
+  color: var(--c-text);
   text-decoration: none;
   font-size: var(--fs-sm);
 }
