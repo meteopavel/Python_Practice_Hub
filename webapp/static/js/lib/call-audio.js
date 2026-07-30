@@ -133,9 +133,9 @@ function setNoiseSuppressionEnabled(value) {
 // если DeepFilterNet3 не проинициализировался (старый браузер, урезанный
 // wasm-бюджет на слабом устройстве).
 async function applyDeepFilterNet(rawStream, audioCtx) {
-  const wasmResp = await fetch('/static/deepfilternet3.wasm');
+  const wasmResp = await fetch('/static/vendor/deepfilternet/deepfilternet3.wasm');
   const wasmBinary = await wasmResp.arrayBuffer();
-  await audioCtx.audioWorklet.addModule('/static/deepfilternet-worklet.js');
+  await audioCtx.audioWorklet.addModule('/static/vendor/deepfilternet/deepfilternet-worklet.js');
   const source = audioCtx.createMediaStreamSource(rawStream);
   const dfnNode = new AudioWorkletNode(audioCtx, 'deepfilternet-processor', {
     processorOptions: {wasmBinary},
@@ -149,10 +149,10 @@ async function applyDeepFilterNet(rawStream, audioCtx) {
 }
 
 async function applyRnnoise(rawStream, audioCtx) {
-  await audioCtx.audioWorklet.addModule('/static/rnnoise-worklet.js');
+  await audioCtx.audioWorklet.addModule('/static/vendor/rnnoise/rnnoise-worklet.js');
   const wasmBinary = await NoiseSuppressor.loadRnnoise({
-    url: '/static/rnnoise.wasm',
-    simdUrl: '/static/rnnoise_simd.wasm',
+    url: '/static/vendor/rnnoise/rnnoise.wasm',
+    simdUrl: '/static/vendor/rnnoise/rnnoise_simd.wasm',
   });
   const source = audioCtx.createMediaStreamSource(rawStream);
   const rnnoiseNode = new NoiseSuppressor.RnnoiseWorkletNode(audioCtx, {maxChannels: 1, wasmBinary});

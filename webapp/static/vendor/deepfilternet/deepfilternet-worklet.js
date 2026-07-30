@@ -1,7 +1,7 @@
 // AudioWorkletProcessor для DeepFilterNet3 (WASM, wasm-bindgen "web" target).
 // Модель зашита в deepfilternet3.wasm на этапе сборки (df_create_default) —
 // отдельно тянуть файл модели не нужно, только сам .wasm.
-import { initSync, df_create_default, df_get_frame_length, df_set_atten_lim, df_set_post_filter_beta, df_process_frame } from '/static/deepfilternet3.js';
+import { initSync, df_create_default, df_get_frame_length, df_set_atten_lim, df_set_post_filter_beta, df_process_frame } from '/static/vendor/deepfilternet/deepfilternet3.js';
 
 const ATTEN_LIM_DB_DEFAULT = 100;
 const POST_FILTER_BETA_DEFAULT = 0.02;

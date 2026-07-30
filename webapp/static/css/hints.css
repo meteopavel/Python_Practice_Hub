@@ -1,0 +1,157 @@
+/* ==========================================================================
+   hints.css — разделено из styles.css (дословно, без правки правил).
+   Секции: 13. ПАНЕЛЬ ПОДСКАЗОК.
+   Дизайн-система — The Engineering Bench (приборный тёмный мир, токены в base.css).
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   13. ПАНЕЛЬ ПОДСКАЗОК (задания 81..100) — 3-я колонка справа
+   -------------------------------------------------------------------------- */
+.hints-panel {
+  position: sticky;
+  top: 72px;
+  max-height: calc(100vh - 88px);
+  overflow-y: auto;
+}
+.hints-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+.hints-panel-empty { color: var(--c-text-faint); font-size: var(--fs-sm); }
+
+/* Ступень подсказки: full hairline-контур, статус — цвет контура + лампы,
+   не «side-tab» бордюр с одной стороны */
+.hint-step {
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-sm);
+  background: var(--c-surface);
+  padding: var(--space-3);
+  transition: opacity var(--transition);
+}
+.hint-step.is-ready    { border-color: color-mix(in srgb, var(--c-signal) 45%, var(--c-border)); }
+.hint-step.is-waiting  { border-color: color-mix(in srgb, var(--c-warn) 45%, var(--c-border)); }
+.hint-step.is-revealed { border-color: color-mix(in srgb, var(--c-pass-solid) 45%, var(--c-border)); }
+.hint-step.is-locked   { opacity: 0.5; }
+.hint-step-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+.hint-step-title { font-family: var(--font-mono); font-weight: var(--fw-bold); font-size: var(--fs-sm); }
+.hint-step-meta { margin-left: auto; font-size: var(--fs-xs); color: var(--c-text-muted); font-family: var(--font-mono); }
+.hint-reset-btn { margin-left: auto; color: var(--c-text-faint); }
+.hint-reset-btn:hover { color: var(--c-fail); }
+
+/* Маркер состояния ступени — квадрат (мир остроугольный). Внутри SVG-иконка
+   на currentColor, цвет берётся из класса состояния ниже. */
+.hint-marker {
+  display: inline-grid;
+  place-items: center;
+  width: 20px; height: 20px;
+  line-height: 0;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+.hint-marker svg { width: 12px; height: 12px; }
+.hint-marker.is-ready    { background: var(--c-signal-soft); color: var(--c-signal); }
+.hint-marker.is-waiting  { background: var(--c-warn-bg); color: var(--c-warn); }
+.hint-marker.is-revealed { background: var(--c-pass-bg); color: var(--c-pass); }
+.hint-marker.is-locked   { background: var(--c-surface-2); color: var(--c-text-faint); }
+
+/* Универсальная приборная inline-иконка — stroke-монохром на currentColor.
+   Используется в кнопках (hint-lock-btn), статустных подписях (mute/solved) —
+   везде, где раньше были эмодзи. */
+.ico {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.125em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+}
+.ico--sm { width: 0.9em; height: 0.9em; }
+
+.hint-timer {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-sm);
+  color: var(--c-warn);
+}
+.hint-step-note { font-size: var(--fs-sm); color: var(--c-text-muted); margin: 0; }
+
+.hint-content { font-size: var(--fs-sm); line-height: var(--lh-base); }
+.hint-content > *:first-child { margin-top: 0; }
+.hint-content > *:last-child  { margin-bottom: 0; }
+.hint-content p { margin: 0 0 var(--space-2); }
+.hint-content ul { margin: 0 0 var(--space-2); padding-left: var(--space-4); }
+.hint-content li { margin-bottom: 2px; }
+.hint-content a { color: var(--c-signal); text-decoration: underline; text-underline-offset: 2px; }
+.hint-content strong { font-weight: var(--fw-semibold); }
+.hint-content .inline { font-size: 0.9em; }
+.hint-content pre.block { font-size: 12px; margin: 0 0 var(--space-2); }
+.hint-content pre.block code { font-family: var(--font-mono); color: inherit; }
+
+.hint-reveal-btn { margin-top: var(--space-2); }
+.hint-collapse-btn {
+  margin-top: var(--space-2);
+  background: transparent;
+  border: none;
+  color: var(--c-text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Справочные материалы — компактный список как у заданий: без делителей,
+   плотная строка, hover-подсветка строки (без подчёркивания и без бордюра). */
+.materials-module { border: 0; background: none; }
+.materials-module + .materials-module { margin-top: var(--space-1); }
+.materials-module > summary {
+  display: flex;
+  align-items: center;
+  padding: 6px var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--c-text);
+  cursor: pointer;
+  list-style: none;
+  border-radius: var(--radius-sm);
+}
+.materials-module > summary::-webkit-details-marker { display: none; }
+.materials-module > summary::before {
+  content: "▸";
+  display: inline-block;
+  margin-right: var(--space-2);
+  color: var(--c-text);
+  transition: transform var(--transition);
+}
+.materials-module[open] > summary::before { transform: rotate(90deg); }
+.materials-module > summary:hover { color: var(--c-text); background: var(--c-surface-2); }
+
+.material-link {
+  display: block;
+  padding: 5px 8px 5px 22px;  /* отступ слева — под стрелку раскрытия */
+  border-radius: var(--radius-sm);
+  color: var(--c-text);
+  text-decoration: none;
+  font-size: var(--fs-sm);
+}
+.material-link:hover {
+  background: var(--c-surface-2);
+  color: var(--c-signal);
+  text-decoration: none;
+}
