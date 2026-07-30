@@ -42,10 +42,10 @@
     <button class="call-icon-btn is-mute is-sm" id="impersonate-btn" type="submit" title="Посмотреть как ученик"></button>
   </form>
   <button class="call-icon-btn is-mute is-sm" id="header-call-btn" title="Позвонить"></button>
-  <form id="call-link-form" class="row" style="margin: 0; gap: 4px; align-items: center">
-    <button class="btn btn-sm" type="submit" id="call-link-submit-btn" title="Отправить ученику ссылку из буфера обмена">Отправить</button>
-    <span class="muted" id="call-link-status" style="font-size: var(--fs-sm); display: none; white-space: nowrap"></span>
-    <button class="btn btn-sm btn-ghost" type="button" id="call-link-cancel-btn" style="display: none">Отменить</button>
+  <form id="call-link-form" class="row" style="margin: 0; gap: 4px; align-items: center" autocomplete="off">
+    <input type="text" class="call-link-input" id="call-link-input" placeholder="Вставьте ссылку" autocomplete="off">
+    <button class="btn btn-sm" type="submit" id="call-link-main-btn">Созвониться</button>
+    <button class="btn btn-sm btn-danger" type="button" id="call-link-cancel-btn" style="display: none">Отменить</button>
   </form>
   <button class="call-icon-btn is-mute is-sm" id="header-mute-btn" title="Микрофон" style="display: none"></button>
   <input type="range" class="mic-gain-slider" id="mic-gain-slider" min="0.5" max="3" step="0.1" title="Громкость микрофона" style="display: none">
@@ -525,8 +525,6 @@ function connectWs() {
       handleRemoteIce(msg);
     } else if (msg.type === 'call_end') {
       endCall(false);
-    } else if (msg.type === 'call_link_ack') {
-      showCallLinkAck();
     } else if (msg.type === 'student_status') {
       renderStudentOnline(!!msg.online);
     }
@@ -585,66 +583,75 @@ let autoRedialAttempted = false;
 // "Присоединиться". Без какой-либо интеграции с API — просто передача
 // текста от одного к другому через уже существующий канал сигналинга.
 //
-// 2026-07-30: поле для вставки ссылки убрали — тьютор просто копирует
-// ссылку у себя в сервисе видеосвязи и жмёт "Отправить", а сама ссылка
-// читается прямо из буфера обмена. Кнопка подсвечивается акцентным цветом,
-// когда в буфере лежит распознанная ссылка на видеовстречу, и выглядит как
-// обычная "Запустить" в остальных случаях — так видно, что жать рано.
+// 2026-07-30: одна кнопка вместо поля+статуса — сама несёт все состояния
+// процесса (идея Павла: честный мониторинг буфера обмена в фоне невозможен
+// без системных попапов разрешения в каждом браузере, поэтому вместо этого
+// тьютор явно раскрывает поле кликом и сам вставляет туда ссылку).
+//   idle    — "Созвониться", поле схлопнуто
+//   editing — поле раскрыто, ссылка ещё не распознана
+//   ready   — распознанная ссылка в поле, кнопка "Отправить" акцентным цветом
+//   sent    — "Отправлено" (роль убранного сообщения "ученик получил"),
+//             рядом кнопка "Отменить" в красном
+//   error   — сокет не открыт, кнопка красная "Ошибка, попробовать снова"
 const VIDEO_CALL_LINK_RE = /https?:\/\/(?:[\w-]+\.)?(?:telemost\.yandex\.ru|meet\.google\.com|zoom\.us|teams\.microsoft\.com)\/\S+/i;
-const callLinkStatus = document.getElementById('call-link-status');
+const callLinkInput = document.getElementById('call-link-input');
+const callLinkMainBtn = document.getElementById('call-link-main-btn');
 const callLinkCancelBtn = document.getElementById('call-link-cancel-btn');
-const callLinkSubmitBtn = document.getElementById('call-link-submit-btn');
+let callLinkState = 'idle';
 
-async function refreshCallLinkButtonState() {
-  let hasLink = false;
-  try {
-    const text = await navigator.clipboard.readText();
-    hasLink = VIDEO_CALL_LINK_RE.test(text || '');
-  } catch (err) {
-    // Доступ к буферу не разрешён (или недоступен вне фокуса вкладки) —
-    // оставляем кнопку в нейтральном виде, ничего страшного.
-  }
-  callLinkSubmitBtn.classList.toggle('btn-primary', hasLink);
+function setCallLinkState(next) {
+  callLinkState = next;
+  callLinkInput.classList.toggle('is-open', next === 'editing' || next === 'ready');
+  callLinkInput.disabled = next === 'sent';
+  callLinkMainBtn.classList.toggle('btn-primary', next === 'ready');
+  callLinkMainBtn.classList.toggle('btn-danger', next === 'error');
+  callLinkMainBtn.disabled = next === 'sent';
+  callLinkCancelBtn.style.display = (next === 'sent' || next === 'error') ? 'inline-block' : 'none';
+  const labels = {idle: 'Созвониться', editing: 'Созвониться', ready: 'Отправить', sent: 'Отправлено', error: 'Ошибка, попробовать снова'};
+  callLinkMainBtn.textContent = labels[next];
 }
-window.addEventListener('focus', refreshCallLinkButtonState);
-document.addEventListener('visibilitychange', () => {
-  if (!document.hidden) refreshCallLinkButtonState();
-});
-refreshCallLinkButtonState();
 
-document.getElementById('call-link-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  let url = '';
-  try {
-    url = ((await navigator.clipboard.readText()) || '').trim();
-  } catch (err) {
-    callLinkStatus.textContent = 'Не удалось прочитать буфер обмена';
-    callLinkStatus.style.display = 'inline';
+callLinkInput.addEventListener('input', () => {
+  if (callLinkState !== 'editing' && callLinkState !== 'ready') return;
+  setCallLinkState(VIDEO_CALL_LINK_RE.test(callLinkInput.value.trim()) ? 'ready' : 'editing');
+});
+
+callLinkInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && (callLinkState === 'editing' || callLinkState === 'ready')) {
+    callLinkInput.value = '';
+    setCallLinkState('idle');
+  }
+});
+
+function trySendCallLink() {
+  const url = callLinkInput.value.trim();
+  if (!(ws && ws.readyState === WebSocket.OPEN)) {
+    setCallLinkState('error');
     return;
   }
-  if (!VIDEO_CALL_LINK_RE.test(url)) {
-    callLinkStatus.textContent = 'В буфере обмена нет ссылки на видеовстречу';
-    callLinkStatus.style.display = 'inline';
-    return;
-  }
-  callLinkStatus.style.display = 'none';
   sendMessage({type: 'call_link', url});
-  callLinkCancelBtn.style.display = 'inline-block';
-});
-
-// Ученик подтверждает получение ссылки сообщением call_link_ack — иначе
-// тьютор не видит, реально ли приглашение дошло и отрендерилось у ученика.
-function showCallLinkAck() {
-  callLinkStatus.innerHTML = ICON('checkCircle') + ' Ученик получил';
-  callLinkStatus.style.display = 'inline';
+  setCallLinkState('sent');
 }
+
+document.getElementById('call-link-form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  if (callLinkState === 'idle') {
+    setCallLinkState('editing');
+    callLinkInput.focus();
+  } else if (callLinkState === 'editing') {
+    callLinkInput.value = '';
+    setCallLinkState('idle');
+  } else if (callLinkState === 'ready' || callLinkState === 'error') {
+    trySendCallLink();
+  }
+});
 
 // Тьютор может отозвать приглашение (например отправил не ту ссылку) — тем же
 // каналом уходит call_link_cancel, ученик прячет кнопку "Присоединиться".
 callLinkCancelBtn.addEventListener('click', () => {
-  sendMessage({type: 'call_link_cancel'});
-  callLinkStatus.style.display = 'none';
-  callLinkCancelBtn.style.display = 'none';
+  if (callLinkState === 'sent') sendMessage({type: 'call_link_cancel'});
+  callLinkInput.value = '';
+  setCallLinkState('idle');
 });
 
 // Онлайн-статус ученика в шапке — тот же чип-переключатель, что и раньше,

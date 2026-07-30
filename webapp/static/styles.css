@@ -322,6 +322,35 @@ a:hover { color: var(--c-signal-hover); }
 }
 .btn-ghost:hover { background: var(--c-surface-2); color: var(--c-text); border-color: var(--c-border-strong); }
 
+/* Danger — отмена/ошибка отправки ссылки на созвон: та же форма, что и
+   .btn-primary, но в цветах провала теста (--c-fail*). */
+.btn-danger {
+  color: #fff;
+  background: var(--c-fail-solid);
+  border-color: var(--c-fail-solid);
+}
+.btn-danger:hover  { filter: brightness(1.12); }
+.btn-danger:active { filter: brightness(0.9); }
+
+/* Поле для вставки ссылки на созвон — схлопнуто в ширину 0, раскрывается
+   анимированно по клику на "Созвониться" (см. tutor_student.html). */
+.call-link-input {
+  height: 25px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--c-text);
+  background: var(--c-surface-2);
+  border: 1px solid var(--c-border-strong);
+  border-radius: var(--radius-sm);
+  max-width: 0;
+  padding: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-width var(--transition), padding var(--transition), opacity var(--transition);
+}
+.call-link-input.is-open { max-width: 220px; padding: 0 10px; opacity: 1; }
+.call-link-input:focus { outline: none; border-color: var(--c-signal-dim); }
+
 /* Маленькая квадратная icon-кнопка для второстепенных действий рядом с
    заголовками панелей — в отличие от .call-icon-btn (круглая, только для
    звонка) держит остроугольный язык остального интерфейса. */
@@ -345,8 +374,9 @@ a:hover { color: var(--c-signal-hover); }
 .btn-lg { padding: 12px 22px; font-size: var(--fs-md); }
 .btn-block { width: 100%; }
 
-/* Круглые icon-кнопки звонка — оставлены круглыми по функции (звонилка),
-   это намеренное исключение из остроугольного мира: орган связи. */
+/* Icon-кнопки звонка — держат тот же остроугольный язык, что и весь сайт
+   (2026-07-30: раньше были круглыми как намеренное исключение, но это не
+   подошло к общему стилю — квадратим наравне с остальными controls). */
 .call-icon-btn {
   display: inline-flex;
   align-items: center;
@@ -354,7 +384,7 @@ a:hover { color: var(--c-signal-hover); }
   width: 44px;
   height: 44px;
   border: 1px solid var(--c-border-strong);
-  border-radius: 50%;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   transition: var(--transition);
   color: #fff;
@@ -376,10 +406,10 @@ a:hover { color: var(--c-signal-hover); }
   color: var(--c-fail);
   border-color: var(--c-fail-border);
 }
-/* is-sm — хедерные иконки (звонок/глазик), а не круглая "звонилка" в
-   реальном разговоре (та остаётся полноразмерной и круглой) — почти
-   квадратные, той же высоты, что остальные controls в хедере. */
-.call-icon-btn.is-sm { width: 25px; height: 25px; border-radius: var(--radius-sm); }
+/* is-sm — хедерные иконки (звонок/глазик), той же высоты, что остальные
+   controls в хедере; полноразмерная "звонилка" реального разговора крупнее,
+   но форма (border-radius) теперь одинаковая — задана в базовом классе. */
+.call-icon-btn.is-sm { width: 25px; height: 25px; }
 .call-icon-btn.is-sm svg { width: 14px; height: 14px; }
 .call-icon-btn.is-pulsing {
   background: var(--c-pass-solid);
