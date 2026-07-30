@@ -340,15 +340,16 @@ a:hover { color: var(--c-signal-hover); }
   font-size: var(--fs-xs);
   color: var(--c-text);
   background: var(--c-surface-2);
-  border: 1px solid var(--c-border-strong);
+  border: 0 solid var(--c-border-strong);
   border-radius: var(--radius-sm);
   max-width: 0;
   padding: 0;
+  margin-right: -4px;
   opacity: 0;
   overflow: hidden;
-  transition: max-width 280ms cubic-bezier(0.4, 0, 0.2, 1), padding 280ms cubic-bezier(0.4, 0, 0.2, 1), opacity 280ms cubic-bezier(0.4, 0, 0.2, 1);
+  transition: max-width 280ms cubic-bezier(0.4, 0, 0.2, 1), padding 280ms cubic-bezier(0.4, 0, 0.2, 1), opacity 280ms cubic-bezier(0.4, 0, 0.2, 1), border-width 280ms cubic-bezier(0.4, 0, 0.2, 1), margin-right 280ms cubic-bezier(0.4, 0, 0.2, 1);
 }
-.call-link-input.is-open { max-width: 220px; padding: 0 10px; opacity: 1; }
+.call-link-input.is-open { max-width: 220px; padding: 0 10px; opacity: 1; border-width: 1px; margin-right: 0; }
 .call-link-input:focus { outline: none; border-color: var(--c-signal-dim); }
 
 /* Маленькая квадратная icon-кнопка для второстепенных действий рядом с
@@ -401,6 +402,7 @@ a:hover { color: var(--c-signal-hover); }
   color: var(--c-text);
   border-color: var(--c-border-strong);
 }
+.call-icon-btn.is-mute:hover { background: var(--c-surface-3); border-color: var(--c-signal-dim); }
 .call-icon-btn.is-mute.is-active {
   background: var(--c-fail-bg);
   color: var(--c-fail);
@@ -589,7 +591,7 @@ a:hover { color: var(--c-signal-hover); }
   border-radius: var(--radius-sm);
   background: var(--c-surface-2);
   color: var(--c-text-muted);
-  border: 1px solid var(--c-border);
+  border: 1px solid var(--c-border-strong);
 }
 
 /* Выпадашка в хедере — <details>, без JS на открытие/закрытие */

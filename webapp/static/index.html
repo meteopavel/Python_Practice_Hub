@@ -531,7 +531,7 @@ async function loadMe() {
     const chip = document.getElementById('impersonation-chip');
     chip.textContent = data.username || '';
     chip.href = sessionUrl;
-    chip.style.display = 'inline-block';
+    chip.style.display = 'inline-flex';
     const callLink = document.getElementById('impersonation-call-link');
     callLink.href = sessionUrl;
     callLink.style.display = 'inline-flex';
