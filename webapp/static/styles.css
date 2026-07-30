@@ -12,24 +12,27 @@
 :root {
   color-scheme: dark;
 
-  /* --- Приборный грунт: тёмный стенд с координатной сеткой */
-  --c-bg:           #0B0F14;  /* фон-стенд (bench dark)             */
-  --c-surface:      #13181F;  /* панель (один тон вверх)            */
-  --c-surface-2:    #1B2129;  /* поднятая поверхность / hover       */
-  --c-surface-3:    #232A33;  /* ещё выше / активный элемент         */
+  /* --- Приборный грунт: палитра Moonlight (Material Theme UI для JetBrains,
+     тема автора Mallowigi, порт Tokyo Night Moon) — тёмно-синий, а не
+     чёрный, стенд. Акцент (--c-signal*) сознательно НЕ тронут — это
+     единственное, что попросили оставить как есть. */
+  --c-bg:           #222436;  /* фон-стенд (bench dark)             */
+  --c-surface:      #262B41;  /* панель (один тон вверх)            */
+  --c-surface-2:    #2F334D;  /* поднятая поверхность / hover       */
+  --c-surface-3:    #363C5C;  /* ещё выше / активный элемент         */
 
-  /* --- Сетка: структурный грунт */
+  /* --- Сетка: структурный грунт (завязана на --c-signal, не трогаем) */
   --grid-minor:     rgba(45, 212, 239, 0.04);  /* тонкие линии сетки  */
   --grid-major:     rgba(45, 212, 239, 0.07);  /* крупные линии сетки  */
 
   /* --- Hairline-линии (1px по сетке, тихие) */
-  --c-border:       #2A323D;
-  --c-border-strong: #3A4452;
+  --c-border:       #2B2F47;
+  --c-border-strong: #444A73;
 
   /* --- Текст */
-  --c-text:         #E6EDF3;  /* основной ~16:1 на --c-bg              */
-  --c-text-muted:   #8B97A6;  /* вторичный ~6:1 на --c-bg              */
-  --c-text-faint:   #5A6675;  /* подписи, плейсхолдеры                 */
+  --c-text:         #C8D3F5;  /* Moonlight foreground                  */
+  --c-text-muted:   #828BB8;  /* Moonlight disabledText                */
+  --c-text-faint:   #6A7396;  /* подписи, плейсхолдеры                 */
 
   /* --- Сигнал: единственный электрический акцент (осциллограф/CRT) */
   --c-signal:        #2DD4EF;  /* акцент «установка активна»           */
@@ -45,26 +48,27 @@
   --c-primary-hover: #54DEF5;
   --c-primary-soft:  rgba(45, 212, 239, 0.12);
 
-  /* --- Семантика: показания прибора (функция, не настроение) */
-  --c-pass:        #3FB950;  /* тест прошёл — терминальный зелёный    */
-  --c-pass-bg:     rgba(63, 185, 80, 0.10);
-  --c-pass-border: rgba(63, 185, 80, 0.30);
-  --c-pass-solid:  #3FB950;
+  /* --- Семантика: показания прибора (функция, не настроение) —
+     Moonlight green/red/orange */
+  --c-pass:        #C3E88D;  /* тест прошёл                            */
+  --c-pass-bg:     rgba(195, 232, 141, 0.10);
+  --c-pass-border: rgba(195, 232, 141, 0.30);
+  --c-pass-solid:  #C3E88D;
 
-  --c-fail:        #F85149;  /* тест упал — терминальный красный      */
-  --c-fail-bg:     rgba(248, 81, 73, 0.10);
-  --c-fail-border: rgba(248, 81, 73, 0.32);
-  --c-fail-solid:  #F85149;
+  --c-fail:        #FF757F;  /* тест упал                              */
+  --c-fail-bg:     rgba(255, 117, 127, 0.10);
+  --c-fail-border: rgba(255, 117, 127, 0.32);
+  --c-fail-solid:  #FF757F;
 
-  --c-warn:        #D29922;  /* вычисляется — янтарный               */
-  --c-warn-bg:     rgba(210, 153, 34, 0.10);
-  --c-warn-border: rgba(210, 153, 34, 0.30);
+  --c-warn:        #FF9668;  /* вычисляется                            */
+  --c-warn-bg:     rgba(255, 150, 104, 0.10);
+  --c-warn-border: rgba(255, 150, 104, 0.30);
 
   /* --- Блок кода: всегда тёмный «экран прибора» (чуть глубже стенда) */
-  --c-code-bg:     #070A0E;
-  --c-code-text:   #E6EDF3;
-  --c-code-border: #1F2630;
-  --c-code-gutter: #5A6675;
+  --c-code-bg:     #1A1C2C;
+  --c-code-text:   #C8D3F5;
+  --c-code-border: #2B2F47;
+  --c-code-gutter: #7E8EDA;
 
   /* --- Типографика: моно — голос прибора, sans — беглое чтение */
   --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, "Liberation Mono", monospace;
