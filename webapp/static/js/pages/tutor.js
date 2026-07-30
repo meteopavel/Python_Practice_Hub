@@ -1,73 +1,5 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Ученики — Python Practice Hub</title>
-<link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
-<link rel="stylesheet" href="/static/styles.css">
-<style>
-  .tutor-main { padding-block: var(--space-4); }
-  .student-row { cursor: pointer; }
-  .student-row:hover { background: var(--c-surface-2); }
-</style>
-</head>
-<body>
-<header class="app-header">
-  <div class="brand"><span class="brand-mark">&lt;/&gt;</span> Python Practice Hub</div>
-  <a class="btn btn-sm btn-ghost" href="/tutor/hints">Подсказки</a>
-  <div class="header-spacer"></div>
-  <details class="account-menu">
-    <summary class="account-trigger">
-      <span class="muted" id="username"></span>
-      <span class="avatar" id="avatar"></span>
-    </summary>
-    <div class="account-menu-panel">
-      <form method="post" action="/logout" style="margin: 0">
-        <button class="account-menu-item" type="submit">Выйти</button>
-      </form>
-    </div>
-  </details>
-</header>
-
-<div class="container tutor-main">
-  <div class="stack stack-2" style="margin-bottom: var(--space-4)">
-    <h1 style="font-size: var(--fs-2xl)">Ученики</h1>
-    <p class="muted">Выберите ученика, чтобы посмотреть его попытки и поработать с ним вживую</p>
-  </div>
-
-  <div class="table-wrap">
-    <table class="table">
-      <thead>
-        <tr><th>Ученик</th><th>Попыток</th><th class="col-right">Последняя активность</th><th class="col-right"></th></tr>
-      </thead>
-      <tbody id="rows"></tbody>
-    </table>
-  </div>
-  <p class="muted" id="empty-state" style="display: none; margin-top: var(--space-4)">Пока нет ни одного ученика.</p>
-
-  <div class="card card-pad stack stack-3" style="margin-top: var(--space-4)">
-    <div class="row between">
-      <span class="panel-title">Новый ученик</span>
-      <button class="btn btn-sm" id="add-student-toggle">Добавить ученика</button>
-    </div>
-    <form id="add-student-form" class="row wrap" style="display: none; gap: var(--space-3); align-items: flex-end;">
-      <div class="field" style="flex: 1; min-width: 160px">
-        <label class="label" for="new-username">Логин</label>
-        <input class="input" id="new-username" required>
-      </div>
-      <div class="field" style="flex: 1; min-width: 160px">
-        <label class="label" for="new-password">Пароль</label>
-        <input class="input" id="new-password" type="password" required>
-      </div>
-      <button class="btn btn-primary btn-sm" type="submit">Создать</button>
-    </form>
-    <p class="field-error" id="add-student-error" style="display: none; margin: 0"></p>
-  </div>
-</div>
-
-<script src="/static/dom-utils.js"></script>
-<script>
+/* tutor.js — список учеников (tutor.html). Таблица с агрегатами, форма
+   создания ученика, смена пароля. */
 
 function initials(name) {
   return (name || '?').slice(0, 2).toUpperCase();
@@ -149,14 +81,5 @@ document.getElementById('add-student-form').addEventListener('submit', async (e)
   load();
 });
 
-document.addEventListener('click', (e) => {
-  document.querySelectorAll('details.account-menu[open]').forEach(d => {
-    if (!d.contains(e.target)) d.removeAttribute('open');
-  });
-});
-
 loadMe();
 load();
-</script>
-</body>
-</html>

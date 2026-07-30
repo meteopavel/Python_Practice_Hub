@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Подсказки — Python Practice Hub{% endblock %}
+{% block header_left %}
+  <a class="btn btn-sm btn-ghost" href="/">← Ученики</a>
+{% endblock %}
+{% block content %}
+<div class="container tutor-main">
+  <div class="stack stack-2" style="margin-bottom: var(--space-4)">
+    <h1 style="font-size: var(--fs-2xl)">Подсказки к заданиям</h1>
+    <p class="muted" style="font-size: var(--fs-sm)">
+      Тайминги фиксированы и не редактируются: <strong>шаг 1</strong> доступен сразу,
+      <strong>шаг 2</strong> открывается через 7 минут после раскрытия шага 1,
+      <strong>шаг 3</strong> — ещё через 15 минут после шага 2.
+      Формат — Markdown: <code class="inline">**жирный**</code>, <code class="inline">`код`</code>,
+      <code class="inline">[текст](https://...)</code>, строки с <code class="inline">- </code> → список, блок кода отступом 4 пробела или в ограде ``` .
+    </p>
+  </div>
+
+  <div class="card card-pad stack stack-3">
+    <div class="row between wrap">
+      <div class="field" style="min-width: 320px; flex: 1">
+        <label class="label" for="task-select">Задание</label>
+        <select class="select" id="task-select"></select>
+      </div>
+      <span id="task-desc" style="font-size: var(--fs-sm); padding-top: 22px"></span>
+    </div>
+  </div>
+
+  <div class="stack stack-4" id="editors" style="margin-top: var(--space-4)"></div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="/static/js/pages/hints.js"></script>
+{% endblock %}

@@ -1,185 +1,14 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Python Practice Hub — проверка кода</title>
-<link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
-<link rel="stylesheet" href="/static/styles.css">
-<style>
-  /* На широком экране базовый .container (max-width: 1320px) оставляет большие
-     пустые поля по бокам — на странице ученика места нужно больше (список,
-     редактор кода, подсказки), поэтому снимаем ограничение ширины.
-     padding-inline оставляем, чтобы контент не прилипал к краям окна. */
-  .student-layout.container { max-width: none; }
-  .student-layout {
-    display: grid;
-    grid-template-columns: 300px 1fr 320px;
-    gap: var(--space-4);
-    align-items: start;
-    padding-block: var(--space-4);
-  }
-  @media (max-width: 1100px) {
-    .student-layout { grid-template-columns: 1fr; }
-    .task-sidebar { position: static; }
-    .hints-panel { position: static; max-height: none; }
-  }
-  .code-mount { min-height: 200px; }
-  .code-mount .cm-editor { height: 100%; }
-  .code-mount .cm-scroller { min-height: 200px; }
-  .hint-mount { min-height: 140px; }
-  .hint-mount .cm-editor { height: 100%; }
-  .hint-mount .cm-scroller { min-height: 140px; }
-  /* Режим "нельзя копировать" (одно из трёх состояний подсказки, см.
-     hint-lock-btn у тьютора) — репетитор просит объяснять решение, а не
-     переносить готовый код в задание. */
-  .hint-mount.is-protected, .hint-mount.is-protected * { user-select: none; -webkit-user-select: none; }
-</style>
-</head>
-<body>
-<header class="app-header">
-  <div class="brand"><span class="brand-mark">&lt;/&gt;</span> Python Practice Hub</div>
-  <a class="chip" id="impersonation-chip" href="#" style="display: none; background: var(--c-primary-soft); color: var(--c-primary); text-decoration: none;"></a>
-  <a class="call-icon-btn is-mute is-sm" id="impersonation-call-link" href="#" title="К звонку и подсказке" style="display: none"></a>
-  <form method="post" action="/impersonate/stop" id="impersonation-exit-form" style="display: none; margin: 0;">
-    <button class="call-icon-btn is-sm is-pulsing" type="submit" title="Вернуться к репетитору" id="impersonation-eye-btn"></button>
-  </form>
-  <a class="call-icon-btn is-pulsing" id="call-link-icon" href="#" target="_blank" rel="noopener" title="Репетитор зовёт на созвон — нажмите, чтобы присоединиться" style="display: none"></a>
-  <div class="header-spacer"></div>
-  <details class="account-menu">
-    <summary class="account-trigger">
-      <span class="muted" id="username"></span>
-      <span class="avatar" id="avatar"></span>
-    </summary>
-    <div class="account-menu-panel">
-      <form method="post" action="/logout" style="margin: 0">
-        <button class="account-menu-item" type="submit">Выйти</button>
-      </form>
-    </div>
-  </details>
-</header>
+/* student.js — страница практики ученика (index.html). Список заданий с
+   пагинацией, редактор решения, история попыток, многоступенчатые подсказки.
+   Та же страница используется тьютором в режиме «посмотреть как ученик».
 
-<div class="container student-layout">
-  <div class="task-sidebar stack stack-4">
-    <aside class="card card-pad stack stack-3">
-      <span class="panel-title">Задания</span>
-      <nav class="task-list" id="task-list"></nav>
-      <div class="row between">
-        <button class="btn btn-sm btn-ghost" id="task-prev-btn">←</button>
-        <span class="muted" id="task-page-label" style="font-size: var(--fs-sm)"></span>
-        <button class="btn btn-sm btn-ghost" id="task-next-btn">→</button>
-      </div>
-    </aside>
-
-    <aside class="card card-pad stack stack-3">
-      <span class="panel-title">Справочные материалы</span>
-      <div id="materials-list" class="stack stack-2"></div>
-    </aside>
-  </div>
-
-  <main class="stack stack-4">
-    <section class="card card-pad stack stack-3">
-      <div class="row between">
-        <div class="stack stack-2">
-          <span class="panel-title">Задание</span>
-          <h2 id="task-title"></h2>
-        </div>
-      </div>
-      <div class="task-desc" id="description"></div>
-    </section>
-
-    <section class="stack stack-3" id="my-attempts-section" style="display: none">
-      <span class="panel-title">Мои попытки</span>
-      <div id="my-attempts-rows"></div>
-    </section>
-
-    <div class="card card-pad row between wrap" id="call-bar" style="display: none">
-      <div class="stack stack-2">
-        <span class="panel-title">Аудиозвонок</span>
-        <span class="muted" id="call-status"></span>
-        <span class="muted" id="remote-mute-status" style="font-size: var(--fs-sm); display: none"></span>
-      </div>
-      <div class="row" id="call-actions"></div>
-    </div>
-    <audio id="remote-audio" autoplay></audio>
-
-    <section class="stack stack-3" id="hint-section" style="display: none">
-      <div class="row between">
-        <span class="panel-title">Подсказка от репетитора</span>
-        <span class="badge badge-pass">Репетитор online</span>
-      </div>
-      <div id="hint-body">
-        <div class="code-editor">
-          <div class="code-editor-bar"><span>hint.py</span></div>
-          <div class="hint-mount" id="hint-mount"></div>
-        </div>
-        <div id="hint-result"></div>
-      </div>
-    </section>
-
-    <section class="stack stack-3" id="solve-section">
-      <div class="row between">
-        <span class="panel-title">Ваше решение · Python 3</span>
-      </div>
-      <p class="muted" style="margin: 0">Напишите решение в виде функции <code class="inline">solve(data)</code>:</p>
-      <div class="code-editor bench-grid">
-        <div class="code-editor-bar">
-          <span>solution.py</span>
-        </div>
-        <div class="code-mount" id="code-mount"></div>
-      </div>
-      <div class="row between wrap">
-        <span class="muted" style="font-size: var(--fs-sm)">Код выполняется на сервере в изолированной среде.</span>
-        <div class="row" style="gap: 8px">
-          <button class="btn btn-sm" id="run-free-btn" title="Выполнить код как есть и показать вывод — без сверки с эталоном">Запустить</button>
-          <button class="btn btn-sm btn-primary" id="submit-btn" title="Проверить решение на тестовых примерах">Проверить</button>
-        </div>
-      </div>
-      <div id="free-run-result"></div>
-    </section>
-    <p class="muted" id="solved-note" style="display: none"><span id="solved-note-icon"></span> Задание уже решено — код можно посмотреть в «Мои попытки» выше.</p>
-
-    <section class="stack stack-4 bench-grid" id="results-section" style="display: none; padding: var(--space-4); border: 1px solid var(--c-border); border-radius: var(--radius-md)">
-      <span class="panel-title">Результаты проверки</span>
-      <div id="summary"></div>
-      <div class="test-list" id="results"></div>
-    </section>
-  </main>
-
-  <aside class="hints-panel" id="hints-panel" style="display: none">
-    <div class="hints-panel-head">
-      <span class="panel-title">Подсказки</span>
-      <span class="hint-step-meta" id="hints-panel-sub"></span>
-    </div>
-    <div class="stack stack-3" id="hints-steps"></div>
-  </aside>
-</div>
-
-<script src="/static/codemirror.bundle.js"></script>
-<script src="/static/attempts.js"></script>
-<script src="/static/dom-utils.js"></script>
-<script src="/static/grade-render.js"></script>
-<script src="/static/call-audio.js"></script>
-<script src="/static/task-nav.js"></script>
-<script src="/static/noise-suppressor.bundle.js"></script>
-<script>
-// Приборные SVG-иконки на currentColor — монохром, stroke-стиль, цвет берётся
-// из CSS-класса состояния. Определена в самом начале: используется и при
-// инициализации (solved-note-icon, HINT_MARKERS), и в рендере подсказок.
-const ICON = (name) => {
-  const p = {
-    lock:    '<rect x="5" y="11" width="14" height="10" rx="1"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
-    unlock:  '<rect x="5" y="11" width="14" height="10" rx="1"/><path d="M8 11V7a4 4 0 0 1 7.5-2"/>',
-    clock:   '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
-    check:   '<path d="M20 6 9 17l-5-5"/>',
-    bellOff: '<path d="M18.66 15A2 2 0 0 1 18 13.7V10a6 6 0 0 0-9.33-5"/><path d="M6 8a6 6 0 0 0 0 6v1.7A2 2 0 0 1 7.34 18H10m0 0a2 2 0 0 0 4 0"/><path d="M3 3l18 18"/><path d="M14 10a2 2 0 0 0-2-2"/>',
-    checkCircle: '<circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/>',
-  };
-  return `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${p[name] || ''}</svg>`;
-};
-const HINT_MARKERS = {
-  ready: ICON('unlock'), waiting: ICON('clock'), revealed: ICON('check'), locked: ICON('lock'),
-};
+   Зависимости (грузятся раньше, см. {% block scripts %} в index.html):
+     codemirror.bundle.js (PracticeHubEditor), js/lib/attempts.js (PPHAttempts),
+     js/lib/dom-utils.js (escapeHtml, redirectToLoginIfUnauthorized, sendMessage),
+     js/lib/grade-render.js (renderGradeResult, renderFreeRunResult, fmtCountdown),
+     js/lib/task-nav.js (saveLastTask, loadMaterials),
+     js/lib/call-audio.js + js/shared/calls.js (выключенный WebRTC-звонок,
+     см. CALLS_DISABLED), js/shared/icons.js (ICON, HINT_MARKERS, ICON_PHONE...). */
 
 const taskList = document.getElementById('task-list');
 const description = document.getElementById('description');
@@ -206,9 +35,9 @@ hintMount.addEventListener('copy', (e) => { if (hintMode === 'protected') e.prev
 hintMount.addEventListener('cut', (e) => { if (hintMode === 'protected') e.preventDefault(); });
 hintMount.addEventListener('contextmenu', (e) => { if (hintMode === 'protected') e.preventDefault(); });
 
-// Три состояния подсказки (переключает тьютор по кругу, см. hint-lock-btn):
-// hidden — блок вообще не показываем ученику; protected — виден, но не
-// копируется; open — виден и копируется свободно. По умолчанию — hidden.
+// Три состояния подсказки (переключает тьютор по кругу, см. hint-lock-btn
+// в tutor-student.js): hidden — блок вообще не показываем ученику; protected —
+// виден, но не копируется; open — виден и копируется свободно. По умолчанию hidden.
 let tutorOnline = false;
 let hintMode = 'hidden';
 
@@ -293,97 +122,13 @@ function hideCallLink() {
   callLinkIcon.style.display = 'none';
 }
 
-// --- Аудиозвонок (WebRTC, P2P) ---------------------------------------------
-// DEPRECATED и ОТКЛЮЧЕНО (2026-07-22): собственный WebRTC-стек решено не
-// развивать дальше — после нескольких заходов на отладку (шумодав,
-// битрейт, TURN) осталась невыясненная проблема с односторонней связью
-// (см. docs/personal/PROJECT_DOCUMENTATION.md §9.6 п.4). Планируется
-// заменить на интеграцию с Яндекс Телемостом (см. там же §11 п.3). Код не
-// удалён — просто входящий звонок теперь игнорируется через
-// CALLS_DISABLED (тьютор всё равно больше не может позвонить, кнопка у
-// него скрыта — это на случай рассинхрона версий или ручного вызова).
-// Ученик всегда принимающий: ждёт offer от тьютора, отвечает answer'ом.
-// Сигналинг идёт через тот же WebSocket, что и live-код/подсказки.
-const CALLS_DISABLED = true;
-let pc = null;
-let localStream = null;
-let noiseSuppressionCtx = null;
-let pendingRemoteIce = [];
+// --- Аудиозвонок (WebRTC, P2P, callee-сторона — ученик) -------------------
+// DEPRECATED и ОТКЛЮЧЕНО (см. js/shared/calls.js, CALLS_DISABLED). Ученик —
+// принимающая сторона: ждёт offer от тьютора, отвечает answer'ом. Сигналинг
+// идёт через тот же WebSocket, что и live-код/подсказки. Общая инфраструктура
+// (состояние, AUDIO_CONSTRAINTS, applyNoiseSuppression, рингтоны) — в calls.js;
+// здесь только роле-специфичная оркестрация (offer→answer, рендер панели звонка).
 let incomingOffer = null;
-let callState = 'idle'; // idle | ringing | in-call
-
-const callBar = document.getElementById('call-bar');
-const callStatusEl = document.getElementById('call-status');
-const callActionsEl = document.getElementById('call-actions');
-const remoteAudio = document.getElementById('remote-audio');
-
-const ICON_PHONE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>';
-const ICON_MIC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>';
-const ICON_MIC_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="1" y1="1" x2="23" y2="23"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/><path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>';
-const ICON_EYE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
-document.getElementById('impersonation-call-link').innerHTML = ICON_PHONE;
-callLinkIcon.innerHTML = ICON_PHONE;
-document.getElementById('impersonation-eye-btn').innerHTML = ICON_EYE;
-document.getElementById('solved-note-icon').innerHTML = ICON('checkCircle');
-
-// --- Звук звонка (Web Audio, без внешних файлов) ---------------------------
-// AudioContext нельзя запустить без жеста пользователя — "разблокируем" его
-// на первый же клик/нажатие клавиши на странице, заранее, чтобы звук
-// входящего звонка не потерялся из-за автоплей-политики браузера.
-let ringAudioCtx = null;
-let ringInterval = null;
-
-document.addEventListener('pointerdown', unlockRingAudio, {once: true});
-document.addEventListener('keydown', unlockRingAudio, {once: true});
-
-// Двойной короткий гудок — сторона принимающего (ученик), входящий звонок.
-function startRingtone() {
-  unlockRingAudio();
-  stopRingSound();
-  const cycle = () => {
-    playRingTone([700], 0.15);
-    setTimeout(() => playRingTone([700], 0.15), 250);
-  };
-  cycle();
-  ringInterval = setInterval(cycle, 1800);
-}
-
-// Прогоняет сырой поток микрофона через RNNoise (WASM, AudioWorklet) —
-// шумоподавление сверх штатного echoCancellation/noiseSuppression браузера,
-// которое на телефонах особенно слабое. При любой ошибке (нет AudioWorklet,
-// не загрузился WASM) — тихо откатываемся на необработанный поток: рабочий
-// звонок без шумодава лучше сорванного звонка.
-let micGainNode = null;
-
-async function applyNoiseSuppression(rawStream) {
-  if (!getNoiseSuppressionEnabled()) {
-    try {
-      return await applyPlainGain(rawStream);
-    } catch (e) {
-      micGainNode = null;
-      return rawStream;
-    }
-  }
-  const audioCtx = new AudioContext({sampleRate: 48000});
-  noiseSuppressionCtx = audioCtx;
-  try {
-    return await applyDeepFilterNet(rawStream, audioCtx);
-  } catch (e) {
-    console.warn('DeepFilterNet3 недоступен, откат на RNNoise:', e);
-  }
-  try {
-    return await applyRnnoise(rawStream, audioCtx);
-  } catch (e) {
-    console.warn('RNNoise тоже недоступен, откат на чистое усиление:', e);
-  }
-  await audioCtx.close();
-  try {
-    return await applyPlainGain(rawStream);
-  } catch (e2) {
-    micGainNode = null;
-    return rawStream;
-  }
-}
 
 function renderCallBar() {
   if (callState === 'idle') {
@@ -420,18 +165,16 @@ function renderCallBar() {
   }
 }
 
-// Явно просим у браузера подавление эха/шума и автогейн — без этого
-// поведение по умолчанию отличается между браузерами и версиями. Микрофон
-// у нас всегда моно, так что просим конкретный формат захвата, а не
-// дефолтный (браузер может занизить sampleRate до подключения обработки).
-const AUDIO_CONSTRAINTS = {
-  echoCancellation: true,
-  noiseSuppression: true,
-  autoGainControl: true,
-  channelCount: 1,
-  sampleRate: 48000,
-  sampleSize: 16,
-};
+const callBar = document.getElementById('call-bar');
+const callStatusEl = document.getElementById('call-status');
+const callActionsEl = document.getElementById('call-actions');
+const remoteAudio = document.getElementById('remote-audio');
+
+// Иконки для живых header-элементов (impersonation-кластер, solved-note).
+document.getElementById('impersonation-call-link').innerHTML = ICON_PHONE;
+callLinkIcon.innerHTML = ICON_PHONE;
+document.getElementById('impersonation-eye-btn').innerHTML = ICON_EYE;
+document.getElementById('solved-note-icon').innerHTML = ICON('checkCircle');
 
 function setupPeerConnection(iceServers) {
   // iceTransportPolicy: 'relay' — форсируем всегда через свой TURN (coturn),
@@ -712,6 +455,11 @@ runFreeBtn.addEventListener('click', async () => {
   }
 });
 
+// Локальный рендер результата своей отправки — НЕ общий renderGradeResult():
+// помимо шаблона тест-кейсов тут есть page-специфичные побочные эффекты
+// (показать results-section, обновить taskStatus, перерисовать список заданий,
+// подтянуть свежую историю попыток) + разная DOM-структура (summary и results
+// — два отдельных контейнера, а renderGradeResult пишет в один).
 function render(data) {
   resultsSection.style.display = 'block';
 
@@ -773,13 +521,7 @@ const hintsPanelSub = document.getElementById('hints-panel-sub');
 let hintState = { taskId: null, levels: [] };
 let hintPollTimer = null;          // периодический опрос при waiting-уровне
 let hintCountdownTimer = null;     // тикающий каждую секунду setInterval отсчёта
-
-const HINT_LEVEL_TITLES = {
-  1: 'Шаг 1 · куда двигаться',
-  2: 'Шаг 2 · конкретика со ссылками',
-  3: 'Шаг 3 · почти решение',
-};
-// HINT_MARKERS и ICON определены в начале скрипта (используются при старте).
+// HINT_MARKERS и HINT_LEVEL_TITLES — в js/shared/icons.js.
 
 function renderHints() {
   // Панель показываем, только если сервер вернул данные (см. loadHints: при
@@ -919,6 +661,3 @@ updateHintSection();
 loadMe();
 loadTasks();
 loadMaterials();
-</script>
-</body>
-</html>

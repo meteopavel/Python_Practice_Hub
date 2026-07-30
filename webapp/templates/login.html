@@ -1,25 +1,7 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Вход — Python Practice Hub</title>
-<link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
-<link rel="stylesheet" href="/static/styles.css">
-<style>
-  .auth-page {
-    min-height: 100vh;
-    display: grid;
-    place-items: center;
-    padding: var(--space-5);
-  }
-  .auth-card { width: 100%; max-width: 400px; }
-  .auth-head { text-align: center; margin-bottom: var(--space-6); }
-  .auth-head .brand-mark { width: 44px; height: 44px; font-size: 20px; margin: 0 auto var(--space-4); }
-  .auth-head h1 { font-size: var(--fs-xl); }
-</style>
-</head>
-<body>
+{% extends "base.html" %}
+{% block title %}Вход — Python Practice Hub{% endblock %}
+{% block header %}{% endblock %}
+{% block content %}
 <main class="auth-page">
   <div class="auth-card">
     <div class="auth-head">
@@ -51,10 +33,7 @@
     </form>
   </div>
 </main>
-<script>
-  if (new URLSearchParams(window.location.search).get('error')) {
-    document.getElementById('error').style.display = 'block';
-  }
-</script>
-</body>
-</html>
+{% endblock %}
+{% block scripts %}
+<script src="/static/js/pages/login.js"></script>
+{% endblock %}

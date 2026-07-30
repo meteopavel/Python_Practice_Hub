@@ -6,6 +6,9 @@
 __pycache__/
 *.pyc
 .claude/
+.zcode/
 /CLAUDE.md
 /docs/personal/
 /secure/
+# Локальная SQLite, создаётся сама при запуске webapp без DATABASE_URL (fallback).
+local.db
