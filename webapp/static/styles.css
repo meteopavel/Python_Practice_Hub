@@ -948,6 +948,12 @@ pre.block {
   margin-right: var(--space-3);
   vertical-align: middle;
 }
+/* В хедерном триггере аватар — последний элемент (справа от него ничего
+   нет), а отступ от имени уже даёт flex-gap .account-trigger — свой
+   margin-right тут лишний и отодвигает аватар от края хедера. */
+.account-trigger .avatar {
+  margin-right: 0;
+}
 
 /* Прогресс-полоска (доля пройденных тестов) */
 .progress {

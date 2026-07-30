@@ -46,11 +46,17 @@
   </form>
   <a class="call-icon-btn is-pulsing" id="call-link-icon" href="#" target="_blank" rel="noopener" title="Репетитор зовёт на созвон — нажмите, чтобы присоединиться" style="display: none"></a>
   <div class="header-spacer"></div>
-  <span class="muted" id="username"></span>
-  <span class="avatar" id="avatar"></span>
-  <form method="post" action="/logout" style="display: inline; margin: 0;">
-    <button class="btn btn-sm btn-ghost" type="submit">Выйти</button>
-  </form>
+  <details class="account-menu">
+    <summary class="account-trigger">
+      <span class="muted" id="username"></span>
+      <span class="avatar" id="avatar"></span>
+    </summary>
+    <div class="account-menu-panel">
+      <form method="post" action="/logout" style="margin: 0">
+        <button class="account-menu-item" type="submit">Выйти</button>
+      </form>
+    </div>
+  </details>
 </header>
 
 <div class="container student-layout">
