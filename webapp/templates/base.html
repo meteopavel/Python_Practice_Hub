@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Python Practice Hub{% endblock %}</title>
+<link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+<link rel="stylesheet" href="/static/styles.css">
+{% block styles %}{% endblock %}
+</head>
+<body>
+{% block header %}
+<header class="app-header">
+  <div class="brand"><span class="brand-mark">&lt;/&gt;</span> Python Practice Hub</div>
+  {% block header_left %}{% endblock %}
+  <div class="header-spacer"></div>
+  <details class="account-menu">
+    <summary class="account-trigger">
+      <span class="muted" id="username"></span>
+      <span class="avatar" id="avatar"></span>
+    </summary>
+    <div class="account-menu-panel">
+      <form method="post" action="/logout" style="margin: 0">
+        <button class="account-menu-item" type="submit">Выйти</button>
+      </form>
+    </div>
+  </details>
+</header>
+{% endblock %}
+
+{% block content %}{% endblock %}
+
+<!-- Общий обработчик: клик вне открытой выпадашки аккаунта закрывает её.
+     Раньше был продублирован inline в tutor/tutor_hints/tutor_student и
+     отсутствовал в index/materials; теперь — в js/shared/app.js (один источник). -->
+<script src="/static/js/lib/dom-utils.js"></script>
+<script src="/static/js/shared/app.js"></script>
+
+{% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,199 +1,18 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Работа с учеником — Python Practice Hub</title>
-<link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
-<link rel="stylesheet" href="/static/styles.css">
-<style>
-  /* На широком экране базовый .container (max-width: 1320px) оставляет большие
-     пустые поля по бокам — на странице работы с учеником места нужно больше
-     (три колонки + код), поэтому снимаем ограничение ширины. padding-inline
-     оставляем, чтобы контент не прилипал к краям окна. */
-  .session-main.container { max-width: none; }
-  .session-main { padding-block: var(--space-4); }
-  .session-layout {
-    display: grid;
-    grid-template-columns: 300px 1fr 320px;
-    gap: var(--space-4);
-    align-items: start;
-  }
-  @media (max-width: 1100px) {
-    .session-layout { grid-template-columns: 1fr; }
-    .task-sidebar { position: static; }
-    .hints-panel { position: static; max-height: none; }
-  }
-  .live-mount { min-height: 180px; }
-  .live-mount .cm-editor { height: 100%; }
-  .live-mount .cm-scroller { min-height: 180px; }
-</style>
-</head>
-<body>
-<header class="app-header">
-  <div class="brand"><span class="brand-mark">&lt;/&gt;</span> Python Practice Hub</div>
-  <div class="row" style="gap: 4px; align-items: center">
-    <details class="account-menu">
-      <summary class="chip account-trigger" style="background: var(--c-primary-soft); color: var(--c-primary)">
-        <span id="switcher-current-name">…</span>
-      </summary>
-      <div class="account-menu-panel" id="switcher-list"></div>
-    </details>
-    <form id="impersonate-form" method="post" style="margin: 0; display: flex; align-items: center">
-      <button class="call-icon-btn is-mute is-sm" id="impersonate-btn" type="submit" title="Посмотреть как ученик"></button>
-    </form>
-  </div>
-  <button class="call-icon-btn is-mute is-sm" id="header-call-btn" title="Позвонить"></button>
-  <form id="call-link-form" class="row" style="margin: 0; gap: 4px; align-items: center" autocomplete="off">
-    <input type="text" class="call-link-input" id="call-link-input" placeholder="Вставьте ссылку" autocomplete="off">
-    <button class="btn btn-sm" type="submit" id="call-link-main-btn">Созвониться</button>
-    <button class="btn btn-sm btn-danger" type="button" id="call-link-cancel-btn" style="display: none">Отменить</button>
-  </form>
-  <button class="call-icon-btn is-mute is-sm" id="header-mute-btn" title="Микрофон" style="display: none"></button>
-  <input type="range" class="mic-gain-slider" id="mic-gain-slider" min="0.5" max="3" step="0.1" title="Громкость микрофона" style="display: none">
-  <label class="muted" id="noise-suppression-label" style="font-size: var(--fs-sm); display: none; align-items: center; gap: 4px">
-    <input type="checkbox" id="noise-suppression-toggle"> шумодав
-  </label>
-  <select class="btn btn-sm" id="mic-select" style="max-width: 160px; display: none" title="Микрофон"></select>
-  <span class="muted" id="remote-mute-status" style="font-size: var(--fs-sm); display: none"></span>
-  <div class="header-spacer"></div>
-  <details class="account-menu">
-    <summary class="account-trigger">
-      <span class="muted" id="username"></span>
-      <span class="avatar" id="avatar"></span>
-    </summary>
-    <div class="account-menu-panel">
-      <form method="post" action="/logout" style="margin: 0">
-        <button class="account-menu-item" type="submit">Выйти</button>
-      </form>
-    </div>
-  </details>
-</header>
-<audio id="remote-audio" autoplay></audio>
+/* tutor-student.js — работа тьютора с учеником (tutor_student.html). Список
+   заданий, live-зеркало кода ученика, редактор подсказки, ИИ-ассистент,
+   мониторинг раскрытых подсказок, пересылка ссылки на созвон.
 
-<div class="container session-main">
-  <div class="session-layout">
-    <div class="task-sidebar stack stack-4">
-      <aside class="card card-pad stack stack-3">
-        <span class="panel-title">Задания</span>
-        <nav class="task-list" id="task-list"></nav>
-        <div class="row between">
-          <button class="btn btn-sm btn-ghost" id="task-prev-btn">←</button>
-          <span class="muted" id="task-page-label" style="font-size: var(--fs-sm)"></span>
-          <button class="btn btn-sm btn-ghost" id="task-next-btn">→</button>
-        </div>
-      </aside>
+   Зависимости (грузятся раньше, см. {% block scripts %} в tutor_student.html):
+     codemirror.bundle.js, js/lib/attempts.js, js/lib/dom-utils.js,
+     js/lib/grade-render.js, js/lib/task-nav.js, js/lib/call-audio.js +
+     js/shared/calls.js (выключенный WebRTC-звонок), js/shared/icons.js
+     (ICON, HINT_MARKERS, HINT_LEVEL_TITLES, ICON_MIC...). */
 
-      <aside class="card card-pad stack stack-3">
-        <span class="panel-title">Справочные материалы</span>
-        <div id="materials-list" class="stack stack-2"></div>
-      </aside>
-    </div>
-
-    <main class="stack stack-4">
-      <section class="card card-pad stack stack-3">
-        <span class="panel-title">Задание</span>
-        <h2 id="task-title"></h2>
-        <div class="task-desc" id="description"></div>
-      </section>
-
-      <section class="stack stack-3" id="student-attempts-section" style="display: none">
-        <span class="panel-title">Попытки ученика</span>
-        <div id="student-attempts-rows"></div>
-      </section>
-
-      <section class="stack stack-3">
-        <div class="row between">
-          <span class="panel-title">Код ученика сейчас</span>
-          <div class="row" style="gap: 8px; align-items: center">
-            <span class="faint" style="font-size: var(--fs-sm)" id="student-live-status">ученик не печатает</span>
-            <button class="btn btn-sm" id="edit-student-code-btn">Править код ученика</button>
-          </div>
-        </div>
-        <div class="code-editor bench-grid">
-          <div class="code-editor-bar"><span id="student-mirror-bar-label">live, read-only</span></div>
-          <div class="live-mount" id="student-mirror-mount"></div>
-        </div>
-        <div id="student-submit-result"></div>
-      </section>
-
-      <section class="stack stack-3">
-        <div class="row between">
-          <span class="panel-title">Ваша подсказка ученику</span>
-          <button class="btn btn-sm" id="hint-lock-btn">Скрыто от ученика</button>
-        </div>
-        <div class="code-editor bench-grid">
-          <div class="code-editor-bar"><span>hint.py</span></div>
-          <div class="live-mount" id="hint-mount"></div>
-        </div>
-        <div class="row between wrap">
-          <span class="muted" style="font-size: var(--fs-sm)">Проверка — по эталону выбранного задания. Запуск — просто выполняет код как есть. Результат увидит и ученик, только если подсказка открыта.</span>
-          <div class="row" style="gap: 8px">
-            <button class="btn btn-sm" id="run-hint-free-btn" title="Выполнить код как есть и показать вывод — без сверки с эталоном">Запустить</button>
-            <button class="btn btn-sm btn-primary" id="run-hint-btn" title="Проверить код на тестовых примерах (без записи попытки ученика)">Проверить</button>
-          </div>
-        </div>
-        <div id="hint-result"></div>
-      </section>
-
-      <section class="card card-pad stack stack-3" id="ai-ask-card">
-        <div class="row between">
-          <span class="panel-title">Спросить ИИ</span>
-          <span class="muted" style="font-size: var(--fs-sm)" id="ai-ask-model-label"></span>
-        </div>
-        <p class="muted" style="font-size: var(--fs-sm); margin: 0">
-          ИИ-помощник (DeepSeek через tutor-llm). Контекст текущего задания и кода ученика
-          подставляются автоматически — снимите галочки, если нужен общий вопрос.
-        </p>
-        <div class="row wrap" style="gap: var(--space-3)">
-          <label class="row" style="gap: 6px; align-items: center; font-size: var(--fs-sm)">
-            <input type="checkbox" id="ai-attach-task" checked>
-            прикрепить задание <span id="ai-attach-task-num">—</span>
-          </label>
-          <label class="row" style="gap: 6px; align-items: center; font-size: var(--fs-sm)">
-            <input type="checkbox" id="ai-attach-code" checked>
-            прикрепить код ученика
-          </label>
-        </div>
-        <div class="field">
-          <label class="label" for="ai-question">Вопрос</label>
-          <textarea class="input" id="ai-question" rows="3" placeholder="Например: почему этот код падает на тесте с повторами?"></textarea>
-        </div>
-        <div class="row" style="gap: 8px">
-          <button class="btn btn-sm btn-primary" id="ai-ask-btn">Спросить ИИ</button>
-        </div>
-        <div id="ai-ask-result"></div>
-      </section>
-    </main>
-
-    <aside class="hints-panel" id="hints-panel" style="display: none">
-      <div class="hints-panel-head">
-        <span class="row" style="gap: 6px; align-items: center">
-          <span class="panel-title">Подсказки ученика</span>
-          <a class="icon-btn" id="hints-edit-link" href="/tutor/hints" title="Редактировать подсказки"></a>
-        </span>
-        <span class="hint-step-meta" id="hints-panel-sub"></span>
-      </div>
-      <div class="stack stack-3" id="hints-steps"></div>
-    </aside>
-  </div>
-</div>
-
-<script src="/static/codemirror.bundle.js"></script>
-<script src="/static/attempts.js"></script>
-<script src="/static/dom-utils.js"></script>
-<script src="/static/grade-render.js"></script>
-<script src="/static/call-audio.js"></script>
-<script src="/static/task-nav.js"></script>
-<script src="/static/noise-suppressor.bundle.js"></script>
-<script>
 const studentId = Number(window.location.pathname.split('/').pop());
 document.getElementById('impersonate-form').action = `/tutor/student/${studentId}/impersonate`;
 
-const ICON_EYE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
-document.getElementById('impersonate-btn').innerHTML = ICON_EYE;
-
 const ICON_EDIT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>';
+document.getElementById('impersonate-btn').innerHTML = ICON_EYE;
 document.getElementById('hints-edit-link').innerHTML = ICON_EDIT;
 
 async function loadMe() {
@@ -558,28 +377,7 @@ function renderSubmitResult(msg) {
   container.prepend(label);
 }
 
-// --- Аудиозвонок (WebRTC, P2P) ---------------------------------------------
-// DEPRECATED и ОТКЛЮЧЕНО (2026-07-22): собственный WebRTC-стек решено не
-// развивать дальше — после нескольких заходов на отладку (шумодав,
-// битрейт, TURN) осталась невыясненная проблема с односторонней связью
-// (см. docs/personal/PROJECT_DOCUMENTATION.md §9.6 п.4). Планируется
-// заменить на интеграцию с Яндекс Телемостом (см. там же §11 п.3). Код не
-// удалён и функции ниже рабочие — просто кнопка звонка скрыта/задизейблена
-// через CALLS_DISABLED, чтобы им нельзя было воспользоваться, пока замена
-// не готова.
-// Тьютор всегда звонящий: создаёт offer, ждёт answer. Сигналинг (offer/answer/
-// ICE) идёт через тот же WebSocket, что и live-код/подсказки — отдельного
-// канала/сервиса для этого не заводим.
-const CALLS_DISABLED = true;
-let pc = null;
-let localStream = null;
-let noiseSuppressionCtx = null;
-let pendingRemoteIce = [];
-let callState = 'idle'; // idle | calling | in-call
-let callTimeoutTimer = null;
-let autoRedialAttempted = false;
-
-// --- Ссылка на звонок (2026-07-22, временная замена собственного WebRTC) --
+// --- Ссылка на созвон (2026-07-22, замена собственного WebRTC) -------------
 // Тьютор созванивается во внешнем сервисе (Телемост и т.п.) сам и просто
 // присылает готовую ссылку тем же WS-каналом — ученик увидит кнопку
 // "Присоединиться". Без какой-либо интеграции с API — просто передача
@@ -670,6 +468,15 @@ function renderStudentOnline(online) {
   }
 }
 
+// --- Аудиозвонок (WebRTC, P2P, caller-сторона — тьютор) -------------------
+// DEPRECATED и ОТКЛЮЧЕНО (см. js/shared/calls.js, CALLS_DISABLED). Тьютор —
+// звонящая сторона: создаёт offer, ждёт answer. Сигналинг через тот же
+// WebSocket. Общая инфраструктура (состояние, AUDIO_CONSTRAINTS,
+// applyNoiseSuppression, рингтоны) — в calls.js; здесь роле-специфичная
+// оркестрация (offer, авто-передозвон, рендер кнопки звонка в шапке).
+let callTimeoutTimer = null;
+let autoRedialAttempted = false;
+
 const headerCallBtn = document.getElementById('header-call-btn');
 if (CALLS_DISABLED) {
   headerCallBtn.style.display = 'none';
@@ -690,64 +497,6 @@ if (CALLS_DISABLED) {
   // (без этого renderHeaderCall() всё равно показывает их в idle-состоянии).
   noiseSuppressionLabel.style.display = 'none';
   micSelect.style.display = 'none';
-}
-
-const ICON_PHONE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>';
-const ICON_MIC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>';
-const ICON_MIC_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="1" y1="1" x2="23" y2="23"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/><path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>';
-
-// --- Звук звонка (Web Audio, без внешних файлов) ---------------------------
-// AudioContext нельзя запустить без жеста пользователя — "разблокируем" его
-// на первый же клик/нажатие клавиши на странице, заранее, чтобы звук вызова
-// не потерялся из-за автоплей-политики браузера.
-let ringAudioCtx = null;
-let ringInterval = null;
-
-document.addEventListener('pointerdown', unlockRingAudio, {once: true});
-document.addEventListener('keydown', unlockRingAudio, {once: true});
-
-// Гудок "дозваниваюсь" — сторона звонящего (тьютор).
-function startRingback() {
-  unlockRingAudio();
-  stopRingSound();
-  playRingTone([425, 480], 1);
-  ringInterval = setInterval(() => playRingTone([425, 480], 1), 3000);
-}
-
-let micGainNode = null;
-
-// При любой ошибке (нет AudioWorklet, не загрузился WASM) — откатываемся по
-// цепочке DeepFilterNet3 → RNNoise → чистое усиление: рабочий звонок без
-// шумодава лучше сорванного звонка, а регулировку громкости хочется
-// сохранить в любом случае.
-async function applyNoiseSuppression(rawStream) {
-  if (!getNoiseSuppressionEnabled()) {
-    try {
-      return await applyPlainGain(rawStream);
-    } catch (e) {
-      micGainNode = null;
-      return rawStream;
-    }
-  }
-  const audioCtx = new AudioContext({sampleRate: 48000});
-  noiseSuppressionCtx = audioCtx;
-  try {
-    return await applyDeepFilterNet(rawStream, audioCtx);
-  } catch (e) {
-    console.warn('DeepFilterNet3 недоступен, откат на RNNoise:', e);
-  }
-  try {
-    return await applyRnnoise(rawStream, audioCtx);
-  } catch (e) {
-    console.warn('RNNoise тоже недоступен, откат на чистое усиление:', e);
-  }
-  await audioCtx.close();
-  try {
-    return await applyPlainGain(rawStream);
-  } catch (e2) {
-    micGainNode = null;
-    return rawStream;
-  }
 }
 
 // Кнопка звонка сама сигнализирует статус цветом (как и кнопка микрофона) —
@@ -791,19 +540,6 @@ function renderHeaderCall() {
     headerMuteBtn.onclick = () => toggleMute(renderHeaderCall);
   }
 }
-
-// Явно просим у браузера подавление эха/шума и автогейн — без этого
-// поведение по умолчанию отличается между браузерами и версиями. Микрофон
-// у нас всегда моно, так что просим конкретный формат захвата, а не
-// дефолтный (браузер может занизить sampleRate до подключения обработки).
-const AUDIO_CONSTRAINTS = {
-  echoCancellation: true,
-  noiseSuppression: true,
-  autoGainControl: true,
-  channelCount: 1,
-  sampleRate: 48000,
-  sampleSize: 16,
-};
 
 function setupPeerConnection(iceServers) {
   // iceTransportPolicy: 'relay' — форсируем всегда через свой TURN (coturn),
@@ -911,12 +647,6 @@ window.addEventListener('beforeunload', () => {
   if (callState !== 'idle') sessionStorage.setItem(`resumeCall_${studentId}`, '1');
 });
 
-document.addEventListener('click', (e) => {
-  document.querySelectorAll('details.account-menu[open]').forEach(d => {
-    if (!d.contains(e.target)) d.removeAttribute('open');
-  });
-});
-
 // --- Мониторинг подсказок ученика (задания 81..100) -------------------------
 // Тьютор видит, какие ступени ученик уже раскрыл, что осталось ждать, и сам
 // текст раскрытых уровней. Это мониторинг (read-only): reveal-кнопок нет,
@@ -931,28 +661,7 @@ const hintsPanelSub = document.getElementById('hints-panel-sub');
 const hintsEditLink = document.getElementById('hints-edit-link');
 let hintState = { taskId: null, levels: [] };
 let hintCountdownTimer = null;
-
-// Приборные SVG-иконки состояний — монохром stroke на currentColor, единый
-// стиль с иконками звонка выше. Заменяют эмодзи (🔒🔓⏳🔇✅).
-const ICON = (name) => {
-  const p = {
-    lock:    '<rect x="5" y="11" width="14" height="10" rx="1"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
-    unlock:  '<rect x="5" y="11" width="14" height="10" rx="1"/><path d="M8 11V7a4 4 0 0 1 7.5-2"/>',
-    eye:     '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>',
-    clock:   '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
-    check:   '<path d="M20 6 9 17l-5-5"/>',
-    bellOff: '<path d="M18.66 15A2 2 0 0 1 18 13.7V10a6 6 0 0 0-9.33-5"/><path d="M6 8a6 6 0 0 0 0 6v1.7A2 2 0 0 1 7.34 18H10m0 0a2 2 0 0 0 4 0"/><path d="M3 3l18 18"/><path d="M14 10a2 2 0 0 0-2-2"/>',
-    checkCircle: '<circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/>',
-  };
-  return `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${p[name] || ''}</svg>`;
-};
-
-const HINT_LEVEL_TITLES = {
-  1: 'Шаг 1 · куда двигаться',
-  2: 'Шаг 2 · конкретика со ссылками',
-  3: 'Шаг 3 · почти решение',
-};
-const HINT_MARKERS = { ready: ICON('unlock'), waiting: ICON('clock'), revealed: ICON('check'), locked: ICON('lock') };
+// ICON, HINT_MARKERS, HINT_LEVEL_TITLES — в js/shared/icons.js.
 
 function renderHintsPanel() {
   // Панель показываем, только если сервер вернул данные (см. loadHintsPanel:
@@ -1074,6 +783,3 @@ renderHeaderCall();
 loadTasks();
 connectWs();
 loadMaterials();
-</script>
-</body>
-</html>

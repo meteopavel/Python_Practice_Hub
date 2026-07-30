@@ -1,115 +1,19 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Подсказки — Python Practice Hub</title>
-<link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
-<link rel="stylesheet" href="/static/styles.css">
-<style>
-  .tutor-main { padding-block: var(--space-4); }
-  .hint-editor-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--space-4);
-    align-items: start;
-  }
-  @media (max-width: 760px) {
-    .hint-editor-row { grid-template-columns: 1fr; }
-  }
-  .hint-editor-textarea {
-    width: 100%;
-    min-height: 140px;
-    font-family: var(--font-mono);
-    font-size: 13px;
-    line-height: 1.55;
-    padding: var(--space-3);
-    resize: vertical;
-    color: var(--c-text);
-    background: var(--c-surface);
-    border: 1px solid var(--c-border-strong);
-    border-radius: var(--radius-md);
-  }
-  .hint-editor-textarea:focus {
-    outline: none;
-    border-color: var(--c-primary);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--c-focus) 28%, transparent);
-  }
-  .hint-preview-box {
-    min-height: 140px;
-    padding: var(--space-3);
-    border: 1px solid var(--c-border);
-    border-radius: var(--radius-md);
-    background: var(--c-surface-2);
-  }
-  .hint-editor-card { border: 1px solid var(--c-border); border-radius: var(--radius-md); padding: var(--space-3); }
-  .hint-level-label { font-weight: var(--fw-semibold); font-size: var(--fs-sm); margin-bottom: var(--space-2); }
-  .hint-level-desc  { font-size: var(--fs-xs); color: var(--c-text-muted); margin-bottom: var(--space-2); }
-  .save-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-top: var(--space-2); }
-  .save-status { font-size: var(--fs-sm); }
-  .save-status.ok { color: var(--c-pass); }
-  .save-status.err { color: var(--c-fail); }
-</style>
-</head>
-<body>
-<header class="app-header">
-  <div class="brand"><span class="brand-mark">&lt;/&gt;</span> Python Practice Hub</div>
-  <a class="btn btn-sm btn-ghost" href="/">← Ученики</a>
-  <div class="header-spacer"></div>
-  <details class="account-menu">
-    <summary class="account-trigger">
-      <span class="muted" id="username"></span>
-      <span class="avatar" id="avatar"></span>
-    </summary>
-    <div class="account-menu-panel">
-      <form method="post" action="/logout" style="margin: 0">
-        <button class="account-menu-item" type="submit">Выйти</button>
-      </form>
-    </div>
-  </details>
-</header>
+/* hints.js — админка подсказок к заданиям (tutor_hints.html). Тьютор правит
+   тексты трёх уровней (markdown) + live-превью. */
 
-<div class="container tutor-main">
-  <div class="stack stack-2" style="margin-bottom: var(--space-4)">
-    <h1 style="font-size: var(--fs-2xl)">Подсказки к заданиям</h1>
-    <p class="muted" style="font-size: var(--fs-sm)">
-      Тайминги фиксированы и не редактируются: <strong>шаг 1</strong> доступен сразу,
-      <strong>шаг 2</strong> открывается через 7 минут после раскрытия шага 1,
-      <strong>шаг 3</strong> — ещё через 15 минут после шага 2.
-      Формат — Markdown: <code class="inline">**жирный**</code>, <code class="inline">`код`</code>,
-      <code class="inline">[текст](https://...)</code>, строки с <code class="inline">- </code> → список, блок кода отступом 4 пробела или в ограде ``` .
-    </p>
-  </div>
-
-  <div class="card card-pad stack stack-3">
-    <div class="row between wrap">
-      <div class="field" style="min-width: 320px; flex: 1">
-        <label class="label" for="task-select">Задание</label>
-        <select class="select" id="task-select"></select>
-      </div>
-      <span id="task-desc" style="font-size: var(--fs-sm); padding-top: 22px"></span>
-    </div>
-  </div>
-
-  <div class="stack stack-4" id="editors" style="margin-top: var(--space-4)"></div>
-</div>
-
-<script src="/static/dom-utils.js"></script>
-<script>
 // --- Минимальный клиентский markdown-рендерер (повторяет серверный из hints.py).
 // Только для live-превью; финальный рендер при показе ученику — серверный.
 function renderMarkdown(text) {
   if (!text) return '<span class="muted" style="font-size: var(--fs-sm)">превью появится при вводе…</span>';
-  const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
   const lines = text.replace(/\r\n/g,'\n').split('\n');
   const blocks = [];
   let i = 0;
   const n = lines.length;
   const inline = t => {
-    let out = esc(t);
+    let out = escapeHtml(t);
     out = out.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,
-      (m, txt, url) => `<a href="${esc(url)}" target="_blank" rel="noopener">${txt}</a>`);
+      (m, txt, url) => `<a href="${escapeHtml(url)}" target="_blank" rel="noopener">${txt}</a>`);
     out = out.replace(/`([^`]+)`/g, '<code class="inline">$1</code>');
     out = out.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
     return out;
@@ -125,7 +29,7 @@ function renderMarkdown(text) {
       const code = [];
       while (i < n && !lines[i].trim().startsWith('```')) { code.push(lines[i]); i++; }
       i++;
-      blocks.push(`<pre class="block"><code>${esc(code.join('\n'))}</code></pre>`);
+      blocks.push(`<pre class="block"><code>${escapeHtml(code.join('\n'))}</code></pre>`);
       continue;
     }
     if (raw.startsWith('    ')) {
@@ -135,7 +39,7 @@ function renderMarkdown(text) {
         code.push(lines[i].startsWith('    ') ? lines[i].slice(4) : '');
         i++;
       }
-      blocks.push(`<pre class="block"><code>${esc(code.join('\n'))}</code></pre>`);
+      blocks.push(`<pre class="block"><code>${escapeHtml(code.join('\n'))}</code></pre>`);
       continue;
     }
     if (s.startsWith('- ') || s.startsWith('* ')) {
@@ -216,7 +120,7 @@ async function loadTasks() {
   sel.addEventListener('change', () => loadTask(Number(sel.value)));
   if (!tasks.length) return;
   // Переход по ссылке "Редактировать подсказки" с карточки ученика
-  // (tutor_student.html) — там уже выбрано конкретное задание, приходим
+  // (tutor-student.js) — там уже выбрано конкретное задание, приходим
   // сразу на него, а не на первое по списку.
   const requestedTaskId = Number(new URLSearchParams(location.search).get('task'));
   const initialTaskId = tasks.some(t => t.id === requestedTaskId) ? requestedTaskId : tasks[0].id;
@@ -273,15 +177,6 @@ async function saveLevel(level) {
   }
 }
 
-document.addEventListener('click', (e) => {
-  document.querySelectorAll('details.account-menu[open]').forEach(d => {
-    if (!d.contains(e.target)) d.removeAttribute('open');
-  });
-});
-
 buildEditors();
 loadMe();
 loadTasks();
-</script>
-</body>
-</html>

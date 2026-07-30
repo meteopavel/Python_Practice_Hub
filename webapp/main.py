@@ -13,8 +13,9 @@ from pathlib import Path
 import httpx
 
 from fastapi import Depends, FastAPI, Form, Request, WebSocket, WebSocketDisconnect
-from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from starlette.middleware.sessions import SessionMiddleware
@@ -49,7 +50,9 @@ app = FastAPI(title="Python Practice Hub — веб-грейдер")
 app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET)
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
+TEMPLATES_DIR = Path(__file__).resolve().parent / "templates"
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
 
 @app.on_event("startup")
@@ -91,8 +94,8 @@ class HintContentRequest(BaseModel):
 
 
 @app.get("/login")
-def login_page():
-    return FileResponse(STATIC_DIR / "login.html")
+def login_page(request: Request):
+    return templates.TemplateResponse(request, "login.html")
 
 
 @app.post("/login")
@@ -121,8 +124,8 @@ def index(request: Request, db: Session = Depends(get_db)):
     # (эффективная роль student) видит ровно ту же index.html, что и ученик.
     _, impersonating, _, _ = effective_identity(request, db)
     if current_user_role(request) == ROLE_TUTOR and not impersonating:
-        return FileResponse(STATIC_DIR / "tutor.html")
-    return FileResponse(STATIC_DIR / "index.html")
+        return templates.TemplateResponse(request, "tutor.html")
+    return templates.TemplateResponse(request, "index.html")
 
 
 @app.get("/tutor")
@@ -138,7 +141,7 @@ def tutor_student_page(student_id: int, request: Request):
         return RedirectResponse(url="/login", status_code=303)
     if current_user_role(request) != ROLE_TUTOR:
         return RedirectResponse(url="/", status_code=303)
-    return FileResponse(STATIC_DIR / "tutor_student.html")
+    return templates.TemplateResponse(request, "tutor_student.html")
 
 
 @app.get("/tutor/hints")
@@ -148,7 +151,7 @@ def tutor_hints_page(request: Request):
         return RedirectResponse(url="/login", status_code=303)
     if current_user_role(request) != ROLE_TUTOR:
         return RedirectResponse(url="/", status_code=303)
-    return FileResponse(STATIC_DIR / "tutor_hints.html")
+    return templates.TemplateResponse(request, "tutor_hints.html")
 
 
 @app.post("/tutor/student/{student_id}/impersonate")
@@ -180,7 +183,7 @@ def materials_page(module: str, lesson: str, request: Request):
         return RedirectResponse(url="/login", status_code=303)
     if get_lesson(module, lesson) is None:
         return JSONResponse(status_code=404, content={"error": "Материал не найден"})
-    return FileResponse(STATIC_DIR / "materials.html")
+    return templates.TemplateResponse(request, "materials.html")
 
 
 def effective_identity(request: Request, db: Session):

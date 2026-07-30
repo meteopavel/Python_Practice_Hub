@@ -1,47 +1,6 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Справочные материалы — Python Practice Hub</title>
-<link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
-<link rel="stylesheet" href="/static/styles.css">
-<style>
-  .material-main { padding-block: var(--space-4); max-width: 860px; }
-  .material-cell-mount { min-height: 0; }
-  .material-cell-mount .cm-editor { height: 100%; }
-  .material-output {
-    margin: 0;
-    white-space: pre-wrap;
-  }
-  .material-output.is-error { color: var(--c-fail); background: var(--c-fail-bg); border-color: var(--c-fail-border); }
-</style>
-</head>
-<body>
-<header class="app-header">
-  <div class="brand"><span class="brand-mark">&lt;/&gt;</span> Python Practice Hub</div>
-  <div class="header-spacer"></div>
-  <span class="muted" id="username"></span>
-  <span class="avatar" id="avatar"></span>
-  <form method="post" action="/logout" style="display: inline; margin: 0;">
-    <button class="btn btn-sm btn-ghost" type="submit">Выйти</button>
-  </form>
-</header>
+/* materials.js — страница справочного урока (materials.html). Читает манифест
+   модулей и ячейки конкретного урока, рендерит read-only CodeMirror. */
 
-<div class="container material-main">
-  <a class="btn btn-sm btn-ghost" href="/" style="margin-bottom: var(--space-4)">← к практике</a>
-
-  <div class="card card-pad stack stack-2" style="margin-bottom: var(--space-4)">
-    <span class="panel-title" id="module-title"></span>
-    <h1 id="lesson-title" style="font-size: var(--fs-2xl); margin: 0"></h1>
-  </div>
-
-  <div class="stack stack-4" id="cells"></div>
-</div>
-
-<script src="/static/codemirror.bundle.js"></script>
-<script src="/static/dom-utils.js"></script>
-<script>
 async function loadMe() {
   const res = await fetch('/api/me');
   if (redirectToLoginIfUnauthorized(res)) return;
@@ -91,6 +50,3 @@ async function loadLesson() {
 
 loadMe();
 loadLesson();
-</script>
-</body>
-</html>

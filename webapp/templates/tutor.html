@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Ученики — Python Practice Hub{% endblock %}
+{% block header_left %}
+  <a class="btn btn-sm btn-ghost" href="/tutor/hints">Подсказки</a>
+{% endblock %}
+{% block content %}
+<div class="container tutor-main">
+  <div class="stack stack-2" style="margin-bottom: var(--space-4)">
+    <h1 style="font-size: var(--fs-2xl)">Ученики</h1>
+    <p class="muted">Выберите ученика, чтобы посмотреть его попытки и поработать с ним вживую</p>
+  </div>
+
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr><th>Ученик</th><th>Попыток</th><th class="col-right">Последняя активность</th><th class="col-right"></th></tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+  <p class="muted" id="empty-state" style="display: none; margin-top: var(--space-4)">Пока нет ни одного ученика.</p>
+
+  <div class="card card-pad stack stack-3" style="margin-top: var(--space-4)">
+    <div class="row between">
+      <span class="panel-title">Новый ученик</span>
+      <button class="btn btn-sm" id="add-student-toggle">Добавить ученика</button>
+    </div>
+    <form id="add-student-form" class="row wrap" style="display: none; gap: var(--space-3); align-items: flex-end;">
+      <div class="field" style="flex: 1; min-width: 160px">
+        <label class="label" for="new-username">Логин</label>
+        <input class="input" id="new-username" required>
+      </div>
+      <div class="field" style="flex: 1; min-width: 160px">
+        <label class="label" for="new-password">Пароль</label>
+        <input class="input" id="new-password" type="password" required>
+      </div>
+      <button class="btn btn-primary btn-sm" type="submit">Создать</button>
+    </form>
+    <p class="field-error" id="add-student-error" style="display: none; margin: 0"></p>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="/static/js/pages/tutor.js"></script>
+{% endblock %}
