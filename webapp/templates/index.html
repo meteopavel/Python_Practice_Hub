@@ -2,11 +2,11 @@
 {% block title %}Python Practice Hub — проверка кода{% endblock %}
 {% block header_left %}
   <a class="chip" id="impersonation-chip" href="#" style="display: none; background: var(--c-primary-soft); color: var(--c-primary); text-decoration: none;"></a>
-  <a class="call-icon-btn is-mute is-sm" id="impersonation-call-link" href="#" title="К звонку и подсказке" style="display: none"></a>
+  <a class="call-icon-btn is-mute is-sm" id="impersonation-call-link" href="#" aria-label="К звонку и подсказке" title="К звонку и подсказке" style="display: none"></a>
   <form method="post" action="/impersonate/stop" id="impersonation-exit-form" style="display: none; margin: 0;">
-    <button class="call-icon-btn is-sm is-pulsing" type="submit" title="Вернуться к репетитору" id="impersonation-eye-btn"></button>
+    <button class="call-icon-btn is-sm is-pulsing" type="submit" aria-label="Вернуться к репетитору" title="Вернуться к репетитору" id="impersonation-eye-btn"></button>
   </form>
-  <a class="call-icon-btn is-pulsing" id="call-link-icon" href="#" target="_blank" rel="noopener" title="Репетитор зовёт на созвон — нажмите, чтобы присоединиться" style="display: none"></a>
+  <a class="call-icon-btn is-pulsing" id="call-link-icon" href="#" target="_blank" rel="noopener" aria-label="Репетитор зовёт на созвон — нажмите, чтобы присоединиться" title="Репетитор зовёт на созвон — нажмите, чтобы присоединиться" style="display: none"></a>
 {% endblock %}
 {% block content %}
 <div class="container container--wide student-layout">
@@ -89,7 +89,7 @@
     </section>
     <p class="muted" id="solved-note" style="display: none"><span id="solved-note-icon"></span> Задание уже решено — код можно посмотреть в «Мои попытки» выше.</p>
 
-    <section class="stack stack-4 bench-grid" id="results-section" style="display: none; padding: var(--space-4); border: 1px solid var(--c-border); border-radius: var(--radius-md)">
+    <section class="stack stack-4 bench-grid" id="results-section" style="display: none; padding: var(--space-4); border: 1px solid var(--c-border); border-radius: var(--radius)">
       <span class="panel-title">Результаты проверки</span>
       <div id="summary"></div>
       <div class="test-list" id="results"></div>

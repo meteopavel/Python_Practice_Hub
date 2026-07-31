@@ -6,7 +6,7 @@
 .task-desc p { margin: 0 0 var(--space-3); white-space: pre-wrap; }
 .task-desc p:last-child { margin-bottom: 0; }
 
-/* Задание в списке — ячейка на сетке, активная «встаёт» сигнальным контуром */
+/* Задание в списке; активное — с акцентным контуром. */
 .task-item {
   display: flex;
   align-items: center;
@@ -16,7 +16,7 @@
   text-align: left;
   background: transparent;
   border: 1px solid transparent;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   cursor: pointer;
   font: inherit;
   font-size: var(--fs-sm);
@@ -40,14 +40,14 @@
   font-variant-numeric: tabular-nums;
   color: var(--c-text);
   background: var(--c-surface-2);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
 }
 .task-item.is-active .task-item-num { color: var(--c-signal-text); background: var(--c-signal); }
 .task-item-body { min-width: 0; flex: 1; }
 .task-item-title { display: block; font-weight: var(--fw-medium); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .task-item-meta  { font-size: var(--fs-sm); color: var(--c-text-muted); }
 .task-item-status { flex-shrink: 0; }
-.task-item-status .dot { width: 8px; height: 8px; display: inline-block; border-radius: 1px; }
+.task-item-status .dot { width: 8px; height: 8px; display: inline-block; border-radius: 0; }
 .dot-pass { background: var(--c-pass-solid); box-shadow: 0 0 6px var(--c-pass-bg); }
 .dot-fail { background: var(--c-fail-solid); }
 .dot-none { background: var(--c-border-strong); }
@@ -61,8 +61,8 @@
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
   font-weight: var(--fw-bold);
-  letter-spacing: 0.04em;
-  border-radius: var(--radius-sm);
+  letter-spacing: var(--tracking-label);
+  border-radius: var(--radius);
   background: var(--c-surface-2);
   color: var(--c-text-muted);
   border: 1px solid var(--c-border-strong);
@@ -91,7 +91,7 @@
   gap: 1px;
   background: var(--c-surface);
   border: 1px solid var(--c-border-strong);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius);
   box-shadow: var(--shadow-lg);
   z-index: 30;
 }
@@ -102,7 +102,7 @@
   padding: var(--space-2) var(--space-3);
   border: none;
   background: none;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   font-size: var(--fs-sm);
   color: var(--c-text);
   cursor: pointer;
@@ -112,11 +112,11 @@
 .account-menu-divider { height: 1px; margin: var(--space-1) 0; background: var(--c-border); }
 
 /* --------------------------------------------------------------------------
-   9. РЕДАКТОР КОДА — экран прибора
+   9. РЕДАКТОР КОДА
    -------------------------------------------------------------------------- */
 .code-editor {
   border: 1px solid var(--c-code-border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   overflow: hidden;
   background: var(--c-code-bg);
 }
@@ -131,39 +131,22 @@
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
   font-weight: var(--fw-bold);
-  letter-spacing: 0.06em;
+  letter-spacing: var(--tracking-label);
   text-transform: uppercase;
 }
 .code-editor-bar::before {
   content: "";
-  width: 6px; height: 6px;
+  width: var(--mark-sm); height: var(--mark-sm);
   background: var(--c-signal);
   flex-shrink: 0;
 }
-.code-textarea {
-  display: block;
-  width: 100%;
-  min-height: 260px;
-  padding: var(--space-4);
-  border: 0;
-  resize: vertical;
-  font-family: var(--font-mono);
-  font-size: 14px;
-  line-height: 1.7;
-  tab-size: 4;
-  color: var(--c-code-text);
-  background: var(--c-code-bg);
-  caret-color: var(--c-signal);
-}
-.code-textarea:focus { outline: none; }
-.code-textarea::placeholder { color: var(--c-code-gutter); }
 
 /* Инлайновый код в тексте задания */
 code.inline {
   font-family: var(--font-mono);
   font-size: 0.9em;
   padding: 1px 6px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   background: var(--c-surface-2);
   border: 1px solid var(--c-border);
   color: var(--c-signal);
@@ -173,19 +156,16 @@ pre.block {
   padding: var(--space-4);
   overflow-x: auto;
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: var(--fs-code);
   line-height: 1.6;
   color: var(--c-code-text);
   background: var(--c-code-bg);
   border: 1px solid var(--c-code-border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
 }
 
 /* --------------------------------------------------------------------------
-   9.1 ИСТОРИЯ ПОПЫТОК — полоса индикаторов-показаний (мини-осциллограмма)
-   Каждая попытка = квадрат-лампа: зелёный pass / красный с диагональю fail
-   (диагональ — для дальтоников, не только цвет). Hover → превью-модалка
-   с кодом+датой. Клик → раскрытие кода инлайн.
+   9.1 ИСТОРИЯ ПОПЫТОК
    -------------------------------------------------------------------------- */
 .attempt-strip {
   display: flex;
@@ -200,7 +180,7 @@ pre.block {
   justify-content: center;
   width: 22px;
   height: 22px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   border: 1px solid var(--c-border-strong);
   background: var(--c-surface-2);
   cursor: pointer;
@@ -210,7 +190,7 @@ pre.block {
 }
 .attempt-chip:hover { transform: translateY(-1px); border-color: var(--c-signal-dim); z-index: 5; }
 .attempt-chip:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 2px; }
-/* лампы состояния */
+/* Индикатор состояния попытки. */
 .attempt-chip::after {
   content: "";
   width: 10px; height: 10px;
@@ -221,14 +201,14 @@ pre.block {
 .attempt-chip.is-fail { border-color: var(--c-fail-border); background: var(--c-fail-bg); }
 .attempt-chip.is-fail::after {
   background: var(--c-fail-solid);
-  /* диагональная риска для дальтоников — fail отличается не только цветом */
+  /* Диагональная риска — fail отличается формой, не только цветом (дальтоники). */
   background-image: linear-gradient(45deg, rgba(0,0,0,0.4) 25%, transparent 25%, transparent 50%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.4) 75%, transparent 75%);
   background-size: 4px 4px;
 }
 .attempt-chip.is-pass.is-latest { border-color: var(--c-pass-solid); }
 .attempt-chip.is-pass.is-latest::after { box-shadow: 0 0 0 2px var(--c-pass-bg); }
 
-/* Раскрытый код под полосой (по клику) */
+/* Раскрытый код под полосой (по клику). */
 .attempt-detail {
   margin-top: var(--space-3);
   border-top: 1px solid var(--c-border);
@@ -246,7 +226,7 @@ pre.block {
 }
 .attempt-detail .code-editor { margin-bottom: 0; }
 
-/* Превью-модалка при наведении — всплывающая карточка с кодом + датой */
+/* Превью-модалка при наведении. */
 .attempt-preview {
   position: fixed;
   z-index: 60;
@@ -254,7 +234,7 @@ pre.block {
   max-height: 320px;
   background: var(--c-surface);
   border: 1px solid var(--c-border-strong);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius);
   box-shadow: var(--shadow-lg);
   display: flex;
   flex-direction: column;
@@ -280,46 +260,32 @@ pre.block {
   padding: var(--space-3);
   overflow: auto;
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: var(--fs-code-sm);
   line-height: 1.6;
   color: var(--c-code-text);
   background: var(--c-code-bg);
   white-space: pre;
 }
 @media (hover: none) {
-  /* На тач-устройствах hover нет — превью отключаем, остаётся клик-раскрытие */
+  /* На тач-устройствах превью отключено, остаётся клик-раскрытие. */
   .attempt-preview { display: none; }
 }
 
-/* Устаревшие классы (details-based) — оставлены, но новая полоса их не использует */
-.attempt-item { border-bottom: 1px solid var(--c-border); }
-.attempt-item:last-child { border-bottom: 0; }
-.attempt-row {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: var(--space-3); padding: var(--space-2) 0;
-  font-size: var(--fs-sm); cursor: pointer;
-}
-.attempt-item .code-editor { margin-bottom: var(--space-2); }
-.attempt-code-mount { min-height: 60px; max-height: 320px; overflow-y: auto; }
-.attempt-code-mount .cm-editor { height: 100%; }
-
 /* --------------------------------------------------------------------------
-   10. РЕЗУЛЬТАТЫ ТЕСТОВ — Verdict Readout, показания прибора
-   Сетка-разметка (bench-grid) на зоне результатов = measurement-surface.
+   10. РЕЗУЛЬТАТЫ ТЕСТОВ
    -------------------------------------------------------------------------- */
 .test-list { display: flex; flex-direction: column; gap: var(--space-2); }
 .test-case {
   border: 1px solid var(--c-border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   background: var(--c-surface);
   overflow: hidden;
   position: relative;
 }
-/* Состояние — цветной hairline-контур всего периметра + status-индикатор,
-   не «side-tab» (бордюр с одной стороны = AI-slop tell). */
+/* Состояние — контур по всему периметру, не бордюр с одной стороны. */
 .test-case.is-pass { border-color: var(--c-pass-border); }
 .test-case.is-fail { border-color: var(--c-fail-border); }
-/* Status-индикатор: квадрат-маркер перед именем теста, как лампа канала */
+/* Маркер состояния перед именем теста. */
 .test-case-head {
   display: flex;
   align-items: center;
@@ -328,7 +294,7 @@ pre.block {
 }
 .test-case-head::before {
   content: "";
-  width: 8px; height: 8px;
+  width: var(--mark); height: var(--mark);
   flex-shrink: 0;
   background: var(--c-border-strong);
 }
@@ -353,7 +319,7 @@ pre.block {
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
   font-weight: var(--fw-bold);
-  letter-spacing: 0.06em;
+  letter-spacing: var(--tracking-label);
   text-transform: uppercase;
   color: var(--c-text-faint);
   padding-top: 3px;
@@ -361,11 +327,11 @@ pre.block {
 .test-io dd {
   margin: 0;
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: var(--fs-code);
   color: var(--c-text);
   background: var(--c-bg);
   padding: 4px 8px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   white-space: pre-wrap;
   word-break: break-word;
   border: 1px solid var(--c-border);
@@ -377,7 +343,7 @@ pre.block {
    -------------------------------------------------------------------------- */
 .table-wrap {
   border: 1px solid var(--c-border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius);
   overflow: auto;
   background: var(--c-surface);
 }
@@ -393,7 +359,7 @@ pre.block {
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
   font-weight: var(--fw-bold);
-  letter-spacing: 0.08em;
+  letter-spacing: var(--tracking-label);
   text-transform: uppercase;
   color: var(--c-text-muted);
   background: var(--c-surface-3);
@@ -413,7 +379,7 @@ pre.block {
 .avatar {
   display: inline-grid; place-items: center;
   width: 30px; height: 30px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   background: var(--c-signal-soft);
   color: var(--c-signal);
   border: 1px solid var(--c-signal-dim);
@@ -423,24 +389,7 @@ pre.block {
   margin-right: var(--space-3);
   vertical-align: middle;
 }
-/* В хедерном триггере аватар — последний элемент (справа от него ничего
-   нет), а отступ от имени уже даёт flex-gap .account-trigger — свой
-   margin-right тут лишний и отодвигает аватар от края хедера. */
+/* В хедерном триггере отступ справа не нужен — даёт flex-gap. */
 .account-trigger .avatar {
   margin-right: 0;
 }
-
-/* Прогресс-полоска (доля пройденных тестов) */
-.progress {
-  display: inline-flex; align-items: center; gap: var(--space-3);
-}
-.progress-bar {
-  width: 90px; height: 6px;
-  border-radius: 0;
-  background: var(--c-surface-3);
-  overflow: hidden;
-  border: 1px solid var(--c-border);
-}
-.progress-fill { height: 100%; background: var(--c-pass-solid); }
-.progress-fill.is-partial { background: var(--c-warn); }
-.progress-fill.is-low { background: var(--c-fail-solid); }

@@ -1,19 +1,14 @@
 /* --------------------------------------------------------------------------
-   13.1 РАСКЛАДКА СТРАНИЦ — постраничный layout, перенесён сюда из инлайн-<style>
-   в шаблонах (раньше у каждой страницы был свой встроенный <style>). Общие
-   трёхколоночные сетки практики ученика и работы тьютора — одна пара классов
-   (.student-layout / .session-layout), сетка у них идентичная.
+   13.1 РАСКЛАДКА СТРАНИЦ
    -------------------------------------------------------------------------- */
 
-/* Вертикальный отступ контента от хедера — общий для всех «плотных» страниц. */
+/* Вертикальный отступ контента от хедера. */
 .tutor-main,
 .session-main,
 .material-main { padding-block: var(--space-4); }
 .student-layout { padding-block: var(--space-4); }
 
-/* Практика ученика и работа тьютора — идентичная трёхколоночная сетка
-   (список заданий 300px / редактор / панель подсказок 320px). Раньше это были
-   два одинаковых правила под разными именами в index.html и tutor_student.html. */
+/* Трёхколоночная сетка практики ученика и работы тьютора. */
 .student-layout,
 .session-layout {
   display: grid;
@@ -22,10 +17,10 @@
   align-items: start;
 }
 
-/* Материалы — узкая читательская колонка, шире --container не нужно. */
+/* Материалы — узкая читательская колонка. */
 .material-main { max-width: 860px; }
 
-/* Страница входа — карточка по центру вьюпорта. */
+/* Страница входа — карточка по центру. */
 .auth-page {
   min-height: 100vh;
   display: grid;
@@ -37,8 +32,7 @@
 .auth-head .brand-mark { width: 44px; height: 44px; font-size: 20px; margin: 0 auto var(--space-4); }
 .auth-head h1 { font-size: var(--fs-xl); }
 
-/* CodeMirror-монты (read-only и редактируемые) — общий паттерн .cm-editor
-   { height:100% } + min-height на обёртке. */
+/* CodeMirror-монты — .cm-editor { height: 100% } + min-height на обёртке. */
 .code-mount { min-height: 200px; }
 .code-mount .cm-editor { height: 100%; }
 .code-mount .cm-scroller { min-height: 200px; }
@@ -51,19 +45,18 @@
 .material-cell-mount { min-height: 0; }
 .material-cell-mount .cm-editor { height: 100%; }
 
-/* Режим «нельзя копировать» подсказку (одно из трёх состояний, см. hint-lock-btn
-   у тьютора) — репетитор просит объяснять решение, а не переносить готовый код. */
+/* Режим «нельзя копировать» подсказку. */
 .hint-mount.is-protected, .hint-mount.is-protected * { user-select: none; -webkit-user-select: none; }
 
-/* Список учеников — кликабельные строки таблицы. */
+/* Список учеников — кликабельные строки. */
 .student-row { cursor: pointer; }
 .student-row:hover { background: var(--c-surface-2); }
 
-/* Вывод ячейки материала (учебный ноутбук). */
+/* Вывод ячейки материала. */
 .material-output { margin: 0; white-space: pre-wrap; }
 .material-output.is-error { color: var(--c-fail); background: var(--c-fail-bg); border-color: var(--c-fail-border); }
 
-/* Админка подсказок — редактор markdown + live-превью, два в ряд. */
+/* Админка подсказок — редактор markdown + live-превью. */
 .hint-editor-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -74,14 +67,14 @@
   width: 100%;
   min-height: 140px;
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: var(--fs-code);
   line-height: 1.55;
   padding: var(--space-3);
   resize: vertical;
   color: var(--c-text);
   background: var(--c-surface);
   border: 1px solid var(--c-border-strong);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius);
 }
 .hint-editor-textarea:focus {
   outline: none;
@@ -92,10 +85,9 @@
   min-height: 140px;
   padding: var(--space-3);
   border: 1px solid var(--c-border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius);
   background: var(--c-surface-2);
 }
-.hint-editor-card { border: 1px solid var(--c-border); border-radius: var(--radius-md); padding: var(--space-3); }
 .hint-level-label { font-weight: var(--fw-semibold); font-size: var(--fs-sm); margin-bottom: var(--space-2); }
 .hint-level-desc  { font-size: var(--fs-xs); color: var(--c-text-muted); margin-bottom: var(--space-2); }
 .save-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-top: var(--space-2); }

@@ -1,40 +1,37 @@
 /* --------------------------------------------------------------------------
-   4. КАРТОЧКА / ПАНЕЛЬ — ячейка на сетке, тональный слой
+   4. КАРТОЧКА / ПАНЕЛЬ
    -------------------------------------------------------------------------- */
 .card {
   background: var(--c-surface);
   border: 1px solid var(--c-border);
-  border-radius: var(--radius-lg);
-  /* глубина через hairline, не тень */
+  border-radius: var(--radius);
   box-shadow: none;
 }
 .card-pad { padding: var(--space-4); }
 
-/* panel-title — НЕ серый SaaS uppercase-микролейбл (запрещён Design-системой),
-   а техническая метка прибора: моноширинная, с signal-маркером как индикатор
-   канала. Читается как маркировка на приборе, а не как дашборд-клише. */
+/* Заголовок панели с маркером-акцентом. */
 .panel-title {
   display: inline-flex;
   align-items: center;
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
   font-weight: var(--fw-bold);
-  letter-spacing: 0.14em;
+  letter-spacing: var(--tracking-label);
   text-transform: uppercase;
   color: var(--c-text);
 }
 .panel-title::before {
   content: "";
   display: inline-block;
-  width: 8px; height: 8px;
+  width: var(--mark); height: var(--mark);
   margin-right: var(--space-2);
   background: var(--c-signal);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   flex-shrink: 0;
 }
 
 /* --------------------------------------------------------------------------
-   5. КНОПКИ — органы управления прибора (острые, технические)
+   5. КНОПКИ
    -------------------------------------------------------------------------- */
 .btn {
   display: inline-flex;
@@ -45,13 +42,13 @@
   font-family: var(--font-mono);
   font-size: var(--fs-sm);
   font-weight: var(--fw-semibold);
-  letter-spacing: 0.04em;
+  letter-spacing: var(--tracking-label);
   text-transform: uppercase;
   line-height: 1;
   color: var(--c-text);
   background: var(--c-surface-2);
   border: 1px solid var(--c-border-strong);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   cursor: pointer;
   transition: background var(--transition), border-color var(--transition), color var(--transition);
   white-space: nowrap;
@@ -61,8 +58,7 @@
 .btn:active { background: var(--c-surface); }
 .btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
-/* Primary — «взведённый» орган управления: яркий сигнал, тёмный текст.
-   Это рычаг прибора, он должен быть безошибочно-заметным. */
+/* Primary. */
 .btn-primary {
   color: var(--c-signal-text);
   background: var(--c-signal);
@@ -78,18 +74,16 @@
 }
 .btn-ghost:hover { background: var(--c-surface-2); color: var(--c-text); border-color: var(--c-border-strong); }
 
-/* Danger — отмена/ошибка отправки ссылки на созвон: та же форма, что и
-   .btn-primary, но в цветах провала теста (--c-fail*). */
+/* Danger — тёмный текст для контраста на насыщенном фоне (WCAG AA). */
 .btn-danger {
-  color: #fff;
+  color: var(--c-signal-text);
   background: var(--c-fail-solid);
   border-color: var(--c-fail-solid);
 }
 .btn-danger:hover  { filter: brightness(1.12); }
 .btn-danger:active { filter: brightness(0.9); }
 
-/* Поле для вставки ссылки на созвон — схлопнуто в ширину 0, раскрывается
-   анимированно по клику на "Созвониться" (см. tutor_student.html). */
+/* Поле ссылки на созвон — раскрывается анимированно из ширины 0. */
 .call-link-input {
   height: 25px;
   font-family: var(--font-mono);
@@ -97,7 +91,7 @@
   color: var(--c-text);
   background: var(--c-surface-2);
   border: 0 solid var(--c-border-strong);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   max-width: 0;
   padding: 0;
   margin-right: -4px;
@@ -108,9 +102,7 @@
 .call-link-input.is-open { max-width: 220px; padding: 0 10px; opacity: 1; border-width: 1px; margin-right: 0; }
 .call-link-input:focus { outline: none; border-color: var(--c-signal-dim); }
 
-/* Маленькая квадратная icon-кнопка для второстепенных действий рядом с
-   заголовками панелей — в отличие от .call-icon-btn (круглая, только для
-   звонка) держит остроугольный язык остального интерфейса. */
+/* Малая квадратная icon-кнопка для второстепенных действий. */
 .icon-btn {
   display: inline-flex;
   align-items: center;
@@ -118,7 +110,7 @@
   width: 26px;
   height: 26px;
   border: 1px solid var(--c-border-strong);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   background: var(--c-surface-2);
   color: var(--c-text-muted);
   cursor: pointer;
@@ -131,9 +123,7 @@
 .btn-lg { padding: 12px 22px; font-size: var(--fs-md); }
 .btn-block { width: 100%; }
 
-/* Icon-кнопки звонка — держат тот же остроугольный язык, что и весь сайт
-   (2026-07-30: раньше были круглыми как намеренное исключение, но это не
-   подошло к общему стилю — квадратим наравне с остальными controls). */
+/* Кнопки звонка. */
 .call-icon-btn {
   display: inline-flex;
   align-items: center;
@@ -141,16 +131,16 @@
   width: 44px;
   height: 44px;
   border: 1px solid var(--c-border-strong);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   cursor: pointer;
   transition: var(--transition);
-  color: #fff;
+  color: var(--c-text);
   background: var(--c-surface-2);
 }
 .call-icon-btn svg { width: 20px; height: 20px; }
-.call-icon-btn.is-accept { background: var(--c-pass-solid); border-color: var(--c-pass-solid); }
+.call-icon-btn.is-accept { color: var(--c-signal-text); background: var(--c-pass-solid); border-color: var(--c-pass-solid); }
 .call-icon-btn.is-accept:hover { filter: brightness(1.12); }
-.call-icon-btn.is-hangup { background: var(--c-fail-solid); border-color: var(--c-fail-solid); }
+.call-icon-btn.is-hangup { color: var(--c-signal-text); background: var(--c-fail-solid); border-color: var(--c-fail-solid); }
 .call-icon-btn.is-hangup:hover { filter: brightness(1.12); }
 .call-icon-btn.is-hangup svg { transform: rotate(135deg); }
 .call-icon-btn.is-mute {
@@ -169,12 +159,12 @@
    но форма (border-radius) теперь одинаковая — задана в базовом классе. */
 .call-icon-btn.is-sm { width: 25px; height: 25px; }
 
-/* Приглашение на созвон у ученика — того же размера, что brand-mark (30x30),
-   а не полноразмерная 44px "звонилка" (та — для уже идущего разговора). */
+/* Приглашение на созвон у ученика — размер как у brand-mark. */
 #call-link-icon { width: 30px; height: 30px; }
 #call-link-icon svg { width: 16px; height: 16px; }
 .call-icon-btn.is-sm svg { width: 14px; height: 14px; }
 .call-icon-btn.is-pulsing {
+  color: var(--c-signal-text);
   background: var(--c-pass-solid);
   border-color: var(--c-pass-solid);
   animation: call-pulse-green 1.6s ease-in-out infinite;
@@ -192,14 +182,14 @@
 }
 
 /* --------------------------------------------------------------------------
-   6. ПОЛЯ ВВОДА — клеммы/разъёмы прибора
+   6. ПОЛЯ ВВОДА
    -------------------------------------------------------------------------- */
 .field { display: flex; flex-direction: column; gap: var(--space-2); }
 .label {
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
   font-weight: var(--fw-bold);
-  letter-spacing: 0.08em;
+  letter-spacing: var(--tracking-label);
   text-transform: uppercase;
   color: var(--c-text-muted);
 }
@@ -211,7 +201,7 @@
   color: var(--c-text);
   background: var(--c-bg);
   border: 1px solid var(--c-border-strong);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   transition: border-color var(--transition), box-shadow var(--transition);
 }
 .input::placeholder, .textarea::placeholder { color: var(--c-text-faint); }
@@ -224,7 +214,7 @@
 .field-error { font-size: var(--fs-sm); color: var(--c-fail); }
 
 /* --------------------------------------------------------------------------
-   7. БЕЙДЖИ / ИНДИКАТОРЫ — показания состояния прибора
+   7. БЕЙДЖИ / ИНДИКАТОРЫ
    -------------------------------------------------------------------------- */
 .badge {
   display: inline-flex;
@@ -234,15 +224,15 @@
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
   font-weight: var(--fw-bold);
-  letter-spacing: 0.06em;
+  letter-spacing: var(--tracking-label);
   text-transform: uppercase;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   border: 1px solid transparent;
   white-space: nowrap;
 }
 .badge::before {
   content: "";
-  width: 6px; height: 6px;
+  width: var(--mark-sm); height: var(--mark-sm);
   background: currentColor;
   flex-shrink: 0;
 }
@@ -252,13 +242,13 @@
 .badge-neutral { color: var(--c-text-muted); background: var(--c-surface-2); border-color: var(--c-border); }
 .badge-neutral::before { background: var(--c-text-faint); }
 
-/* Крупный итоговый счётчик тестов — главное показание прибора */
+/* Итоговый счётчик тестов. */
 .result-summary {
   display: flex;
   align-items: center;
   gap: var(--space-4);
   padding: var(--space-4) var(--space-5);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius);
   font-weight: var(--fw-bold);
   border: 1px solid var(--c-border);
   background: var(--c-surface);
@@ -277,5 +267,5 @@
   font-family: var(--font-mono);
   font-size: var(--fs-2xl);
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
+  letter-spacing: var(--tracking-tight);
 }

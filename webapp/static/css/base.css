@@ -1,13 +1,10 @@
 /* --------------------------------------------------------------------------
-   1. ТОКЕНЫ — приборный тёмный мир (единственный мир, полный commit)
+   1. ТОКЕНЫ
    -------------------------------------------------------------------------- */
 :root {
   color-scheme: dark;
 
-  /* --- Приборный грунт: палитра Moonlight (Material Theme UI для JetBrains,
-     тема автора Mallowigi, порт Tokyo Night Moon) — тёмно-синий, а не
-     чёрный, стенд. Акцент (--c-signal*) сознательно НЕ тронут — это
-     единственное, что попросили оставить как есть. */
+  /* --- Палитра (Moonlight) */
   --c-bg:           #222436;
   --c-surface:      #262B41;
   --c-surface-2:    #2F334D;
@@ -17,7 +14,7 @@
   --grid-minor:     rgba(45, 212, 239, 0.04);
   --grid-major:     rgba(45, 212, 239, 0.07);
 
-  /* --- Hairline-линии */
+  /* --- Линии */
   --c-border:       #2B2F47;
   --c-border-strong: #444A73;
 
@@ -26,7 +23,7 @@
   --c-text-muted:   #828BB8;
   --c-text-faint:   #6A7396;
 
-  /* --- Сигнал: единственный электрический акцент (осциллограф/CRT) */
+  /* --- Акцент */
   --c-signal:        #2DD4EF;
   --c-signal-hover:  #54DEF5;
   --c-signal-dim:    #16788A;
@@ -34,14 +31,12 @@
   --c-signal-text:   #05181C;
   --c-focus:         #2DD4EF;
 
-  /* --- Совместимость: страницы используют --c-primary* для акцента.
-     Сохраняем стабильный API: primary = signal (единственный акцент мира). */
+  /* --- Акцент (алиас primary, для совместимости) */
   --c-primary:       #2DD4EF;
   --c-primary-hover: #54DEF5;
   --c-primary-soft:  rgba(45, 212, 239, 0.12);
 
-  /* --- Семантика: показания прибора (функция, не настроение) —
-     Moonlight green/red/orange */
+  /* --- Семантика */
   --c-pass:        #6ACC63;
   --c-pass-bg:     rgba(106, 204, 99, 0.10);
   --c-pass-border: rgba(106, 204, 99, 0.30);
@@ -56,13 +51,13 @@
   --c-warn-bg:     rgba(255, 150, 104, 0.10);
   --c-warn-border: rgba(255, 150, 104, 0.30);
 
-  /* --- Блок кода: всегда тёмный «экран прибора» (чуть глубже стенда) */
+  /* --- Код */
   --c-code-bg:     #1A1C2C;
   --c-code-text:   #C8D3F5;
   --c-code-border: #2B2F47;
   --c-code-gutter: #7E8EDA;
 
-  /* --- Типографика: моно — голос прибора, sans — беглое чтение */
+  /* --- Типографика */
   --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, "Liberation Mono", monospace;
   --font-ui:   "Inter Tight", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
 
@@ -72,7 +67,12 @@
   --fs-lg:  1.0625rem;
   --fs-xl:  1.375rem;
   --fs-2xl: 1.75rem;
-  --fs-3xl: 2.25rem;
+  --fs-code: 13px;
+  --fs-code-sm: 12px;
+
+  /* --- Трекинг */
+  --tracking-label: 0.06em;
+  --tracking-tight: -0.01em;
 
   --lh-tight: 1.2;
   --lh-base:  1.55;
@@ -82,7 +82,7 @@
   --fw-semibold: 600;
   --fw-bold:    700;
 
-  /* --- Отступы (шаг 4px, по сетке) */
+  /* --- Отступы (шаг 4px) */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -92,20 +92,19 @@
   --space-7: 48px;
   --space-8: 64px;
 
-  /* --- Скругления: острые, технические (прибор/плата, не мягкие карточки) */
-  --radius-sm: 2px;
-  --radius-md: 3px;
-  --radius-lg: 4px;
-  --radius-pill: 2px;
+  /* --- Скругление */
+  --radius: 2px;
+
+  /* --- Маркеры */
+  --mark: 8px;
+  --mark-sm: 6px;
 
   /* --- Раскладка */
   --container: 1320px;
   --transition: 120ms cubic-bezier(0.4, 0, 0.2, 1);
   --grid-cell: 24px;
 
-  /* --- Тени: мир плоский. «Глубина» = тональный подъём + hairline-контур.
-     Теневые токены оставлены как очень тихие акценты для всплывающих меню,
-     но не для покоящихся поверхностей. */
+  /* --- Тени */
   --shadow-sm: 0 0 0 1px var(--c-border);
   --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--c-border);
   --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--c-border-strong);
@@ -118,10 +117,7 @@
 
 html { -webkit-text-size-adjust: 100%; }
 
-/* Body — приборный стенд. Сетка НЕ фоновый декор всего body (это AI-slop
-   сигнатура): она живёт только на «экранах прибора» — где он измеряет
-   (результаты тестов, редактор кода) — через .bench-grid. Body — плоская
-   тёмная поверхность, глубина строится тональными слоями поверхностей. */
+/* Body — фоновая поверхность. Сетку см. в .bench-grid. */
 body {
   margin: 0;
   font-family: var(--font-ui);
@@ -133,8 +129,7 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* «Экран прибора»: координатная сетка как measurement-surface, не декор.
-   Применяется точечно к зонам, где грейдер показывает измерение/код. */
+/* Координатная сетка — применяется точечно к рабочим зонам (код, результаты). */
 .bench-grid {
   background-image:
     linear-gradient(var(--grid-minor) 1px, transparent 1px),
@@ -148,14 +143,14 @@ h1 {
   font-size: var(--fs-2xl);
   line-height: var(--lh-tight);
   font-weight: var(--fw-bold);
-  letter-spacing: -0.01em;
+  letter-spacing: var(--tracking-tight);
 }
 h2 {
   font-family: var(--font-mono);
   font-size: var(--fs-xl);
   line-height: var(--lh-tight);
   font-weight: var(--fw-bold);
-  letter-spacing: -0.01em;
+  letter-spacing: var(--tracking-tight);
 }
 h3 {
   font-family: var(--font-mono);
@@ -167,19 +162,16 @@ h4 { font-size: var(--fs-md); font-weight: var(--fw-semibold); }
 
 a { color: var(--c-signal); text-decoration: none; }
 a:hover { color: var(--c-signal-hover); }
-/* Подчёркивание ссылок — только там, где это осознанно задано (контент
-   подсказок .hint-content a). Кнопки и навигация (.btn, material-link) при
-   hover НЕ подчёркиваются — подчёркивание там кринж, как сказал заказчик. */
+/* Подчёркивание ссылок задаётся точечно (контент подсказок), не на всех ссылках. */
 
 :focus-visible {
   outline: 2px solid var(--c-focus);
   outline-offset: 2px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
 }
 
 .muted { color: var(--c-text-muted); }
 .faint { color: var(--c-text-faint); }
-.mono  { font-family: var(--font-mono); }
 
 ::selection { background: var(--c-signal-soft); color: var(--c-text); }
 
@@ -193,17 +185,12 @@ a:hover { color: var(--c-signal-hover); }
   padding-inline: var(--space-5);
 }
 
-/* Полноэкранные рабочие страницы (практика ученика, работа тьютора с учеником):
-   трём колонкам + редактору кода нужно больше места, чем базовый --container
-   (1320px). Декларативный модификатор вместо того, чтобы молча переопределять
-   max-width у конкретного layout-класса. padding-inline сохраняем — контент
-   не должен прилипать к краям окна. */
+/* Широкий контейнер для полноэкранных рабочих страниц. */
 .container--wide {
   max-width: none;
 }
 
-/* Хедер-стенд: приборная панель сверху. Hairline снизу, без blur-стекла —
-   мир плоский и материальный, не «стеклянный». */
+/* Хедер. */
 .app-header {
   position: sticky;
   top: 0;
@@ -227,13 +214,12 @@ a:hover { color: var(--c-signal-hover); }
   letter-spacing: 0.02em;
   color: var(--c-text);
 }
-/* Знак </> — остаётся (идеален для код-прибора), но перерисован: острые
-   углы, signal-контур на сетке, как индикатор «канал активен». */
+/* Знак </>. */
 .brand-mark {
   display: grid;
   place-items: center;
   width: 30px; height: 30px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   background: var(--c-signal-soft);
   color: var(--c-signal);
   font-family: var(--font-mono);
@@ -248,8 +234,7 @@ a:hover { color: var(--c-signal-hover); }
    -------------------------------------------------------------------------- */
 .stack   { display: flex; flex-direction: column; }
 .stack-2 { gap: var(--space-2); } .stack-3 { gap: var(--space-3); }
-.stack-4 { gap: var(--space-4); } .stack-5 { gap: var(--space-5); }
+.stack-4 { gap: var(--space-4); }
 .row { display: flex; align-items: center; gap: var(--space-3); }
 .between { justify-content: space-between; }
 .wrap { flex-wrap: wrap; }
-.grow { flex: 1; }
