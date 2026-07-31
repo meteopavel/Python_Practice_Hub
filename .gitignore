@@ -12,3 +12,8 @@ __pycache__/
 /secure/
 # Локальная SQLite, создаётся сама при запуске webapp без DATABASE_URL (fallback).
 local.db
+
+# impeccable: runtime-артефакты детектора (абсолютные пути, session IDs).
+# design.json коммитится — это sidecar дизайн-системы.
+.impeccable/hook.cache.json
+.impeccable/questions/
