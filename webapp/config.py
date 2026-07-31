@@ -1,9 +1,17 @@
 # -*- coding: utf-8 -*-
 """Чтение конфигурации из окружения. Импортируется main.py и роутами."""
+import mimetypes
 import os
 from pathlib import Path
 
 from fastapi.templating import Jinja2Templates
+
+# Регистрация MIME-типов шрифтов: на некоторых Linux-образах (включая
+# Docker) .woff2 не зарегистрирован в системной mimetypes-таблице, и
+# Starlette StaticFiles отдаёт шрифт как application/octet-stream, из-за
+# чего браузер его отклоняет. Регистрируем канонические font/* типы.
+mimetypes.add_type("font/woff2", ".woff2")
+mimetypes.add_type("font/woff", ".woff")
 
 # webapp/ лежит в репозитории; static/ и templates/ — её подпапки.
 # Пути вычисляются от этого файла, чтобы работать из любого cwd (корень репо

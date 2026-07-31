@@ -1,0 +1,58 @@
+/* --------------------------------------------------------------------------
+   ШРИФТЫ — локально, без внешних запросов.
+   Inter Tight — SIL Open Font License 1.1 (см. ../fonts/LICENSE-InterTight.txt)
+   JetBrains Mono — Apache 2.0 (см. ../fonts/LICENSE-JetBrainsMono.txt, NOTICE)
+   -------------------------------------------------------------------------- */
+
+/* --- Inter Tight (UI, беглый текст) --- */
+@font-face {
+  font-family: 'Inter Tight';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/static/fonts/InterTight-Regular.woff2) format('woff2');
+}
+@font-face {
+  font-family: 'Inter Tight';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(/static/fonts/InterTight-Medium.woff2) format('woff2');
+}
+@font-face {
+  font-family: 'Inter Tight';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(/static/fonts/InterTight-SemiBold.woff2) format('woff2');
+}
+@font-face {
+  font-family: 'Inter Tight';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(/static/fonts/InterTight-Bold.woff2) format('woff2');
+}
+
+/* --- JetBrains Mono (метки, код, числа) --- */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/static/fonts/JetBrainsMono-Regular.woff2) format('woff2');
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(/static/fonts/JetBrainsMono-Medium.woff2) format('woff2');
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(/static/fonts/JetBrainsMono-Bold.woff2) format('woff2');
+}
