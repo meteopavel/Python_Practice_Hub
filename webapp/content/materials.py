@@ -12,7 +12,9 @@ import json
 import re
 from pathlib import Path
 
-_ROOT = Path(__file__).resolve().parent.parent
+# Корень репозитория (там лежат 1_introduction/, 2_loops_and_conditions/ и т.д.).
+# Из webapp/content/materials.py это три .parent вверх: content → webapp → корень.
+_ROOT = Path(__file__).resolve().parent.parent.parent
 
 # Заголовки модулей — только 5, руками, без эвристик.
 _MODULE_TITLES = {

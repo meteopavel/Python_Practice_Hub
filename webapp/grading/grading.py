@@ -12,8 +12,8 @@ import os
 
 import httpx
 
-from bot_bridge import get_solver
-from test_cases import TEST_CASES
+from webapp.grading.bot_bridge import get_solver
+from webapp.grading.test_cases import TEST_CASES
 
 EXECUTOR_URL = os.environ.get("EXECUTOR_URL", "http://127.0.0.1:8010")
 

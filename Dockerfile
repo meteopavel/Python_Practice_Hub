@@ -22,6 +22,6 @@ COPY --chmod=755 4_dicts_and_sets 4_dicts_and_sets/
 COPY --chmod=755 5_strings 5_strings/
 
 USER app
-WORKDIR /app/webapp
+WORKDIR /app
 EXPOSE 8000
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "webapp.main:app", "--host", "0.0.0.0", "--port", "8000"]

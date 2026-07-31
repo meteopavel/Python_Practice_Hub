@@ -24,7 +24,7 @@ from typing import Iterable
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from models import Hint, HintReveal
+from webapp.core.models import Hint, HintReveal
 
 # Задания, к которым привязаны подсказки. Это курируемая база, как и
 # TEST_CASES: добавить задание = расширить диапазон здесь. Контент в Hint

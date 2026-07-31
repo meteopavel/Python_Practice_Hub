@@ -6,7 +6,7 @@ from fastapi import Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
-from models import User
+from webapp.core.models import User
 
 
 def hash_password(password: str) -> str:

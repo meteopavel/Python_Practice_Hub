@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """Одноразовая загрузка курированных подсказок для заданий 81..100.
 
-Запуск (внутри контейнера app на Frankfurt):
-    docker compose exec app python seed_hints.py
+Запуск (внутри контейнера app на Frankfurt, WORKDIR=/app):
+    docker compose exec app python -m webapp.scripts.seed_hints
 
 Идемпотентно: для каждой пары (task_id, level) делает upsert — повторный
 запуск обновит тексты, не создавая дублей (UNIQUE(task_id, level) в модели
@@ -15,11 +15,11 @@ Hint). Если тьютор уже отредактировал подсказ�
   2 — конкретика со ссылками на документацию Python.
   3 — почти готовое решение с пометками TODO что доделать.
 
-Формат контента — markdown (см. hints.render_markdown).
+Формат контента — markdown (см. content/hints.py render_markdown).
 """
-from db import Base, SessionLocal, engine
-import models  # noqa: F401 — регистрирует все таблицы в Base.metadata (нужно для create_all)
-from models import Hint
+from webapp.core.db import Base, SessionLocal, engine
+import webapp.core.models  # noqa: F401 — регистрирует все таблицы в Base.metadata (нужно для create_all)
+from webapp.core.models import Hint
 
 # task_id -> {level -> markdown}
 HINTS_DATA: dict[int, dict[int, str]] = {

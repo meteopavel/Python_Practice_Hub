@@ -63,7 +63,7 @@
 Завести пользователя вручную (самостоятельной регистрации нет).
 
 Использование (внутри контейнера app):
-    docker exec -it python_practice_hub-app-1 python create_user.py <username> [role]
+    docker exec -it python_practice_hub-app-1 python -m webapp.scripts.create_user <username> [role]
 
 role: student (по умолчанию) | tutor
 

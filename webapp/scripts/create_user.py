@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """Завести пользователя вручную (самостоятельной регистрации нет).
 
-Использование (внутри контейнера app):
-    docker exec -it python_practice_hub-app-1 python create_user.py <username> [role]
+Использование (внутри контейнера app, WORKDIR=/app):
+    docker exec -it python_practice_hub-app-1 python -m webapp.scripts.create_user <username> [role]
 
 role: student (по умолчанию) | tutor
 
@@ -11,16 +11,16 @@ role: student (по умолчанию) | tutor
 import getpass
 import sys
 
-from auth import hash_password
-from db import SessionLocal
-from models import ROLE_STUDENT, ROLE_TUTOR, User
+from webapp.core.auth import hash_password
+from webapp.core.db import SessionLocal
+from webapp.core.models import ROLE_STUDENT, ROLE_TUTOR, User
 
 VALID_ROLES = (ROLE_STUDENT, ROLE_TUTOR)
 
 
 def main() -> None:
     if len(sys.argv) not in (2, 3):
-        print(f"Использование: python create_user.py <username> [{'|'.join(VALID_ROLES)}]")
+        print(f"Использование: python -m webapp.scripts.create_user <username> [{'|'.join(VALID_ROLES)}]")
         sys.exit(1)
 
     username = sys.argv[1]

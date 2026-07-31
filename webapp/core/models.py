@@ -3,7 +3,7 @@
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, SmallInteger, String, Text, UniqueConstraint
 from sqlalchemy.sql import func
 
-from db import Base
+from webapp.core.db import Base
 
 ROLE_STUDENT = "student"
 ROLE_TUTOR = "tutor"
