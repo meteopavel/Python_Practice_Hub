@@ -1,6 +1,7 @@
 .env
 /.venv/
 /.idea/
+/node_modules/
 /experiments.ipynb
 .DS_Store
 __pycache__/
