@@ -82,7 +82,10 @@ async def session_ws(websocket: WebSocket, student_id: int):
             # Результат отправки решения учеником (кнопка "Проверить" в своём
             # редакторе) — тьютор должен увидеть его сразу, а не только когда
             # сам откроет "Попытки ученика".
-            if data.get("type") == "submit_result":
+            # hint_revealed — ученик раскрыл ступень подсказки (bug.3): тьютору
+            # надо тут же перерисовать панель подсказок без F5, как и попытки.
+            # Оба события однонаправленные student→tutor, поэтому идут вместе.
+            if data.get("type") in ("submit_result", "hint_revealed"):
                 if not is_tutor:
                     for tutor_ws in room.tutor_sockets:
                         await safe_send(tutor_ws, data)

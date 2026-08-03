@@ -299,6 +299,21 @@ function connectWs() {
     } else if (msg.type === 'submit_result') {
       renderSubmitResult(msg);
       loadStudentAttempts(currentTaskId);
+      // bug.3: точка-индикатор в списке заданий должна перекрашиваться сразу,
+      // а не только после F5. Статус монотонен как task_status_map на бэке
+      // (_common.py): 'pass' липкий — решённое однажды задание неудачной
+      // попыткой обратно в 'fail' не скатывается.
+      if (msg.result && typeof msg.result.all_passed === 'boolean') {
+        const newStatus = msg.result.all_passed ? 'pass' : 'fail';
+        if (taskStatus[msg.task_id] !== 'pass' && taskStatus[msg.task_id] !== newStatus) {
+          taskStatus[msg.task_id] = newStatus;
+          renderTaskList();
+        }
+      }
+    } else if (msg.type === 'hint_revealed') {
+      // bug.3: ученик раскрыл ступень — перерисуем панель подсказок, если
+      // смотрим на ту же задачу (иначе событие не по делу).
+      if (msg.task_id === currentTaskId) loadHintsPanel(currentTaskId);
     } else if (msg.type === 'mute_status') {
       const muteEl = document.getElementById('remote-mute-status');
       muteEl.innerHTML = ICON('bellOff') + ' у ученика микрофон выключен';

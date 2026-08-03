@@ -555,6 +555,9 @@ async function revealHint(level) {
     hintsPanelSub.textContent = data.levels.some(l => l.status === 'waiting') ? 'открытие по таймеру' : '';
     renderHints();
     scheduleHintPoll();
+    // bug.3: тьютор должен видеть раскрытие подсказки сразу, без F5 — то же
+    // событие, что и submit_result, релеится ему в комнату (см. ws.py).
+    sendMessage({type: 'hint_revealed', task_id: hintState.taskId, level});
   } catch (e) { /* сеть — молча, состояние не меняем */ }
 }
 
