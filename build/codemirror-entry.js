@@ -45,8 +45,8 @@ const theme = EditorView.theme({
   '.cm-activeLineGutter': {backgroundColor: 'rgba(255, 255, 255, 0.06)'},
   '&.cm-focused': {outline: 'none'},
   '.cm-matchingBracket, .cm-nonmatchingBracket': {
-    backgroundColor: 'rgba(77, 132, 255, 0.35)',
-    outline: '1px solid var(--c-focus)',
+    borderBottom: '2px solid var(--c-focus)',
+    fontWeight: 'bold',
   },
   '.cm-scroller': {overflow: 'auto'},
 }, {dark: true});
