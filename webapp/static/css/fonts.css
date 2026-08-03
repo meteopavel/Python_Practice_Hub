@@ -1,7 +1,7 @@
 /* --------------------------------------------------------------------------
    ШРИФТЫ — локально, без внешних запросов.
    Inter Tight — SIL Open Font License 1.1 (см. ../fonts/LICENSE-InterTight.txt)
-   JetBrains Mono — Apache 2.0 (см. ../fonts/LICENSE-JetBrainsMono.txt, NOTICE)
+   JetBrains Mono — SIL Open Font License 1.1 (см. ../fonts/LICENSE-JetBrainsMono.txt)
    -------------------------------------------------------------------------- */
 
 /* --- Inter Tight (UI, беглый текст) --- */
@@ -48,6 +48,13 @@
   font-weight: 500;
   font-display: swap;
   src: url(/static/fonts/JetBrainsMono-Medium.woff2) format('woff2');
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(/static/fonts/JetBrainsMono-SemiBold.woff2) format('woff2');
 }
 @font-face {
   font-family: 'JetBrains Mono';

@@ -17,6 +17,10 @@ colors:
   ink-faint: "#6A7396"
   code-screen: "#1A1C2C"
   code-gutter: "#7E8EDA"
+  code-keyword: "#baacff"
+  code-var: "#70b0ff"
+  code-string: "#7af8ca"
+  code-class: "#ffdb8e"
   pass: "#6ACC63"
   pass-bg: "rgba(106, 204, 99, 0.10)"
   fail: "#FF757F"
@@ -42,7 +46,7 @@ typography:
     fontFamily: '"JetBrains Mono", ui-monospace, monospace'
     fontWeight: 700
     fontSize: "0.6875rem"
-    letterSpacing: "0.14em"
+    letterSpacing: "0.06em"
     lineHeight: 1
   code:
     fontFamily: '"JetBrains Mono", ui-monospace, "SF Mono", monospace'
@@ -65,7 +69,7 @@ components:
     backgroundColor: "{colors.signal}"
     textColor: "#05181C"
     typography: '"JetBrains Mono", monospace 600 0.8125rem uppercase'
-    rounded: "{rounded.sm}"
+    rounded: "{rounded.default}"
     padding: "9px 16px"
   button-primary-hover:
     backgroundColor: "{colors.signal-hover}"
@@ -74,7 +78,7 @@ components:
     backgroundColor: "{colors.panel-raised}"
     textColor: "{colors.ink}"
     typography: '"JetBrains Mono", monospace 600 0.8125rem uppercase'
-    rounded: "{rounded.sm}"
+    rounded: "{rounded.default}"
     padding: "9px 16px"
   button-secondary-hover:
     backgroundColor: "{colors.panel-active}"
@@ -82,36 +86,36 @@ components:
     backgroundColor: "transparent"
     textColor: "{colors.ink-muted}"
     typography: '"JetBrains Mono", monospace 600 0.8125rem uppercase'
-    rounded: "{rounded.sm}"
+    rounded: "{rounded.default}"
     padding: "9px 16px"
   button-danger:
     backgroundColor: "{colors.fail}"
     textColor: "#FFFFFF"
     typography: '"JetBrains Mono", monospace 600 0.8125rem uppercase'
-    rounded: "{rounded.sm}"
+    rounded: "{rounded.default}"
     padding: "9px 16px"
   input-field:
     backgroundColor: "{colors.bench-dark}"
     textColor: "{colors.ink}"
     typography: '"Inter Tight", 0.9375rem'
-    rounded: "{rounded.sm}"
+    rounded: "{rounded.default}"
     padding: "10px 12px"
   chip:
     backgroundColor: "{colors.panel-raised}"
     textColor: "{colors.ink-muted}"
     typography: '"JetBrains Mono", 700 0.6875rem'
-    rounded: "{rounded.sm}"
+    rounded: "{rounded.default}"
     height: "25px"
   badge-pass:
     backgroundColor: "{colors.pass-bg}"
     textColor: "{colors.pass}"
     typography: '"JetBrains Mono", 700 0.6875rem uppercase'
-    rounded: "{rounded.sm}"
+    rounded: "{rounded.default}"
     padding: "3px 8px"
   card:
     backgroundColor: "{colors.panel}"
     textColor: "{colors.ink}"
-    rounded: "{rounded.lg}"
+    rounded: "{rounded.default}"
     padding: "16px"
 ---
 
@@ -163,7 +167,7 @@ components:
 
 ## Typography
 
-Шрифты хостятся локально в `webapp/static/fonts/` (woff2, subset под Latin + кириллицу), подключаются через `webapp/static/css/fonts.css` (`@font-face`, `font-display: swap`). Никаких внешних запросов: лучше приватность, быстрее, работает офлайн. Лицензии: Inter Tight — SIL OFL 1.1, JetBrains Mono — Apache 2.0 (тексты лицензий лежат рядом со шрифтами).
+Шрифты хостятся локально в `webapp/static/fonts/` (woff2, subset под Latin + кириллицу), подключаются через `webapp/static/css/fonts.css` (`@font-face`, `font-display: swap`). Никаких внешних запросов: лучше приватность, быстрее, работает офлайн. Лицензии: Inter Tight и JetBrains Mono — обе SIL OFL 1.1 (тексты лицензий лежат рядом со шрифтами).
 
 **Display/Label Font:** JetBrains Mono (с fallback на системный моно) — лейблы, метки, цифры, названия, код.
 **Body Font:** Inter Tight (с system-ui fallback) — беглое чтение описаний и подсказок.
@@ -249,7 +253,9 @@ components:
 Прозрачен в покое; hover → фон Panel Raised. Активный (`is-active`) — `signal-soft` фон + `signal-dim` контур. Номер задания — моно-квадрат (`task-item-num`), в активном состоянии инвертируется: Signal фон, тёмный текст. Статус — `8×8px` маркер справа (`dot-pass` / `dot-fail` / `dot-none`).
 
 ### Code editor
-Code Screen фон (`#1A1C2C`), глубже грунта. Бар редактора — mono uppercase signal-цвет с маркером перед подписью (как `panel-title`). Textarea — JetBrains Mono `14px`/`1.7`, `caret-color: signal`, `tab-size: 4`. Инлайновый `code.inline` — Signal текст на Panel Raised с hairline-контуром.
+Code Screen фон (`#1A1C2C`), глубже грунта. Бар редактора — mono uppercase signal-цвет с маркером перед подписью (как `panel-title`). Сам редактор — CodeMirror 6 (собирается из исходников в `build/codemirror-entry.js` через esbuild, `npm run build:codemirror`; см. `webapp/static/vendor/codemirror.bundle.js`), JetBrains Mono `13px`/`1.7`, `caret-color: signal`, отступ 4 пробела. Инлайновый `code.inline` — Signal текст на Panel Raised с hairline-контуром.
+
+**Подсветка синтаксиса:** keyword/operator — Code Keyword (`#baacff`); имя переменной/функции — Code Var (`#70b0ff`); число/bool/null — Warn (`#FF9668`, тот же токен, что и статус «в процессе»); строка — Code String (`#7af8ca`); имя класса — Code Class (`#ffdb8e`); комментарий и пунктуация — Code Gutter, обычный текст — Ink.
 
 ### Verdict Readout (сигнатурный компонент)
 Таблица тестов. Каждый `.test-case` — ячейка с цветным контуром полного периметра по состоянию (pass/fail), **не бордюр с одной стороны**. Перед именем теста — `8×8px` маркер состояния. I/O — двухколоночная сетка `96px / 1fr`: слева моно-uppercase подпись (`dt`, Ink Faint), справа значение (`dd`, моно на Bench Dark фоне, hairline-контур). `diff-got` (полученный ответ при провале) — Fail-цвета.
