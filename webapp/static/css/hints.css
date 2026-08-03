@@ -1,10 +1,12 @@
-/* --------------------------------------------------------------------------
-   13. ПАНЕЛЬ ПОДСКАЗОК
-   -------------------------------------------------------------------------- */
+/* ==========================================================================
+   hints.css — панель подсказок (ученик/тьютор) и список справочных материалов
+   ========================================================================== */
+@layer components {
+
 .hints-panel {
   position: sticky;
-  top: 72px;
-  max-height: calc(100vh - 88px);
+  top: calc(var(--header-h) + var(--space-4));
+  max-height: calc(100vh - var(--header-h) - var(--space-6));
   overflow-y: auto;
 }
 .hints-panel-head {
@@ -17,15 +19,15 @@
 
 /* Ступень подсказки: статус — цвет контура по всему периметру. */
 .hint-step {
-  border: 1px solid var(--c-border);
+  border: 1px solid var(--c-hairline);
   border-radius: var(--radius);
-  background: var(--c-surface);
+  background: var(--c-panel);
   padding: var(--space-3);
-  transition: opacity var(--transition);
+  transition: opacity var(--dur-fast) var(--ease);
 }
-.hint-step.is-ready    { border-color: color-mix(in srgb, var(--c-signal) 45%, var(--c-border)); }
-.hint-step.is-waiting  { border-color: color-mix(in srgb, var(--c-warn) 45%, var(--c-border)); }
-.hint-step.is-revealed { border-color: color-mix(in srgb, var(--c-pass-solid) 45%, var(--c-border)); }
+.hint-step.is-ready    { border-color: color-mix(in srgb, var(--c-signal) 45%, var(--c-hairline)); }
+.hint-step.is-waiting  { border-color: color-mix(in srgb, var(--c-warn) 45%, var(--c-hairline)); }
+.hint-step.is-revealed { border-color: color-mix(in srgb, var(--c-pass) 45%, var(--c-hairline)); }
 .hint-step.is-locked   { opacity: 0.5; }
 .hint-step-head {
   display: flex;
@@ -34,8 +36,8 @@
   margin-bottom: var(--space-2);
 }
 .hint-step-title { font-family: var(--font-mono); font-weight: var(--fw-bold); font-size: var(--fs-sm); }
-.hint-step-meta { margin-left: auto; font-size: var(--fs-xs); color: var(--c-text-muted); font-family: var(--font-mono); }
-.hint-reset-btn { margin-left: auto; color: var(--c-text-faint); }
+.hint-step-meta { margin-left: auto; font-size: var(--fs-xs); color: var(--c-ink-muted); font-family: var(--font-mono); }
+.hint-reset-btn { margin-left: auto; color: var(--c-ink-faint); }
 .hint-reset-btn:hover { color: var(--c-fail); }
 
 /* Маркер состояния ступени с SVG-иконкой. */
@@ -51,7 +53,7 @@
 .hint-marker.is-ready    { background: var(--c-signal-soft); color: var(--c-signal); }
 .hint-marker.is-waiting  { background: var(--c-warn-bg); color: var(--c-warn); }
 .hint-marker.is-revealed { background: var(--c-pass-bg); color: var(--c-pass); }
-.hint-marker.is-locked   { background: var(--c-surface-2); color: var(--c-text-faint); }
+.hint-marker.is-locked   { background: var(--c-panel-raised); color: var(--c-ink-faint); }
 
 /* Универсальная inline-иконка (stroke на currentColor). */
 .ico {
@@ -73,7 +75,7 @@
   font-size: var(--fs-sm);
   color: var(--c-warn);
 }
-.hint-step-note { font-size: var(--fs-sm); color: var(--c-text-muted); margin: 0; }
+.hint-step-note { font-size: var(--fs-sm); color: var(--c-ink-muted); margin: 0; }
 
 .hint-content { font-size: var(--fs-sm); line-height: var(--lh-base); }
 .hint-content > *:first-child { margin-top: 0; }
@@ -101,7 +103,7 @@
   font-weight: var(--fw-bold);
   letter-spacing: var(--tracking-label);
   text-transform: uppercase;
-  color: var(--c-text);
+  color: var(--c-ink);
   cursor: pointer;
   list-style: none;
   border-radius: var(--radius);
@@ -111,22 +113,24 @@
   content: "▸";
   display: inline-block;
   margin-right: var(--space-2);
-  color: var(--c-text);
-  transition: transform var(--transition);
+  color: var(--c-ink);
+  transition: transform var(--dur-fast) var(--ease);
 }
 .materials-module[open] > summary::before { transform: rotate(90deg); }
-.materials-module > summary:hover { color: var(--c-text); background: var(--c-surface-2); }
+.materials-module > summary:hover { color: var(--c-ink); background: var(--c-panel-raised); }
 
 .material-link {
   display: block;
   padding: 5px 8px 5px 22px;
   border-radius: var(--radius);
-  color: var(--c-text);
+  color: var(--c-ink);
   text-decoration: none;
   font-size: var(--fs-sm);
 }
 .material-link:hover {
-  background: var(--c-surface-2);
+  background: var(--c-panel-raised);
   color: var(--c-signal);
   text-decoration: none;
+}
+
 }

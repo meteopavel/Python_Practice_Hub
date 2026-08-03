@@ -1,0 +1,82 @@
+/* ==========================================================================
+   layout.css — контейнеры, хедер, утилиты раскладки
+   ========================================================================== */
+@layer layout {
+
+.container {
+  width: 100%;
+  max-width: var(--container);
+  margin-inline: auto;
+  padding-inline: var(--space-5);
+}
+
+/* Широкий контейнер для полноэкранных рабочих страниц. */
+.container--wide {
+  max-width: none;
+}
+
+/* Хедер. */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  min-height: var(--header-h);
+  padding-inline: var(--space-5);
+  background: var(--c-bench-dark);
+  border-bottom: 1px solid var(--c-hairline);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-family: var(--font-mono);
+  font-weight: var(--fw-bold);
+  font-size: var(--fs-md);
+  letter-spacing: 0.02em;
+  color: var(--c-ink);
+}
+/* Знак </>. */
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: var(--icon-sq-md); height: var(--icon-sq-md);
+  border-radius: var(--radius);
+  background: var(--c-signal-soft);
+  color: var(--c-signal);
+  font-family: var(--font-mono);
+  font-weight: var(--fw-bold);
+  font-size: 14px;
+  border: 1px solid var(--c-signal-dim);
+}
+.header-spacer { flex: 1; }
+
+}
+
+/* --------------------------------------------------------------------------
+   Утилиты — отдельный, самый приоритетный слой раскладки: должны перебивать
+   display/gap/margin, заданные компонентами, независимо от порядка классов.
+   -------------------------------------------------------------------------- */
+@layer utilities {
+
+.stack   { display: flex; flex-direction: column; }
+.stack-2 { gap: var(--space-2); } .stack-3 { gap: var(--space-3); }
+.stack-4 { gap: var(--space-4); }
+.row { display: flex; align-items: center; gap: var(--space-3); }
+.between { justify-content: space-between; }
+.wrap { flex-wrap: wrap; }
+.gap-1 { gap: var(--space-1); }
+.gap-2 { gap: var(--space-2); }
+.text-sm { font-size: var(--fs-sm); }
+.text-center { text-align: center; }
+.m-0 { margin: 0; }
+.d-inline-flex { display: inline-flex; align-items: center; }
+
+/* Скрытие по состоянию — не тегом-модификатором, а классом, поверх любого
+   display, который задаёт компонент (.row/.stack/... флекс и т.п.). */
+.is-hidden { display: none; }
+
+}

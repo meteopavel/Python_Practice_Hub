@@ -1,0 +1,68 @@
+/* ==========================================================================
+   reset.css — сброс и базовая типографика
+   ========================================================================== */
+@layer reset {
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+/* Body — фоновая поверхность. Сетку см. в .bench-grid. */
+body {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: var(--fs-md);
+  line-height: var(--lh-base);
+  color: var(--c-ink);
+  background-color: var(--c-bench-dark);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Координатная сетка — применяется точечно к рабочим зонам (код, результаты). */
+.bench-grid {
+  background-image:
+    linear-gradient(var(--grid-minor) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-minor) 1px, transparent 1px);
+  background-size: var(--grid-cell) var(--grid-cell);
+}
+
+h1, h2, h3, h4, p { margin: 0; }
+h1 {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xl);
+  line-height: var(--lh-tight);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--tracking-tight);
+}
+h2 {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xl);
+  line-height: var(--lh-tight);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--tracking-tight);
+}
+h3 {
+  font-family: var(--font-mono);
+  font-size: var(--fs-lg);
+  line-height: var(--lh-tight);
+  font-weight: var(--fw-semibold);
+}
+h4 { font-size: var(--fs-md); font-weight: var(--fw-semibold); }
+
+a { color: var(--c-signal); text-decoration: none; }
+a:hover { color: var(--c-signal-hover); }
+/* Подчёркивание ссылок задаётся точечно (контент подсказок), не на всех ссылках. */
+
+:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius);
+}
+
+.muted { color: var(--c-ink-muted); }
+.faint { color: var(--c-ink-faint); }
+
+::selection { background: var(--c-signal-soft); color: var(--c-ink); }
+
+}

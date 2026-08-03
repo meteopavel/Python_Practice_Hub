@@ -1,0 +1,117 @@
+/* ==========================================================================
+   tokens.css — дизайн-токены (Moonlight palette)
+   Порядок каскадных слоёв объявлен здесь один раз: слои, объявленные позже,
+   всегда перебивают более ранние — независимо от порядка <link> в base.html.
+   ========================================================================== */
+@layer tokens, reset, layout, components, pages, utilities, responsive;
+
+@layer tokens {
+:root {
+  color-scheme: dark;
+
+  /* --- Палитра (Moonlight) */
+  --c-bench-dark:    #222436;
+  --c-panel:         #262B41;
+  --c-panel-raised:  #2F334D;
+  --c-panel-active:  #363C5C;
+
+  /* --- Сетка */
+  --grid-minor:     rgba(45, 212, 239, 0.04);
+
+  /* --- Линии */
+  --c-hairline:        #2B2F47;
+  --c-hairline-strong: #444A73;
+
+  /* --- Текст */
+  --c-ink:         #C8D3F5;
+  --c-ink-muted:   #828BB8;
+  --c-ink-faint:   #6A7396;
+
+  /* --- Акцент */
+  --c-signal:        #2DD4EF;
+  --c-signal-hover:  #54DEF5;
+  --c-signal-dim:    #16788A;
+  --c-signal-soft:   rgba(45, 212, 239, 0.12);
+  --c-signal-text:   #05181C;
+  --c-focus:         #2DD4EF;
+
+  /* --- Семантика */
+  --c-pass:        #6ACC63;
+  --c-pass-bg:     rgba(106, 204, 99, 0.10);
+  --c-pass-border: rgba(106, 204, 99, 0.30);
+
+  --c-fail:        #FF757F;
+  --c-fail-bg:     rgba(255, 117, 127, 0.10);
+  --c-fail-border: rgba(255, 117, 127, 0.32);
+
+  --c-warn:        #FF9668;
+  --c-warn-bg:     rgba(255, 150, 104, 0.10);
+  --c-warn-border: rgba(255, 150, 104, 0.30);
+
+  /* --- Код */
+  --c-code-screen:     #1A1C2C;
+  --c-code-gutter: #7E8EDA;
+
+  /* --- Подсветка синтаксиса (редактор кода) */
+  --c-code-keyword: #baacff;
+  --c-code-var:     #70b0ff;
+  --c-code-string:  #7af8ca;
+  --c-code-class:   #ffdb8e;
+
+  /* --- Типографика */
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, "Liberation Mono", monospace;
+  --font-ui:   "Inter Tight", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+
+  --fs-xs:  0.6875rem;
+  --fs-sm:  0.8125rem;
+  --fs-md:  0.9375rem;
+  --fs-lg:  1.0625rem;
+  --fs-xl:  1.375rem;
+  --fs-2xl: 1.75rem;
+  --fs-code: 13px;
+  --fs-code-sm: 12px;
+
+  /* --- Трекинг */
+  --tracking-label: 0.06em;
+  --tracking-tight: -0.01em;
+
+  --lh-tight: 1.2;
+  --lh-base:  1.55;
+
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold:    700;
+
+  /* --- Отступы (шаг 4px) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-8: 64px;
+
+  /* --- Скругление */
+  --radius: 2px;
+
+  /* --- Маркеры */
+  --mark: 8px;
+  --mark-sm: 6px;
+
+  /* --- Размеры контролов */
+  --header-h:      56px;
+  --control-h-sm:  25px;
+  --icon-sq-sm:    26px;
+  --icon-sq-md:    30px;
+  --icon-sq-lg:    44px;
+
+  /* --- Раскладка */
+  --container: 1320px;
+  --dur-fast: 120ms;
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --grid-cell: 24px;
+
+  /* --- Тени */
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--c-hairline-strong);
+}
+}

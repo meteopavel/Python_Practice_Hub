@@ -1,6 +1,10 @@
-/* --------------------------------------------------------------------------
-   14. АДАПТИВ (desktop-first)
-   -------------------------------------------------------------------------- */
+/* ==========================================================================
+   responsive.css — адаптив (desktop-first). Отдельный, самый приоритетный
+   слой каскада — брейкпоинты должны перебивать компоненты/страницы/утилиты
+   независимо от порядка объявления правил внутри них.
+   ========================================================================== */
+@layer responsive {
+
 @media (max-width: 1100px) {
   /* Трёхколоночные сетки схлопываются в одну колонку. */
   .student-layout,
@@ -28,7 +32,7 @@
   .test-io { grid-template-columns: 1fr; }
   .test-io dt { padding-top: var(--space-2); }
   .brand { font-size: var(--fs-sm); }
-  .brand-mark { width: 26px; height: 26px; font-size: var(--fs-code-sm); }
+  .brand-mark { width: var(--icon-sq-sm); height: var(--icon-sq-sm); font-size: var(--fs-code-sm); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -37,4 +41,6 @@
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
   }
+}
+
 }

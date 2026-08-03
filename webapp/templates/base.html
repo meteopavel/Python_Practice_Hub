@@ -6,7 +6,9 @@
 <title>{% block title %}Python Practice Hub{% endblock %}</title>
 <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
 <link rel="stylesheet" href="/static/css/fonts.css">
-<link rel="stylesheet" href="/static/css/base.css">
+<link rel="stylesheet" href="/static/css/tokens.css">
+<link rel="stylesheet" href="/static/css/reset.css">
+<link rel="stylesheet" href="/static/css/layout.css">
 <link rel="stylesheet" href="/static/css/components.css">
 <link rel="stylesheet" href="/static/css/workspace.css">
 <link rel="stylesheet" href="/static/css/hints.css">
@@ -26,7 +28,7 @@
       <span class="avatar" id="avatar"></span>
     </summary>
     <div class="account-menu-panel">
-      <form method="post" action="/logout" style="margin: 0">
+      <form method="post" action="/logout" class="m-0">
         <button class="account-menu-item" type="submit">Выйти</button>
       </form>
     </div>
