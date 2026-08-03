@@ -44,11 +44,11 @@ const theme = EditorView.theme({
   '.cm-activeLine': {backgroundColor: 'rgba(255, 255, 255, 0.04)'},
   '.cm-activeLineGutter': {backgroundColor: 'rgba(255, 255, 255, 0.06)'},
   '&.cm-focused': {outline: 'none'},
-  '.cm-matchingBracket': {
+  '&.cm-focused .cm-matchingBracket': {
     backgroundColor: 'transparent',
     borderBottom: '2px solid var(--c-focus)',
   },
-  '.cm-nonmatchingBracket': {
+  '&.cm-focused .cm-nonmatchingBracket': {
     backgroundColor: 'transparent',
     borderBottom: '2px solid var(--c-fail)',
   },
