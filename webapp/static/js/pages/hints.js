@@ -102,15 +102,6 @@ function buildEditors() {
   });
 }
 
-async function loadMe() {
-  const res = await fetch('/api/me');
-  if (res.status === 401) { window.location.href = '/login'; return; }
-  if (res.status === 403) { window.location.href = '/'; return; }
-  const data = await res.json();
-  document.getElementById('username').textContent = data.username || '';
-  document.getElementById('avatar').textContent = (data.username || '?').slice(0, 2).toUpperCase();
-}
-
 async function loadTasks() {
   const res = await fetch('/api/admin/hints/tasks');
   if (!res.ok) return;
@@ -178,5 +169,5 @@ async function saveLevel(level) {
 }
 
 buildEditors();
-loadMe();
+initHeaderUser();
 loadTasks();

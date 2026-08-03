@@ -15,14 +15,6 @@ const ICON_EDIT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 document.getElementById('impersonate-btn').innerHTML = ICON_EYE;
 document.getElementById('hints-edit-link').innerHTML = ICON_EDIT;
 
-async function loadMe() {
-  const res = await fetch('/api/me');
-  if (res.status === 401) { window.location.href = '/login'; return; }
-  const data = await res.json();
-  document.getElementById('username').textContent = data.username || '';
-  document.getElementById('avatar').textContent = (data.username || '?').slice(0, 2).toUpperCase();
-}
-
 async function loadStudentSwitcher() {
   const res = await fetch('/api/students');
   if (!res.ok) return;
@@ -137,52 +129,23 @@ async function loadTasks() {
 const TASK_PAGE_SIZE = 7;
 let taskPage = 0;
 
-function renderTaskList() {
-  const totalPages = Math.max(1, Math.ceil(tasks.length / TASK_PAGE_SIZE));
-  taskPage = Math.min(taskPage, totalPages - 1);
-  const start = taskPage * TASK_PAGE_SIZE;
-  const pageTasks = tasks.slice(start, start + TASK_PAGE_SIZE);
-
-  document.getElementById('task-list').innerHTML = pageTasks.map(t => {
-    const status = taskStatus[t.id];
-    const dotClass = status === 'pass' ? 'dot-pass' : status === 'fail' ? 'dot-fail' : 'dot-none';
-    const activeClass = t.id === currentTaskId ? ' is-active' : '';
-    const preview = t.description.length > 42 ? t.description.slice(0, 42) + '…' : t.description;
-    return `<button class="task-item${activeClass}" data-id="${t.id}">
-      <span class="task-item-num">${t.id}</span>
-      <span class="task-item-body"><span class="task-item-title">${escapeHtml(preview)}</span></span>
-      <span class="task-item-status"><span class="dot ${dotClass}"></span></span>
-    </button>`;
-  }).join('');
-  document.querySelectorAll('#task-list .task-item').forEach(btn => {
-    btn.addEventListener('click', () => {
-      currentTaskId = Number(btn.dataset.id);
-      // Активное задание должно быть видно в списке — перейдём на его страницу.
-      const idx = tasks.findIndex(t => t.id === currentTaskId);
-      if (idx !== -1) taskPage = Math.floor(idx / TASK_PAGE_SIZE);
-      renderTaskList();
-      showTask();
-      saveLastTask();
-    });
-  });
-
-  document.getElementById('task-page-label').textContent = `${taskPage + 1} / ${totalPages}`;
-  document.getElementById('task-prev-btn').disabled = taskPage === 0;
-  document.getElementById('task-next-btn').disabled = taskPage >= totalPages - 1;
+function selectTask(taskId) {
+  currentTaskId = taskId;
+  // Активное задание должно быть видно в списке — перейдём на его страницу.
+  const idx = tasks.findIndex(t => t.id === currentTaskId);
+  if (idx !== -1) taskPage = Math.floor(idx / TASK_PAGE_SIZE);
+  renderTaskList();
+  showTask();
+  saveLastTask();
 }
 
-document.getElementById('task-prev-btn').addEventListener('click', () => {
-  if (taskPage > 0) { taskPage--; renderTaskList(); }
-});
-document.getElementById('task-next-btn').addEventListener('click', () => {
-  taskPage++; renderTaskList();
-});
+const renderTaskList = initTaskList(selectTask);
 
 function showTask() {
   const task = tasks.find(t => t.id === currentTaskId);
   document.getElementById('task-title').textContent = task ? `Задание ${task.id}` : '';
   document.getElementById('description').innerHTML = task
-    ? `<p>${escapeHtml(task.description)}</p><p><strong style="color: var(--c-text)">Пример:</strong> ${escapeHtml(task.example)}</p>`
+    ? `<p>${escapeHtml(task.description)}</p><p><strong style="color: var(--c-ink)">Пример:</strong> ${escapeHtml(task.example)}</p>`
     : '';
   loadStudentAttempts(currentTaskId);
   if (!editingStudentCode) mirrorEditor.setValue(codeByTask[currentTaskId] || '');
@@ -194,11 +157,11 @@ function showTask() {
 
 async function loadStudentAttempts(taskId) {
   const section = document.getElementById('student-attempts-section');
-  if (taskId === null) { section.style.display = 'none'; return; }
+  if (taskId === null) { section.classList.add('is-hidden'); return; }
   const res = await fetch(`/api/students/${studentId}/attempts/${taskId}`);
-  if (!res.ok) { section.style.display = 'none'; return; }
+  if (!res.ok) { section.classList.add('is-hidden'); return; }
   const attempts = await res.json();
-  section.style.display = attempts.length ? 'block' : 'none';
+  section.classList.toggle('is-hidden', !attempts.length);
   PPHAttempts.render(document.getElementById('student-attempts-rows'), attempts, PracticeHubEditor.create);
 }
 
@@ -463,8 +426,8 @@ function renderStudentOnline(online) {
     switcherChip.style.background = 'var(--c-pass-bg)';
     switcherChip.style.color = 'var(--c-pass)';
   } else {
-    switcherChip.style.background = 'var(--c-primary-soft)';
-    switcherChip.style.color = 'var(--c-primary)';
+    switcherChip.style.background = 'var(--c-signal-soft)';
+    switcherChip.style.color = 'var(--c-signal)';
   }
 }
 
@@ -660,17 +623,17 @@ const hintsStepsEl = document.getElementById('hints-steps');
 const hintsPanelSub = document.getElementById('hints-panel-sub');
 const hintsEditLink = document.getElementById('hints-edit-link');
 let hintState = { taskId: null, levels: [] };
-let hintCountdownTimer = null;
+const hintCountdown = createHintCountdown(hintsStepsEl, () => loadHintsPanel(hintState.taskId));
 // ICON, HINT_MARKERS, HINT_LEVEL_TITLES — в js/shared/icons.js.
 
 function renderHintsPanel() {
   // Панель показываем, только если сервер вернул данные (см. loadHintsPanel:
   // при 404 hintState остаётся пустым и панель скрывается).
   if (!hintState.taskId || !hintState.levels.length) {
-    hintsPanel.style.display = 'none';
+    hintsPanel.classList.add('is-hidden');
     return;
   }
-  hintsPanel.style.display = '';
+  hintsPanel.classList.remove('is-hidden');
   hintsStepsEl.innerHTML = hintState.levels.map(lv => {
     const st = lv.status;
     // Тьютор видит «готов открыть» как «доступно», а «locked» — как «не открыл»:
@@ -701,50 +664,26 @@ function renderHintsPanel() {
   hintsStepsEl.querySelectorAll('.hint-reset-btn').forEach(btn => {
     btn.addEventListener('click', () => resetHint(Number(btn.dataset.level)));
   });
-  setupHintCountdown();
-}
-
-function setupHintCountdown() {
-  if (hintCountdownTimer) { clearInterval(hintCountdownTimer); hintCountdownTimer = null; }
-  const timers = hintsStepsEl.querySelectorAll('.hint-timer');
-  let nextAvail = null;
-  timers.forEach(el => {
-    const avail = Number(el.dataset.avail);
-    if (avail) nextAvail = nextAvail === null ? avail : Math.min(nextAvail, avail);
-  });
-  if (!timers.length) return;
-  const tick = () => {
-    timers.forEach(el => {
-      const avail = Number(el.dataset.avail);
-      if (avail) el.textContent = fmtCountdown(avail - Date.now());
-    });
-    if (nextAvail !== null && Date.now() >= nextAvail) {
-      clearInterval(hintCountdownTimer);
-      hintCountdownTimer = null;
-      loadHintsPanel(hintState.taskId);
-    }
-  };
-  tick();
-  hintCountdownTimer = setInterval(tick, 1000);
+  hintCountdown.start();
 }
 
 async function loadHintsPanel(taskId) {
-  if (hintCountdownTimer) { clearInterval(hintCountdownTimer); hintCountdownTimer = null; }
+  hintCountdown.stop();
   hintsEditLink.href = taskId !== null ? `/tutor/hints?task=${taskId}` : '/tutor/hints';
   if (taskId === null) {
     hintState = { taskId, levels: [] };
-    hintsPanel.style.display = 'none';
+    hintsPanel.classList.add('is-hidden');
     return;
   }
   try {
     const res = await fetch(`/api/students/${studentId}/hints/${taskId}`);
-    if (!res.ok) { hintsPanel.style.display = 'none'; return; }
+    if (!res.ok) { hintsPanel.classList.add('is-hidden'); return; }
     const data = await res.json();
     hintState = { taskId, levels: data.levels };
     hintsPanelSub.textContent = data.levels.some(l => l.status === 'waiting') ? 'открытие по таймеру' : '';
     renderHintsPanel();
   } catch (e) {
-    hintsPanel.style.display = 'none';
+    hintsPanel.classList.add('is-hidden');
   }
 }
 
@@ -777,7 +716,7 @@ async function resetHint(level) {
   }
 }
 
-loadMe();
+initHeaderUser();
 loadStudentSwitcher();
 renderHeaderCall();
 loadTasks();

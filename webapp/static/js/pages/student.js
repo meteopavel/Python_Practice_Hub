@@ -6,11 +6,10 @@
      codemirror.bundle.js (PracticeHubEditor), js/lib/attempts.js (PPHAttempts),
      js/lib/dom-utils.js (escapeHtml, redirectToLoginIfUnauthorized, sendMessage),
      js/lib/grade-render.js (renderGradeResult, renderFreeRunResult, fmtCountdown),
-     js/lib/task-nav.js (saveLastTask, loadMaterials),
+     js/lib/task-nav.js (initTaskList, saveLastTask, loadMaterials),
      js/lib/call-audio.js + js/shared/calls.js (выключенный WebRTC-звонок,
      см. CALLS_DISABLED), js/shared/icons.js (ICON, HINT_MARKERS, ICON_PHONE...). */
 
-const taskList = document.getElementById('task-list');
 const description = document.getElementById('description');
 const taskTitle = document.getElementById('task-title');
 const DEFAULT_SOLVE_CODE = 'def solve(data):\n    pass\n';
@@ -42,7 +41,7 @@ let tutorOnline = false;
 let hintMode = 'hidden';
 
 function updateHintSection() {
-  hintSection.style.display = (tutorOnline && hintMode !== 'hidden') ? 'flex' : 'none';
+  hintSection.classList.toggle('is-hidden', !(tutorOnline && hintMode !== 'hidden'));
   hintMount.classList.toggle('is-protected', hintMode === 'protected');
 }
 const submitBtn = document.getElementById('submit-btn');
@@ -113,13 +112,13 @@ const callLinkIcon = document.getElementById('call-link-icon');
 
 function showCallLink(url) {
   callLinkIcon.href = url;
-  callLinkIcon.style.display = 'inline-flex';
+  callLinkIcon.classList.remove('is-hidden');
   sendMessage({type: 'call_link_ack'});
 }
 
 // Тьютор может отозвать приглашение — прячем значок обратно.
 function hideCallLink() {
-  callLinkIcon.style.display = 'none';
+  callLinkIcon.classList.add('is-hidden');
 }
 
 // --- Аудиозвонок (WebRTC, P2P, callee-сторона — ученик) -------------------
@@ -132,10 +131,10 @@ let incomingOffer = null;
 
 function renderCallBar() {
   if (callState === 'idle') {
-    callBar.style.display = 'none';
+    callBar.classList.add('is-hidden');
     return;
   }
-  callBar.style.display = 'flex';
+  callBar.classList.remove('is-hidden');
   if (callState === 'ringing') {
     callStatusEl.textContent = 'входящий звонок от репетитора';
     callActionsEl.innerHTML = `
@@ -269,22 +268,19 @@ const taskStatus = {}; // id -> 'pass' | 'fail'; seeded from history on load, up
 let impersonating = false;
 
 async function loadMe() {
-  const res = await fetch('/api/me');
-  if (redirectToLoginIfUnauthorized(res)) return;
-  const data = await res.json();
-  document.getElementById('username').textContent = data.username || '';
-  document.getElementById('avatar').textContent = (data.username || '?').slice(0, 2).toUpperCase();
+  const data = await initHeaderUser();
+  if (!data) return;
   impersonating = !!data.impersonating;
   if (impersonating) {
     const sessionUrl = `/tutor/student/${data.id}`;
     const chip = document.getElementById('impersonation-chip');
     chip.textContent = data.username || '';
     chip.href = sessionUrl;
-    chip.style.display = 'inline-flex';
+    chip.classList.remove('is-hidden');
     const callLink = document.getElementById('impersonation-call-link');
     callLink.href = sessionUrl;
-    callLink.style.display = 'inline-flex';
-    document.getElementById('impersonation-exit-form').style.display = 'inline-flex';
+    callLink.classList.remove('is-hidden');
+    document.getElementById('impersonation-exit-form').classList.remove('is-hidden');
     submitBtn.disabled = true;
     submitBtn.title = 'Отправка кода отключена в режиме просмотра «как ученик»';
   } else {
@@ -324,67 +320,31 @@ async function loadTasks() {
 
 const TASK_PAGE_SIZE = 7;
 let taskPage = 0;
-
-function renderTaskList() {
-  const totalPages = Math.max(1, Math.ceil(tasks.length / TASK_PAGE_SIZE));
-  taskPage = Math.min(taskPage, totalPages - 1);
-  const start = taskPage * TASK_PAGE_SIZE;
-  const pageTasks = tasks.slice(start, start + TASK_PAGE_SIZE);
-
-  taskList.innerHTML = pageTasks.map(t => {
-    const status = taskStatus[t.id];
-    const dotClass = status === 'pass' ? 'dot-pass' : status === 'fail' ? 'dot-fail' : 'dot-none';
-    const activeClass = t.id === currentTaskId ? ' is-active' : '';
-    const preview = t.description.length > 42 ? t.description.slice(0, 42) + '…' : t.description;
-    return `<button class="task-item${activeClass}" data-id="${t.id}">
-      <span class="task-item-num">${t.id}</span>
-      <span class="task-item-body">
-        <span class="task-item-title">${escapeHtml(preview)}</span>
-      </span>
-      <span class="task-item-status"><span class="dot ${dotClass}"></span></span>
-    </button>`;
-  }).join('');
-  taskList.querySelectorAll('.task-item').forEach(btn => {
-    btn.addEventListener('click', () => {
-      switchToTask(Number(btn.dataset.id));
-    });
-  });
-
-  document.getElementById('task-page-label').textContent = `${taskPage + 1} / ${totalPages}`;
-  document.getElementById('task-prev-btn').disabled = taskPage === 0;
-  document.getElementById('task-next-btn').disabled = taskPage >= totalPages - 1;
-}
-
-document.getElementById('task-prev-btn').addEventListener('click', () => {
-  if (taskPage > 0) { taskPage--; renderTaskList(); }
-});
-document.getElementById('task-next-btn').addEventListener('click', () => {
-  taskPage++; renderTaskList();
-});
+const renderTaskList = initTaskList(switchToTask);
 
 function showDescription() {
   const task = tasks.find(t => t.id === currentTaskId);
   taskTitle.textContent = task ? `Задание ${task.id}` : '';
   description.innerHTML = task
-    ? `<p>${escapeHtml(task.description)}</p><p><strong style="color: var(--c-text)">Пример:</strong> ${escapeHtml(task.example)}</p>`
+    ? `<p>${escapeHtml(task.description)}</p><p><strong style="color: var(--c-ink)">Пример:</strong> ${escapeHtml(task.example)}</p>`
     : '';
   updateSolveVisibility();
   loadMyAttemptHistory(currentTaskId);
 }
 
 async function loadMyAttemptHistory(taskId) {
-  if (taskId === null) { myAttemptsSection.style.display = 'none'; return; }
+  if (taskId === null) { myAttemptsSection.classList.add('is-hidden'); return; }
   const res = await fetch(`/api/attempts/mine/${taskId}`);
-  if (!res.ok) { myAttemptsSection.style.display = 'none'; return; }
+  if (!res.ok) { myAttemptsSection.classList.add('is-hidden'); return; }
   const attempts = await res.json();
-  myAttemptsSection.style.display = attempts.length ? 'block' : 'none';
+  myAttemptsSection.classList.toggle('is-hidden', !attempts.length);
   PPHAttempts.render(myAttemptsRows, attempts, PracticeHubEditor.create);
 }
 
 function updateSolveVisibility() {
   const solved = taskStatus[currentTaskId] === 'pass';
-  solveSection.style.display = solved ? 'none' : '';
-  solvedNote.style.display = solved ? 'block' : 'none';
+  solveSection.classList.toggle('is-hidden', solved);
+  solvedNote.classList.toggle('is-hidden', !solved);
 }
 
 // Переключение задания: код и результаты — строго свои на каждое задание,
@@ -400,7 +360,7 @@ function switchToTask(taskId) {
   renderTaskList();
   showDescription();
   codeEditor.setValue(codeByTask[currentTaskId] || DEFAULT_SOLVE_CODE);
-  resultsSection.style.display = 'none';
+  resultsSection.classList.add('is-hidden');
   summary.innerHTML = '';
   results.innerHTML = '';
   document.getElementById('hint-result').innerHTML = '';
@@ -427,7 +387,7 @@ submitBtn.addEventListener('click', async () => {
     render(data);
     sendMessage({type: 'submit_result', task_id: currentTaskId, result: data});
   } catch (e) {
-    resultsSection.style.display = 'block';
+    resultsSection.classList.remove('is-hidden');
     summary.innerHTML = `<div class="result-summary is-fail"><span>Ошибка запроса: ${escapeHtml(String(e))}</span></div>`;
   } finally {
     submitBtn.disabled = false;
@@ -461,7 +421,7 @@ runFreeBtn.addEventListener('click', async () => {
 // подтянуть свежую историю попыток) + разная DOM-структура (summary и results
 // — два отдельных контейнера, а renderGradeResult пишет в один).
 function render(data) {
-  resultsSection.style.display = 'block';
+  resultsSection.classList.remove('is-hidden');
 
   if (data.error) {
     summary.innerHTML = `<div class="result-summary is-fail"><span>${escapeHtml(data.error)}</span></div>`;
@@ -479,32 +439,7 @@ function render(data) {
     <span>${data.all_passed ? 'Все тесты пройдены' : 'Есть ошибки'}</span>
   </div>`;
 
-  results.innerHTML = data.results.map((r, i) => {
-    const input = escapeHtml(JSON.stringify(r.input));
-    if (!r.passed && r.error) {
-      return `<div class="test-case is-fail">
-        <div class="test-case-head">
-          <span class="test-case-name">Тест ${i + 1}</span>
-          <span class="badge badge-fail">Ошибка</span>
-        </div>
-        <dl class="test-io">
-          <dt>Вход</dt><dd>${input}</dd>
-          <dt>Ошибка</dt><dd class="diff-got">${escapeHtml(r.error)}</dd>
-        </dl>
-      </div>`;
-    }
-    return `<div class="test-case ${r.passed ? 'is-pass' : 'is-fail'}">
-      <div class="test-case-head">
-        <span class="test-case-name">Тест ${i + 1}</span>
-        <span class="badge ${r.passed ? 'badge-pass' : 'badge-fail'}">${r.passed ? 'Пройден' : 'Не пройден'}</span>
-      </div>
-      <dl class="test-io">
-        <dt>Вход</dt><dd>${input}</dd>
-        <dt>Ожидалось</dt><dd>${escapeHtml(JSON.stringify(r.expected))}</dd>
-        <dt>Получено</dt><dd class="${r.passed ? '' : 'diff-got'}">${escapeHtml(JSON.stringify(r.actual))}</dd>
-      </dl>
-    </div>`;
-  }).join('');
+  results.innerHTML = renderTestCases(data.results);
 }
 
 // --- Многоступенчатые подсказки ---------------------------------------------
@@ -520,17 +455,17 @@ const hintsStepsEl = document.getElementById('hints-steps');
 const hintsPanelSub = document.getElementById('hints-panel-sub');
 let hintState = { taskId: null, levels: [] };
 let hintPollTimer = null;          // периодический опрос при waiting-уровне
-let hintCountdownTimer = null;     // тикающий каждую секунду setInterval отсчёта
+const hintCountdown = createHintCountdown(hintsStepsEl, () => loadHints(hintState.taskId));
 // HINT_MARKERS и HINT_LEVEL_TITLES — в js/shared/icons.js.
 
 function renderHints() {
   // Панель показываем, только если сервер вернул данные (см. loadHints: при
   // 404 hintState остаётся пустым и панель скрывается).
   if (!hintState.taskId || !hintState.levels.length) {
-    hintsPanel.style.display = 'none';
+    hintsPanel.classList.add('is-hidden');
     return;
   }
-  hintsPanel.style.display = '';
+  hintsPanel.classList.remove('is-hidden');
   hintsStepsEl.innerHTML = hintState.levels.map(lv => {
     const st = lv.status;
     const cls = `hint-step is-${st}`;
@@ -562,57 +497,23 @@ function renderHints() {
     btn.addEventListener('click', () => revealHint(Number(btn.dataset.level)));
   });
 
-  setupHintCountdown();
-}
-
-// Обратный отсчёт до ближайшей разблокировки (waiting-уровень). Сервер —
-// источник правды: по достижении нуля переспрашиваем состояние, а не
-// «превращаем» waiting в ready локально. Таймер ТИКАЕТ каждую секунду
-// (setInterval), а не стоит — иначе ученик видит застывшее число.
-function setupHintCountdown() {
-  if (hintCountdownTimer) { clearInterval(hintCountdownTimer); hintCountdownTimer = null; }
-  let nextAvail = null;
-  const timers = hintsStepsEl.querySelectorAll('.hint-timer');
-  timers.forEach(el => {
-    const avail = Number(el.dataset.avail);
-    if (!avail) return;
-    nextAvail = nextAvail === null ? avail : Math.min(nextAvail, avail);
-  });
-  if (!timers.length) return;
-
-  const tick = () => {
-    timers.forEach(el => {
-      const avail = Number(el.dataset.avail);
-      if (!avail) return;
-      const remaining = avail - Date.now();
-      el.textContent = fmtCountdown(remaining);
-    });
-    // Сервер — источник правды о готовности: по достижении нуля не превращаем
-    // waiting в ready сами, а переспрашиваем состояние.
-    if (nextAvail !== null && Date.now() >= nextAvail) {
-      clearInterval(hintCountdownTimer);
-      hintCountdownTimer = null;
-      loadHints(hintState.taskId);
-    }
-  };
-  tick();
-  hintCountdownTimer = setInterval(tick, 1000);
+  hintCountdown.start();
 }
 
 async function loadHints(taskId) {
   // При любой перезагрузке состояния гасим тикающий таймер и поллинг — иначе
   // интервал от предыдущей задачи продолжит тикать поверх нового состояния.
-  if (hintCountdownTimer) { clearInterval(hintCountdownTimer); hintCountdownTimer = null; }
+  hintCountdown.stop();
   if (hintPollTimer) { clearInterval(hintPollTimer); hintPollTimer = null; }
 
   if (taskId === null) {
     hintState = { taskId, levels: [] };
-    hintsPanel.style.display = 'none';
+    hintsPanel.classList.add('is-hidden');
     return;
   }
   try {
     const res = await fetch(`/api/hints/${taskId}`);
-    if (!res.ok) { hintsPanel.style.display = 'none'; return; }
+    if (!res.ok) { hintsPanel.classList.add('is-hidden'); return; }
     const data = await res.json();
     hintState = { taskId, levels: data.levels };
     hintsPanelSub.textContent = data.levels.some(l => l.status === 'waiting')
@@ -621,7 +522,7 @@ async function loadHints(taskId) {
     renderHints();
     scheduleHintPoll();
   } catch (e) {
-    hintsPanel.style.display = 'none';
+    hintsPanel.classList.add('is-hidden');
   }
 }
 

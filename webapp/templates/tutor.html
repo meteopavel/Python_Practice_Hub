@@ -18,14 +18,14 @@
       <tbody id="rows"></tbody>
     </table>
   </div>
-  <p class="muted" id="empty-state" style="display: none; margin-top: var(--space-4)">Пока нет ни одного ученика.</p>
+  <p class="muted is-hidden" id="empty-state" style="margin-top: var(--space-4)">Пока нет ни одного ученика.</p>
 
   <div class="card card-pad stack stack-3" style="margin-top: var(--space-4)">
     <div class="row between">
       <span class="panel-title">Новый ученик</span>
       <button class="btn btn-sm" id="add-student-toggle">Добавить ученика</button>
     </div>
-    <form id="add-student-form" class="row wrap" style="display: none; gap: var(--space-3); align-items: flex-end;">
+    <form id="add-student-form" class="row wrap is-hidden" style="align-items: flex-end;">
       <div class="field" style="flex: 1; min-width: 160px">
         <label class="label" for="new-username">Логин</label>
         <input class="input" id="new-username" required>
@@ -36,7 +36,7 @@
       </div>
       <button class="btn btn-primary btn-sm" type="submit">Создать</button>
     </form>
-    <p class="field-error" id="add-student-error" style="display: none; margin: 0"></p>
+    <p class="field-error is-hidden m-0" id="add-student-error"></p>
   </div>
 </div>
 {% endblock %}

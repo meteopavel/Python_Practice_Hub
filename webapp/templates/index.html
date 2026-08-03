@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 {% block title %}Python Practice Hub — проверка кода{% endblock %}
 {% block header_left %}
-  <a class="chip" id="impersonation-chip" href="#" style="display: none; background: var(--c-primary-soft); color: var(--c-primary); text-decoration: none;"></a>
-  <a class="call-icon-btn is-mute is-sm" id="impersonation-call-link" href="#" aria-label="К звонку и подсказке" title="К звонку и подсказке" style="display: none"></a>
-  <form method="post" action="/impersonate/stop" id="impersonation-exit-form" style="display: none; margin: 0;">
+  <a class="chip is-hidden" id="impersonation-chip" href="#" style="background: var(--c-signal-soft); color: var(--c-signal); text-decoration: none;"></a>
+  <a class="call-icon-btn is-mute is-sm is-hidden" id="impersonation-call-link" href="#" aria-label="К звонку и подсказке" title="К звонку и подсказке"></a>
+  <form method="post" action="/impersonate/stop" id="impersonation-exit-form" class="d-inline-flex is-hidden m-0">
     <button class="call-icon-btn is-sm is-pulsing" type="submit" aria-label="Вернуться к репетитору" title="Вернуться к репетитору" id="impersonation-eye-btn"></button>
   </form>
-  <a class="call-icon-btn is-pulsing" id="call-link-icon" href="#" target="_blank" rel="noopener" aria-label="Репетитор зовёт на созвон — нажмите, чтобы присоединиться" title="Репетитор зовёт на созвон — нажмите, чтобы присоединиться" style="display: none"></a>
+  <a class="call-icon-btn is-pulsing is-md is-hidden" id="call-link-icon" href="#" target="_blank" rel="noopener" aria-label="Репетитор зовёт на созвон — нажмите, чтобы присоединиться" title="Репетитор зовёт на созвон — нажмите, чтобы присоединиться"></a>
 {% endblock %}
 {% block content %}
 <div class="container container--wide student-layout">
@@ -16,7 +16,7 @@
       <nav class="task-list" id="task-list"></nav>
       <div class="row between">
         <button class="btn btn-sm btn-ghost" id="task-prev-btn">←</button>
-        <span class="muted" id="task-page-label" style="font-size: var(--fs-sm)"></span>
+        <span class="muted text-sm" id="task-page-label"></span>
         <button class="btn btn-sm btn-ghost" id="task-next-btn">→</button>
       </div>
     </aside>
@@ -38,22 +38,22 @@
       <div class="task-desc" id="description"></div>
     </section>
 
-    <section class="stack stack-3" id="my-attempts-section" style="display: none">
+    <section class="stack stack-3 is-hidden" id="my-attempts-section">
       <span class="panel-title">Мои попытки</span>
       <div id="my-attempts-rows"></div>
     </section>
 
-    <div class="card card-pad row between wrap" id="call-bar" style="display: none">
+    <div class="card card-pad row between wrap is-hidden" id="call-bar">
       <div class="stack stack-2">
         <span class="panel-title">Аудиозвонок</span>
         <span class="muted" id="call-status"></span>
-        <span class="muted" id="remote-mute-status" style="font-size: var(--fs-sm); display: none"></span>
+        <span class="muted text-sm" id="remote-mute-status" style="display: none"></span>
       </div>
       <div class="row" id="call-actions"></div>
     </div>
     <audio id="remote-audio" autoplay></audio>
 
-    <section class="stack stack-3" id="hint-section" style="display: none">
+    <section class="stack stack-3 is-hidden" id="hint-section">
       <div class="row between">
         <span class="panel-title">Подсказка от репетитора</span>
         <span class="badge badge-pass">Репетитор online</span>
@@ -71,7 +71,7 @@
       <div class="row between">
         <span class="panel-title">Ваше решение · Python 3</span>
       </div>
-      <p class="muted" style="margin: 0">Напишите решение в виде функции <code class="inline">solve(data)</code>:</p>
+      <p class="muted m-0">Напишите решение в виде функции <code class="inline">solve(data)</code>:</p>
       <div class="code-editor bench-grid">
         <div class="code-editor-bar">
           <span>solution.py</span>
@@ -79,24 +79,24 @@
         <div class="code-mount" id="code-mount"></div>
       </div>
       <div class="row between wrap">
-        <span class="muted" style="font-size: var(--fs-sm)">Код выполняется на сервере в изолированной среде.</span>
-        <div class="row" style="gap: 8px">
+        <span class="muted text-sm">Код выполняется на сервере в изолированной среде.</span>
+        <div class="row gap-2">
           <button class="btn btn-sm" id="run-free-btn" title="Выполнить код как есть и показать вывод — без сверки с эталоном">Запустить</button>
           <button class="btn btn-sm btn-primary" id="submit-btn" title="Проверить решение на тестовых примерах">Проверить</button>
         </div>
       </div>
       <div id="free-run-result"></div>
     </section>
-    <p class="muted" id="solved-note" style="display: none"><span id="solved-note-icon"></span> Задание уже решено — код можно посмотреть в «Мои попытки» выше.</p>
+    <p class="muted is-hidden" id="solved-note"><span id="solved-note-icon"></span> Задание уже решено — код можно посмотреть в «Мои попытки» выше.</p>
 
-    <section class="stack stack-4 bench-grid" id="results-section" style="display: none; padding: var(--space-4); border: 1px solid var(--c-border); border-radius: var(--radius)">
+    <section class="stack stack-4 bench-grid is-hidden" id="results-section" style="padding: var(--space-4); border: 1px solid var(--c-hairline); border-radius: var(--radius)">
       <span class="panel-title">Результаты проверки</span>
       <div id="summary"></div>
       <div class="test-list" id="results"></div>
     </section>
   </main>
 
-  <aside class="hints-panel" id="hints-panel" style="display: none">
+  <aside class="hints-panel is-hidden" id="hints-panel">
     <div class="hints-panel-head">
       <span class="panel-title">Подсказки</span>
       <span class="hint-step-meta" id="hints-panel-sub"></span>
@@ -109,6 +109,7 @@
 <script src="/static/vendor/codemirror.bundle.js"></script>
 <script src="/static/vendor/rnnoise/noise-suppressor.bundle.js"></script>
 <script src="/static/js/lib/grade-render.js"></script>
+<script src="/static/js/lib/hint-countdown.js"></script>
 <script src="/static/js/lib/attempts.js"></script>
 <script src="/static/js/lib/task-nav.js"></script>
 <script src="/static/js/lib/call-audio.js"></script>

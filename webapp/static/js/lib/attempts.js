@@ -3,7 +3,8 @@
    Чипы-индикаторы: pass = зелёная лампа, fail = красная с диагональю
    (диагональ — для дальтоников). Hover/focus → превью-модалка с кодом+датой.
    Клик → раскрытие кода инлайн (одна раскрытая за раз).
-   Самодостаточен: не зависит от внешних функций страницы.
+   Не зависит от функций страницы, кроме глобального escapeHtml (dom-utils.js,
+   подключается в base.html раньше любого page-скрипта).
    ========================================================================== */
 (function () {
   'use strict';
@@ -15,12 +16,6 @@
       lock:  '<rect x="5" y="11" width="14" height="10" rx="1"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
     };
     return '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">' + (p[name] || '') + '</svg>';
-  }
-
-  function escapeText(s) {
-    return String(s == null ? '' : s)
-      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
   }
 
   function fmtDate(iso) {
@@ -122,7 +117,7 @@
             const label = (a.passed ? 'Попытка пройдена' : 'Попытка с ошибкой') +
                           ': ' + fmtDate(a.created_at);
             return '<button type="button" class="' + cls + '" data-idx="' + i +
-                   '" aria-label="' + escapeText(label) + '" title="' + escapeText(label) + '"></button>';
+                   '" aria-label="' + escapeHtml(label) + '" title="' + escapeHtml(label) + '"></button>';
           }).join('') +
         '</div>';
 

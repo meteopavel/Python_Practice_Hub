@@ -1,14 +1,6 @@
 /* materials.js — страница справочного урока (materials.html). Читает манифест
    модулей и ячейки конкретного урока, рендерит read-only CodeMirror. */
 
-async function loadMe() {
-  const res = await fetch('/api/me');
-  if (redirectToLoginIfUnauthorized(res)) return;
-  const data = await res.json();
-  document.getElementById('username').textContent = data.username || '';
-  document.getElementById('avatar').textContent = (data.username || '?').slice(0, 2).toUpperCase();
-}
-
 async function loadLesson() {
   const parts = window.location.pathname.split('/').filter(Boolean);
   const module = decodeURIComponent(parts[1]);
@@ -48,5 +40,5 @@ async function loadLesson() {
   });
 }
 
-loadMe();
+initHeaderUser();
 loadLesson();

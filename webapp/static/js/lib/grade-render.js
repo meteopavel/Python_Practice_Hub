@@ -12,16 +12,11 @@ function fmtCountdown(ms) {
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
-function renderGradeResult(container, data) {
-  if (data.error) {
-    container.innerHTML = `<div class="result-summary is-fail"><span>${escapeHtml(data.error)}</span></div>`;
-    return;
-  }
-  const summaryHtml = `<div class="result-summary ${data.all_passed ? 'is-pass' : 'is-fail'}">
-    <span class="count">${data.passed} / ${data.total}</span>
-    <span>${data.all_passed ? 'Все тесты пройдены' : 'Есть ошибки'}</span>
-  </div>`;
-  const casesHtml = data.results.map((r, i) => {
+// Разметка тест-кейсов — общая для сводного результата (renderGradeResult,
+// один контейнер) и страницы ученика (student.js: render(), два отдельных
+// контейнера — summary и results), поэтому вынесена отдельно от обёртки.
+function renderTestCases(results) {
+  return results.map((r, i) => {
     const input = escapeHtml(JSON.stringify(r.input));
     if (!r.passed && r.error) {
       return `<div class="test-case is-fail">
@@ -47,6 +42,18 @@ function renderGradeResult(container, data) {
       </dl>
     </div>`;
   }).join('');
+}
+
+function renderGradeResult(container, data) {
+  if (data.error) {
+    container.innerHTML = `<div class="result-summary is-fail"><span>${escapeHtml(data.error)}</span></div>`;
+    return;
+  }
+  const summaryHtml = `<div class="result-summary ${data.all_passed ? 'is-pass' : 'is-fail'}">
+    <span class="count">${data.passed} / ${data.total}</span>
+    <span>${data.all_passed ? 'Все тесты пройдены' : 'Есть ошибки'}</span>
+  </div>`;
+  const casesHtml = renderTestCases(data.results);
   container.innerHTML = `<div class="stack stack-3">${summaryHtml}<div class="test-list">${casesHtml}</div></div>`;
 }
 
