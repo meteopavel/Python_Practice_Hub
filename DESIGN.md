@@ -52,7 +52,7 @@ typography:
     fontFamily: '"JetBrains Mono", ui-monospace, "SF Mono", monospace'
     fontWeight: 400
     fontSize: "13px"
-    lineHeight: 1.7
+    lineHeight: 1.55
 rounded:
   default: "2px"
 spacing:
@@ -253,7 +253,7 @@ components:
 Прозрачен в покое; hover → фон Panel Raised. Активный (`is-active`) — `signal-soft` фон + `signal-dim` контур. Номер задания — моно-квадрат (`task-item-num`), в активном состоянии инвертируется: Signal фон, тёмный текст. Статус — `8×8px` маркер справа (`dot-pass` / `dot-fail` / `dot-none`).
 
 ### Code editor
-Code Screen фон (`#1A1C2C`), глубже грунта. Бар редактора — mono uppercase signal-цвет с маркером перед подписью (как `panel-title`). Сам редактор — CodeMirror 6 (собирается из исходников в `build/codemirror-entry.js` через esbuild, `npm run build:codemirror`; см. `webapp/static/vendor/codemirror.bundle.js`), JetBrains Mono `13px`/`1.7`, `caret-color: signal`, отступ 4 пробела. Инлайновый `code.inline` — Signal текст на Panel Raised с hairline-контуром.
+Code Screen фон (`#1A1C2C`), глубже грунта. Бар редактора — mono uppercase signal-цвет с маркером перед подписью (как `panel-title`). Сам редактор — CodeMirror 6 (собирается из исходников в `build/codemirror-entry.js` через esbuild, `npm run build:codemirror`; см. `webapp/static/vendor/codemirror.bundle.js`), JetBrains Mono `13px`/`1.55` (=`--lh-base`), `caret-color: signal`, отступ 4 пробела. Инлайновый `code.inline` — Signal текст на Panel Raised с hairline-контуром.
 
 **Подсветка синтаксиса:** keyword/operator — Code Keyword (`#baacff`); имя переменной/функции — Code Var (`#70b0ff`); число/bool/null — Warn (`#FF9668`, тот же токен, что и статус «в процессе»); строка — Code String (`#7af8ca`); имя класса — Code Class (`#ffdb8e`); комментарий и пунктуация — Code Gutter, обычный текст — Ink.
 

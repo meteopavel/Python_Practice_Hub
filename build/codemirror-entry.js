@@ -34,7 +34,7 @@ const theme = EditorView.theme({
     padding: '16px',
   },
   '.cm-line': {
-    lineHeight: '1.7',
+    lineHeight: 'var(--lh-base)',
   },
   '.cm-gutters': {
     backgroundColor: 'var(--c-code-screen)',

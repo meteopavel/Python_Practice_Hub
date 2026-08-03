@@ -25,6 +25,7 @@
   cursor: pointer;
   font: inherit;
   font-size: var(--fs-sm);
+  line-height: var(--lh-ui);
   color: var(--c-ink);
   transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
 }
