@@ -12,14 +12,9 @@ RUN pip install --no-cache-dir -r webapp/requirements.txt
 # пользователю app иначе будет нечем их прочитать.
 COPY --chmod=755 bot/solvers.py bot/tasks.json bot/
 COPY --chmod=755 webapp/ webapp/
-
-# Справочные материалы (учебные ноутбуки) — webapp/materials.py читает их
-# напрямую, отдельного конвертированного формата нет.
-COPY --chmod=755 1_introduction 1_introduction/
-COPY --chmod=755 2_loops_and_conditions 2_loops_and_conditions/
-COPY --chmod=755 3_functions 3_functions/
-COPY --chmod=755 4_dicts_and_sets 4_dicts_and_sets/
-COPY --chmod=755 5_strings 5_strings/
+# Учебные ноутбуки (справочные материалы) лежат внутри webapp/content/notebooks/
+# и едут в образ вместе с COPY webapp/ выше; отдельного конвертированного
+# формата нет — materials.py читает .ipynb напрямую.
 
 USER app
 WORKDIR /app

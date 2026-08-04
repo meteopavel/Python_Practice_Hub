@@ -10,8 +10,8 @@ __pycache__/
 .zcode/
 .codex/
 /CLAUDE.md
-/docs/personal/
-/docs/architecture/
+/PRODUCT.md
+/docs/
 /secure/
 # Локальная SQLite, создаётся сама при запуске webapp без DATABASE_URL (fallback).
 local.db

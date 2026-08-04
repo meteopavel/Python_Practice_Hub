@@ -1,8 +1,8 @@
 /* ==========================================================================
    call-audio.js — WebRTC-звонок: аудио-цепочка (шумодав/gain), ICE/SDP,
    рингтоны, выбор микрофона. Общий код для index.html и tutor_student.html
-   (сам звонок сейчас CALLS_DISABLED, см. docs/personal/PROJECT_DOCUMENTATION.md
-   §11 п.3 — код оставлен рабочим на случай возврата к своему WebRTC-стеку).
+   (сам звонок сейчас CALLS_DISABLED, см. docs/webrtc-calls.md — код оставлен
+   рабочим на случай возврата к своему WebRTC-стеку).
 
    Зависит от глобалов, которые каждая страница объявляет сама:
    AUDIO_CONSTRAINTS, pc, pendingRemoteIce, ringAudioCtx, ringInterval,

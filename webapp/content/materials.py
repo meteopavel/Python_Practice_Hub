@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-"""Справочные материалы — те же учебные ноутбуки (1_introduction/,
-2_loops_and_conditions/ и т.д. в корне репозитория), что и раньше лежали
-только как Jupyter-тетрадки. Здесь не БД и не отдельный конвертированный
+"""Справочные материалы — учебные ноутбуки (1_introduction/,
+2_loops_and_conditions/ и т.д. в `webapp/content/notebooks/`), что и раньше
+лежали только как Jupyter-тетрадки. Здесь не БД и не отдельный конвертированный
 формат — .ipynb читается напрямую (это просто JSON), один раз при старте
 приложения, и держится в памяти. Ноутбуки маленькие (~470KB на все 36),
 без картинок/attachments — только code-ячейки, объяснение зашито в них
@@ -12,9 +12,9 @@ import json
 import re
 from pathlib import Path
 
-# Корень репозитория (там лежат 1_introduction/, 2_loops_and_conditions/ и т.д.).
-# Из webapp/content/materials.py это три .parent вверх: content → webapp → корень.
-_ROOT = Path(__file__).resolve().parent.parent.parent
+# Папка с модулями-ноутбуками (1_introduction/, 2_loops_and_conditions/ и т.д.)
+# — рядом с этим файлом, в `webapp/content/notebooks/`.
+_ROOT = Path(__file__).resolve().parent / "notebooks"
 
 # Заголовки модулей — только 5, руками, без эвристик.
 _MODULE_TITLES = {
