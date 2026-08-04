@@ -471,8 +471,10 @@ const hintCountdown = createHintCountdown(hintsStepsEl, () => loadHints(hintStat
 
 function renderHints() {
   // Панель показываем, только если сервер вернул данные (см. loadHints: при
-  // 404 hintState остаётся пустым и панель скрывается).
-  if (!hintState.taskId || !hintState.levels.length) {
+  // 404 hintState остаётся пустым и панель скрывается). Сравнение именно с
+  // null, не falsy: task_id служебной задачи — 0, и `!0` ложно скрывал бы
+  // панель для неё.
+  if (hintState.taskId === null || !hintState.levels.length) {
     hintsPanel.classList.add('is-hidden');
     return;
   }
@@ -547,7 +549,7 @@ function scheduleHintPoll() {
 }
 
 async function revealHint(level) {
-  if (!hintState.taskId) return;
+  if (hintState.taskId === null) return;
   try {
     const res = await fetch(`/api/hints/${hintState.taskId}/reveal`, {
       method: 'POST',

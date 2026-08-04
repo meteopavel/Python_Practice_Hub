@@ -676,8 +676,9 @@ const hintCountdown = createHintCountdown(hintsStepsEl, () => loadHintsPanel(hin
 
 function renderHintsPanel() {
   // Панель показываем, только если сервер вернул данные (см. loadHintsPanel:
-  // при 404 hintState остаётся пустым и панель скрывается).
-  if (!hintState.taskId || !hintState.levels.length) {
+  // при 404 hintState остаётся пустым и панель скрывается). Сравнение с null,
+  // не falsy: task_id служебной задачи — 0, и `!0` ложно скрывал бы панель.
+  if (hintState.taskId === null || !hintState.levels.length) {
     hintsPanel.classList.add('is-hidden');
     return;
   }
@@ -739,7 +740,7 @@ async function loadHintsPanel(taskId) {
 // не открывал. Каскад (уровни выше) и таймеры обрабатываются на бэке; здесь —
 // подтвердить, отправить POST, перерисовать панель из ответа сервера.
 async function resetHint(level) {
-  if (!hintState.taskId) return;
+  if (hintState.taskId === null) return;
   if (!confirm(`Сбросить подсказку уровня ${level}?` +
                `\nУченик снова увидит её закрытой, таймер следующего уровня обнулится.` +
                `\nЭто действие необратимо.`)) return;
