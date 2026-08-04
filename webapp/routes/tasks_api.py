@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 """API заданий и student-facing данных: список заданий, материалы, попытки
-ученика, TURN-креды, эталонное решение, отправка и свободный запуск кода."""
+ученика, TURN-креды, отправка и свободный запуск кода."""
 import base64
 import hashlib
 import hmac
-import inspect
 import time
 
 from fastapi import APIRouter, Depends, Request
@@ -12,11 +11,11 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from webapp.config import STUN_URLS, TURN_SECRET, TURN_URLS
-from webapp.core.auth import current_user_id, current_user_role, forbidden, unauthorized
+from webapp.core.auth import current_user_id, unauthorized
 from webapp.core.db import get_db
 from webapp.core.models import Attempt
 from webapp.content.materials import MATERIALS_MANIFEST, get_lesson
-from webapp.grading.bot_bridge import TASKS, get_solver
+from webapp.grading.bot_bridge import TASKS
 from webapp.grading.grading import grade, run_free
 from webapp.grading.test_cases import TEST_CASES
 from webapp.routes._common import HintFreeRunRequest, SubmissionRequest, effective_identity, task_attempts, task_status_map
@@ -49,18 +48,6 @@ def get_material(module: str, lesson: str, request: Request):
     if data is None:
         return JSONResponse(status_code=404, content={"error": "Материал не найден"})
     return data
-
-
-@router.get("/api/solution/{task_id}")
-def get_solution(task_id: int, request: Request):
-    if current_user_id(request) is None:
-        return unauthorized()
-    if current_user_role(request) != "tutor":
-        return forbidden()
-    oracle = get_solver(task_id)
-    if oracle is None:
-        return JSONResponse(status_code=404, content={"error": f"Эталон для задания {task_id} не найден"})
-    return {"task_id": task_id, "source": inspect.getsource(oracle)}
 
 
 @router.get("/api/turn-credentials")
