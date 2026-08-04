@@ -99,6 +99,14 @@ async def session_ws(websocket: WebSocket, student_id: int):
                     await safe_send(room.student_ws, data)
                 continue
 
+            # Тьютор откатил задание как выполненное (feat.2): ученик должен
+            # сразу увидеть обнуление — точка/индикатор «решено» пропадает
+            # live, без F5. Симметрично submit_result в обратную сторону.
+            if data.get("type") == "solved_reverted":
+                if is_tutor and room.student_ws is not None:
+                    await safe_send(room.student_ws, data)
+                continue
+
             code = data.get("code", "")
             task_id = data.get("task_id")
             if is_tutor:

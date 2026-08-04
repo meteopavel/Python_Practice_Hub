@@ -814,3 +814,10 @@ def solve_task_100(data):
         if counts[x] > 1 and x not in result:
             result.append(x)
     return result
+
+
+def solve_task_101(data):
+    result = 0
+    for x in data:
+        result += x
+    return result

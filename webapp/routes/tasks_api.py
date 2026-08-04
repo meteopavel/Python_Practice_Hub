@@ -18,7 +18,7 @@ from webapp.core.models import Attempt
 from webapp.content.materials import MATERIALS_MANIFEST, get_lesson
 from webapp.grading.bot_bridge import TASKS, get_solver
 from webapp.grading.grading import grade, run_free
-from webapp.grading.test_cases import TEST_CASES
+from webapp.grading.test_cases import HIDDEN_TASK_IDS, TEST_CASES
 from webapp.routes._common import HintFreeRunRequest, SubmissionRequest, effective_identity, task_attempts, task_status_map
 
 router = APIRouter()
@@ -28,9 +28,12 @@ router = APIRouter()
 def list_tasks(request: Request):
     if current_user_id(request) is None:
         return unauthorized()
+    # Скрытые служебные задания (HIDDEN_TASK_IDS) видит только тьютор: ученик
+    # их не получает ни списком, ни попытками — как будто их нет в грейдере.
+    is_tutor = current_user_role(request) == "tutor"
     return [
         {"id": task_id, "description": TASKS[task_id]["description"], "example": TASKS[task_id]["example"]}
-        for task_id in sorted(TEST_CASES)
+        for task_id in sorted(TEST_CASES) if is_tutor or task_id not in HIDDEN_TASK_IDS
     ]
 
 

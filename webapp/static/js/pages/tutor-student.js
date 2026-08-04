@@ -152,6 +152,7 @@ function showTask() {
   document.getElementById('student-submit-result').innerHTML = '';
   document.getElementById('hint-result').innerHTML = '';
   loadHintsPanel(currentTaskId);
+  updateRevertButton();
   if (typeof refreshAiTaskLabel === 'function') refreshAiTaskLabel();
 }
 
@@ -164,6 +165,52 @@ async function loadStudentAttempts(taskId) {
   section.classList.toggle('is-hidden', !attempts.length);
   PPHAttempts.render(document.getElementById('student-attempts-rows'), attempts, PracticeHubEditor.create);
 }
+
+// Бейдж «Ученик решил» + кнопка отката показываются только для решённого
+// задания. Вызывается при смене задания (showTask) и при live-обновлении
+// статуса (submit_result), чтобы кнопка появлялась/пропадала без F5.
+function updateRevertButton() {
+  const row = document.getElementById('revert-solved-row');
+  if (!row) return;
+  row.classList.toggle('is-hidden', taskStatus[currentTaskId] !== 'pass');
+}
+
+// Откат решённого задания (feat.2): тьютор удаляет удачные попытки ученика,
+// задание снова становится нерешённым. По образцу resetHint — confirm, POST,
+// перерисовка из ответа. Удаляем ключ статуса (None — попыток не осталось) и
+// перезагружаем список попыток (passing ушли). Плюс живо сообщаем ученику,
+// что задание обнулено, — симметрично submit_result в обратную сторону.
+async function revertSolved() {
+  if (currentTaskId === null) return;
+  const task = tasks.find(t => t.id === currentTaskId);
+  const label = task ? `№${task.id}` : 'это задание';
+  if (!confirm(`Откатить ${label} как невыполненное?\n` +
+               `Удаляются удачные попытки ученика — задание снова станет нерешённым.\n` +
+               `Ученик увидит обнуление сразу (live). Действие необратимо.`)) return;
+  try {
+    const res = await fetch(`/api/students/${studentId}/attempts/${currentTaskId}/revert`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+    });
+    if (res.status === 401) { window.location.href = '/login'; return; }
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      alert(data.error || 'Не удалось откатить задание');
+      return;
+    }
+    const data = await res.json();
+    // None/отсутствие ключа — попыток не осталось (точка обнулится); иначе 'fail'.
+    if (data.status) taskStatus[currentTaskId] = data.status;
+    else delete taskStatus[currentTaskId];
+    renderTaskList();
+    updateRevertButton();
+    loadStudentAttempts(currentTaskId);
+    sendMessage({type: 'solved_reverted', task_id: currentTaskId});
+  } catch (e) {
+    /* сеть — молча, состояние не меняем */
+  }
+}
+document.getElementById('revert-solved-btn').addEventListener('click', revertSolved);
 
 async function runHintCode() {
   if (currentTaskId === null) return;
@@ -308,6 +355,9 @@ function connectWs() {
         if (taskStatus[msg.task_id] !== 'pass' && taskStatus[msg.task_id] !== newStatus) {
           taskStatus[msg.task_id] = newStatus;
           renderTaskList();
+          // feat.2: ученик только что решил текущее задание — покажем бейдж
+          // и кнопку отката без перезагрузки.
+          if (msg.task_id === currentTaskId) updateRevertButton();
         }
       }
     } else if (msg.type === 'hint_revealed') {
