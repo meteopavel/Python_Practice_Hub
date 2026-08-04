@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Одноразовая загрузка курированных подсказок для заданий 81..100.
+"""Одноразовая загрузка курированных подсказок для заданий 0 и 81..100.
 
 Запуск (внутри контейнера app на Frankfurt, WORKDIR=/app):
     docker compose exec app python -m webapp.scripts.seed_hints
@@ -23,6 +23,15 @@ from webapp.core.models import Hint
 
 # task_id -> {level -> markdown}
 HINTS_DATA: dict[int, dict[int, str]] = {
+    # 0 — служебная тестовая задача (feat.2): на ней тьютор и ученик
+    # отрабатывают механику проекта, в т.ч. панель подсказок. Содержание
+    # простое, как и сама задача («сумма списка»), — цель не научить, а дать
+    # рабочий контент всех трёх уровней для прогона UI.
+    0: {
+        1: "Нужно сложить все элементы списка. Заведи переменную-аккумулятор (начни с 0) и проходи по списку циклом, добавляя каждый элемент.",
+        2: "Заведи `result = 0`, в цикле `for x in data:` делай `result += x`.\n\n- [Цикл for](https://docs.python.org/3/tutorial/controlflow.html#for-statements)",
+        3: "```python\nresult = 0\nfor x in data:\n    result += ...  # TODO: что добавить?\nreturn result\n```",
+    },
     81: {
         1: "Подумай, как пройти по списку и для каждой позиции взять **текущий и следующий** элемент. Сколько всего пар получится для списка длины n? Кортеж (пара) записывается круглыми скобками: `(a, b)`.",
         2: "Перебирай индексы `i` от 0 до `len(data) - 1`, бери `data[i]` и `data[i + 1]`. Это удобно собрать через генератор списка.\n\n- [range](https://docs.python.org/3/library/stdtypes.html#ranges) — диапазон индексов\n- [Кортежи](https://docs.python.org/3/tutorial/datastructures.html#tuples-and-sequences)",
