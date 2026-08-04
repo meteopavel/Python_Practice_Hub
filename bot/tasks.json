@@ -509,7 +509,7 @@
       "example": "[1, 2, 3, 2, 4, 1, 1] → [1, 2]",
       "type": "list_of_numbers"
     },
-    "101": {
+    "0": {
       "description": "Найти сумму всех элементов списка.",
       "example": "[1, 2, 3] → 6",
       "type": "list_of_numbers"

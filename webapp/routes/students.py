@@ -145,25 +145,24 @@ def reset_student_hint(student_id: int, task_id: int, payload: HintResetRequest,
     return hints_response(db, student_id, task_id)
 
 
-@router.post("/api/students/{student_id}/attempts/{task_id}/revert")
-def revert_solved(student_id: int, task_id: int, request: Request, db: Session = Depends(get_db)):
-    """Тьютор откатывает задание ученика как выполненное — удаляет все
-    удачные попытки (passed=True) по этому заданию. Статус решённости —
-    производное от Attempt.passed (task_status_map в _common.py: 'pass' если
-    хоть одна попытка прошла), поэтому «сделать снова не решено» = удалить
-    passing-попытки. Failing-попытки остаются: задание становится 'fail'
-    (есть неудачные) либо вовсе пропадает из статуса (иных попыток не было).
-    Действие необратимо, как и reset подсказок. Возвращает свежий статус
-    этой задачи ('fail' | None), чтобы фронт сразу перекрасил точку."""
+@router.delete("/api/students/{student_id}/attempts/{attempt_id}")
+def delete_student_attempt(student_id: int, attempt_id: int, request: Request, db: Session = Depends(get_db)):
+    """Тьютор удаляет одну попытку ученика — удачную или нет, в любом порядке.
+    Статус решённости — производное от Attempt.passed (task_status_map в
+    _common.py: 'pass' если хоть одна попытка прошла), поэтому удаление
+    последней удачной попытки делает задание снова нерешённым ('fail', если
+    остались неудачные), а удаление всех — возвращает в начальное состояние
+    (статус пропадает, индикатор исчезает). Возвращает свежий статус задачи,
+    чтобы фронт сразу перекрасил точку и перезагрузил список попыток."""
     if (err := _require_tutor(request)) is not None:
         return err
     if require_student(db, student_id) is None:
         return JSONResponse(status_code=404, content={"error": "Ученик не найден"})
-    db.query(Attempt).filter(
-        Attempt.user_id == student_id,
-        Attempt.task_id == task_id,
-        Attempt.passed == True,  # noqa: E712 — SQLAlchemy filter, не Python-сравнение
-    ).delete(synchronize_session=False)
+    attempt = db.query(Attempt).filter(Attempt.id == attempt_id, Attempt.user_id == student_id).first()
+    if attempt is None:
+        return JSONResponse(status_code=404, content={"error": "Попытка не найдена"})
+    task_id = attempt.task_id
+    db.delete(attempt)
     db.commit()
     status_map = task_status_map(db, student_id)
     return {"task_id": task_id, "status": status_map.get(task_id)}

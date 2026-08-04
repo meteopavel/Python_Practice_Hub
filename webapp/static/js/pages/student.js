@@ -83,12 +83,12 @@ function connectWs(ownId) {
     } else if (msg.type === 'tutor_edit_code') {
       if (msg.task_id === currentTaskId) codeEditor.setValue(msg.code || '');
       codeByTask[msg.task_id] = msg.code || '';
-    } else if (msg.type === 'solved_reverted') {
-      // feat.2: тьютор откатил задание как выполненное — удаляем статус
-      // (точка в списке обнулится), перерисовываем. Если смотрим на эту
-      // задачу — возвращаем секцию решения и прячем «уже решено», а также
-      // перезагружаем «Мои попытки» (удачные попытки удалены на сервере).
-      delete taskStatus[msg.task_id];
+    } else if (msg.type === 'attempts_changed') {
+      // feat.2: тьютор удалил попытку — статус мог измениться (pass→fail или
+      // вовсе пропасть). Перезагружаем индикатор и, если смотрим на эту
+      // задачу, секцию решения и «Мои попытки».
+      if (msg.status) taskStatus[msg.task_id] = msg.status;
+      else delete taskStatus[msg.task_id];
       renderTaskList();
       if (msg.task_id === currentTaskId) {
         updateSolveVisibility();

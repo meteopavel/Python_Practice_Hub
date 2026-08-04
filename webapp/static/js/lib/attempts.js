@@ -71,7 +71,10 @@
     previewEl.classList.remove('is-open');
   }
 
-  function openDetail(container, chip, attempt, editorFactory) {
+  // Иконка-корзина для удаления попытки (только тьютор, см. options.onDelete).
+  const TRASH_SVG = '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>';
+
+  function openDetail(container, chip, attempt, editorFactory, onDelete) {
     let detail = container.querySelector('.attempt-detail');
     const isOpen = detail && detail.dataset.idx === String(chip.dataset.idx);
     if (detail) detail.remove();
@@ -79,14 +82,26 @@
     detail = document.createElement('div');
     detail.className = 'attempt-detail';
     detail.dataset.idx = chip.dataset.idx;
+    // Кнопка удаления появляется в шапке только если страница передала onDelete
+    // (тьютор). margin-left:auto прижимает её вправо. Сам список/статус после
+    // удаления перерисовывает страница — onDelete возвращает Promise<boolean>,
+    // здесь мы только даём подтверждение и инициируем вызов.
+    const deleteBtn = typeof onDelete === 'function' && attempt.id != null
+      ? '<button type="button" class="icon-btn attempt-delete-btn" title="Удалить попытку" aria-label="Удалить попытку">' + TRASH_SVG + '</button>'
+      : '';
     detail.innerHTML =
       '<div class="attempt-detail-head">' +
         (attempt.passed ? icon('check') : icon('lock')) +
         ' ' + fmtDate(attempt.created_at) +
         ' · ' + (attempt.passed ? 'пройдено' : 'ошибка') +
+        deleteBtn +
       '</div>' +
       '<div class="code-editor bench-grid"><div class="attempt-detail-mount"></div></div>';
     container.appendChild(detail);
+    if (deleteBtn) {
+      const btn = detail.querySelector('.attempt-delete-btn');
+      btn.addEventListener('click', function () { onDelete(attempt.id); });
+    }
     const mount = detail.querySelector('.attempt-detail-mount');
     mount.style.minHeight = '60px';
     mount.style.maxHeight = '320px';
@@ -99,10 +114,13 @@
 
   // Публичный API. editorFactory передаёт страница (зависит от её PracticeHubEditor).
   window.PPHAttempts = {
-    // attempts: [{passed, created_at, code}]
+    // attempts: [{id, passed, created_at, code}]  (id нужен для onDelete)
     // container: элемент-носитель полосы
     // editorFactory: (mount, code, null, {readOnly}) => editor — обычно PracticeHubEditor.create
-    render: function (container, attempts, editorFactory) {
+    // options: { onDelete?: (attemptId) => Promise<boolean> } — если задан, в
+    //          шапке раскрытой попытки рисуется корзина (только тьютор).
+    render: function (container, attempts, editorFactory, options) {
+      const onDelete = options && typeof options.onDelete === 'function' ? options.onDelete : null;
       if (!attempts || !attempts.length) { container.innerHTML = ''; return; }
       let lastPassIdx = -1;
       for (let i = attempts.length - 1; i >= 0; i--) {
@@ -134,7 +152,7 @@
         chip.addEventListener('mouseleave', hidePreview);
         chip.addEventListener('blur', hidePreview);
         chip.addEventListener('click', function () {
-          openDetail(container, chip, attempt, editorFactory);
+          openDetail(container, chip, attempt, editorFactory, onDelete);
         });
       });
     }

@@ -99,10 +99,12 @@ async def session_ws(websocket: WebSocket, student_id: int):
                     await safe_send(room.student_ws, data)
                 continue
 
-            # Тьютор откатил задание как выполненное (feat.2): ученик должен
-            # сразу увидеть обнуление — точка/индикатор «решено» пропадает
-            # live, без F5. Симметрично submit_result в обратную сторону.
-            if data.get("type") == "solved_reverted":
+            # Тьютор удалил попытку ученика (feat.2): статус решённости мог
+            # измениться (pass→fail или вовсе пропасть). Ученик должен увидеть
+            # это live, без F5 — как и при submit_result, только в обратную
+            # сторону. Сообщение несёт свежий статус, чтобы ученик сразу
+            # перекрасил точку/индикатор.
+            if data.get("type") == "attempts_changed":
                 if is_tutor and room.student_ws is not None:
                     await safe_send(room.student_ws, data)
                 continue

@@ -44,6 +44,7 @@ def task_attempts(db: Session, user_id: int, task_id: int) -> list:
     )
     return [
         {
+            "id": a.id,
             "passed": a.passed,
             "code": a.code,
             "created_at": a.created_at.isoformat() if a.created_at else None,

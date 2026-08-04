@@ -182,13 +182,14 @@ class TestTutorToStudentRelay:
             msg = student_ws.receive_json()
             assert msg == {"type": "tutor_hint", "code": "исправь отступ"}
 
-    def test_solved_reverted_relayed_to_student(self, app, student_client, tutor_client, student):
-        # feat.2: тьютор откатил задачу как выполненную — ученик сразу видит
-        # обнуление (точка «решено» пропадает live, без F5).
+    def test_attempts_changed_relayed_to_student(self, app, student_client, tutor_client, student):
+        # feat.2: тьютор удалил попытку ученика — статус мог измениться (pass→fail
+        # или вовсе пропасть). Ученик видит это live: сообщение несёт свежий
+        # статус, чтобы сразу перекрасить точку/индикатор.
         with live_room(student_client, tutor_client, student.id) as (student_ws, tutor_ws):
-            tutor_ws.send_json({"type": "solved_reverted", "task_id": 12})
+            tutor_ws.send_json({"type": "attempts_changed", "task_id": 12, "status": None})
             msg = student_ws.receive_json()
-            assert msg == {"type": "solved_reverted", "task_id": 12}
+            assert msg == {"type": "attempts_changed", "task_id": 12, "status": None}
 
     def test_hint_visibility_relayed_to_student(self, app, student_client, tutor_client, student):
         # Тьютор открывает/закрывает подсказку «замком» — статус летит ученику.
@@ -208,17 +209,17 @@ class TestTutorToStudentRelay:
 # --- Направленные гейты ------------------------------------------------------
 
 class TestDirectionGates:
-    """Часть сообщений привязана к роли: solved_reverted — только от тьютора,
+    """Часть сообщений привязана к роли: attempts_changed — только от тьютора,
     hint_revealed/submit_result — только от ученика. Сообщение «не от той
     стороны» не ретранслируется (continue без send). Проверяем фильтрацию без
     таймаутов: шлём «неправильное» сообщение, затем валидное — и убеждаемся, что
     получатель видит только валидное (неправильное отфильтровалось)."""
 
-    def test_solved_reverted_from_student_is_dropped(self, app, student_client, tutor_client, student):
-        # solved_reverted от ученика (не тьютора) не должен долететь до тьютора.
+    def test_attempts_changed_from_student_is_dropped(self, app, student_client, tutor_client, student):
+        # attempts_changed от ученика (не тьютора) не должен долететь до тьютора.
         # За ним шлём валидный hint_revealed — тьютор получает ровно его.
         with live_room(student_client, tutor_client, student.id) as (student_ws, tutor_ws):
-            student_ws.send_json({"type": "solved_reverted", "task_id": 1})  # отфильтровано
+            student_ws.send_json({"type": "attempts_changed", "task_id": 1, "status": None})  # отфильтровано
             student_ws.send_json({"type": "hint_revealed", "task_id": 81, "level": 1})  # валидное
             msg = tutor_ws.receive_json()
             assert msg["type"] == "hint_revealed"

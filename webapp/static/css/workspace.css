@@ -167,6 +167,9 @@ pre.block {
   color: var(--c-ink-muted);
   font-variant-numeric: tabular-nums;
 }
+/* Корзина удаления попытки (только тьютор) — прижата вправо, красный hover. */
+.attempt-delete-btn { margin-left: auto; }
+.attempt-delete-btn:hover { color: var(--c-fail); border-color: var(--c-fail-border); background: var(--c-fail-bg); }
 .attempt-detail .code-editor { margin-bottom: 0; }
 
 /* Превью-модалка при наведении. */
