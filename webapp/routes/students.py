@@ -4,6 +4,7 @@
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from webapp.core.auth import current_user_id, current_user_role, forbidden, hash_password, unauthorized
@@ -45,20 +46,24 @@ def list_students(request: Request, db: Session = Depends(get_db)):
     if (err := _require_tutor(request)) is not None:
         return err
     students = db.query(User).filter(User.role == ROLE_STUDENT).order_by(User.username).all()
+    # Агрегаты по попыткам — одним запросом (count + max(created_at) с группировкой
+    # по user_id), не N+1 (раньше было 2 запроса на каждого студента в цикле).
+    student_ids = [s.id for s in students]
+    agg_rows = (
+        db.query(Attempt.user_id.label("uid"), func.count(Attempt.id).label("cnt"), func.max(Attempt.created_at).label("last"))
+        .filter(Attempt.user_id.in_(student_ids))
+        .group_by(Attempt.user_id)
+        .all()
+    ) if student_ids else []
+    agg = {row.uid: (row.cnt, row.last) for row in agg_rows}
     result = []
     for student in students:
-        last_attempt = (
-            db.query(Attempt)
-            .filter(Attempt.user_id == student.id)
-            .order_by(Attempt.created_at.desc())
-            .first()
-        )
-        attempts_count = db.query(Attempt).filter(Attempt.user_id == student.id).count()
+        cnt, last = agg.get(student.id, (0, None))
         result.append({
             "id": student.id,
             "username": student.username,
-            "attempts_count": attempts_count,
-            "last_attempt_at": last_attempt.created_at.isoformat() if last_attempt and last_attempt.created_at else None,
+            "attempts_count": cnt,
+            "last_attempt_at": last.isoformat() if last else None,
         })
     return result
 
