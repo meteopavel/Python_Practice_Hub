@@ -8,13 +8,14 @@ __pycache__/
 *.pyc
 .claude/
 .zcode/
+.codex/
 /CLAUDE.md
 /docs/personal/
+/docs/architecture/
 /secure/
 # Локальная SQLite, создаётся сама при запуске webapp без DATABASE_URL (fallback).
 local.db
 
-# impeccable: runtime-артефакты детектора (абсолютные пути, session IDs).
-# design.json коммитится — это sidecar дизайн-системы.
-.impeccable/hook.cache.json
-.impeccable/questions/
+# impeccable: детектор UI. Вся папка — личный локальный tooling (sidecar
+# дизайн-системы, runtime-артефакты с абсолютными путями и session IDs).
+.impeccable/
