@@ -1,0 +1,5 @@
+# Dev-зависимости для тестов. Ставить в тот же venv, что и webapp/requirements.txt:
+#   pip install -r requirements-dev.txt
+# httpx уже входит в webapp/requirements.txt (нужен и Starlette TestClient, и
+# HTTP-клиент грейдера) — здесь его не дублируем.
+pytest==8.4.2
