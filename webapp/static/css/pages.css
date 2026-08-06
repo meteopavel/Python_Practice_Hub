@@ -18,6 +18,13 @@
   gap: var(--space-4);
   align-items: start;
 }
+/* Дети грида должны ужиматься: без этого 1fr-трек получает min-width: auto
+   и растягивается под min-content (CodeMirror/длинный код не переносятся) →
+   карточка вылезает за экран на мобилке. min-width: 0 позволяет треку
+   сжиматься, коду — скроллиться внутри редактора (overflow у .code-editor и
+   .cm-scroller уже есть). Для fixed-треков (300px/320px) безвредно. */
+.student-layout > *,
+.session-layout > * { min-width: 0; }
 
 /* Материалы — узкая читательская колонка. */
 .material-main { max-width: 860px; }
