@@ -75,5 +75,5 @@ def tutor_ask(payload: TutorAskRequest, request: Request):
         # tutor-llm недоступен (контейнер не поднят / тоннель упал)
         return JSONResponse(
             status_code=502,
-            content={"error": f"tutor-llm недоступен ({TUTOR_LLM_URL}): {exc}"},
+            content={"error": f"tutor-llm недоступен: {exc}"},
         )

@@ -37,4 +37,6 @@ STUN_URLS = os.environ.get("STUN_URLS", "stun:informatika.meteopavel.space:3478"
 # tutor-llm — отдельный микросервис на роутере (как executor, см.
 # tutor-llm/). Проксирует запросы тьютора в DeepSeek API. Ключ DeepSeek
 # живёт только в контейнере tutor-llm, сюда не пробрасывается.
-TUTOR_LLM_URL = os.environ.get("TUTOR_LLM_URL", "http://10.0.0.1:8011")
+TUTOR_LLM_URL = os.environ.get("TUTOR_LLM_URL")
+if not TUTOR_LLM_URL:
+    raise RuntimeError("TUTOR_LLM_URL не задан — см. env.example")

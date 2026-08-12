@@ -46,8 +46,11 @@ require_env() {
 }
 
 # Общие функции (run_with_heartbeat, timeout_run, rsync_via_tunnel) —
-# используются во всех проектах, см. сам файл.
-source "$(dirname "${PROJECT_ROOT}")/tools/deploy_helpers.sh"
+# используются во всех проектах. Путь к файлу задаётся в .env
+# (DEPLOY_HELPERS_FILE), т.к. layout директорий у каждого разработчика свой.
+DEPLOY_HELPERS_FILE=$(get_env "DEPLOY_HELPERS_FILE" "$ENV_FILE")
+require_env "DEPLOY_HELPERS_FILE" "$DEPLOY_HELPERS_FILE"
+source "$DEPLOY_HELPERS_FILE"
 
 log "🚀 Python_Practice_Hub deploy (роутер=executor + Frankfurt=front)"
 log "📁 Project root: $PROJECT_ROOT"

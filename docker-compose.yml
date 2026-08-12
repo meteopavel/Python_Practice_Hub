@@ -4,7 +4,7 @@ services:
     restart: unless-stopped
     environment:
       - EXECUTOR_URL=${EXECUTOR_URL}
-      - TUTOR_LLM_URL=${TUTOR_LLM_URL:-http://10.0.0.1:8011}
+      - TUTOR_LLM_URL=${TUTOR_LLM_URL}
       - DATABASE_URL=${DATABASE_URL}
       - SESSION_SECRET=${SESSION_SECRET}
       - TURN_SECRET=${TURN_SECRET}
