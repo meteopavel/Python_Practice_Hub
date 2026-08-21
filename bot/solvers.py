@@ -816,6 +816,171 @@ def solve_task_100(data):
     return result
 
 
+def solve_task_101(data):
+    max_value = data[0]
+    min_value = data[0]
+    for num in data:
+        if num > max_value:
+            max_value = num
+        if num < min_value:
+            min_value = num
+    return max_value - min_value
+
+
+def solve_task_102(data):
+    count = 0
+    for num in data:
+        if num > 0:
+            count += 1
+    return count
+
+
+def solve_task_103(data):
+    result = []
+    for num in data:
+        if num < 0:
+            result.append(0)
+        else:
+            result.append(num)
+    return result
+
+
+def solve_task_104(data):
+    best_index = 0
+    for i in range(1, len(data)):
+        if data[i] > data[best_index]:
+            best_index = i
+    return best_index
+
+
+def solve_task_105(data):
+    for num in data:
+        if num % 2 != 0:
+            return '❌ Есть нечётные'
+    return '✅ Все чётные'
+
+
+def solve_task_106(data):
+    count = 0
+    for num in data[0]:
+        if num == data[1]:
+            count += 1
+    return count
+
+
+def solve_task_107(data):
+    result = []
+    for num in data[0]:
+        result.append(num + data[1])
+    return result
+
+
+def solve_task_108(data):
+    result = 0
+    for i in range(0, len(data), 2):
+        result += data[i]
+    return result
+
+
+def solve_task_109(data):
+    result = 0
+    for num in data:
+        if 10 <= num <= 99:
+            result += num
+    return result
+
+
+def solve_task_110(data):
+    count = 0
+    for i in range(len(data)):
+        if data[i] == i:
+            count += 1
+    return count
+
+
+def solve_task_111(data):
+    result = []
+    for word in data:
+        result.append(word.capitalize())
+    return result
+
+
+def solve_task_112(data):
+    result = ''
+    for word in data:
+        if result != '':
+            result += ' '
+        result += word
+    return result
+
+
+def solve_task_113(data):
+    result = 0
+    for word in data:
+        result += len(word)
+    return result
+
+
+def solve_task_114(data):
+    word = data[0]
+    if word[0].lower() in 'aeiou':
+        return '✅ Начинается с гласной'
+    return '❌ Начинается с согласной'
+
+
+def solve_task_115(data):
+    word = data[0]
+    result = ''
+    for letter in word:
+        result += letter + letter
+    return result
+
+
+def solve_task_116(data):
+    word = data[0]
+    result = {}
+    for letter in word:
+        if letter not in result:
+            result[letter] = 0
+        result[letter] += 1
+    return result
+
+
+def solve_task_117(data):
+    count = 0
+    for word in data:
+        if word == word[::-1]:
+            count += 1
+    return count
+
+
+def solve_task_118(data):
+    result = []
+    for num in data:
+        if num > 0:
+            result.append(1)
+        elif num < 0:
+            result.append(-1)
+        else:
+            result.append(0)
+    return result
+
+
+def solve_task_119(data):
+    result = []
+    for i in range(len(data[0])):
+        result.append(data[0][i] + data[1][i])
+    return result
+
+
+def solve_task_120(data):
+    count = 0
+    for i in range(1, len(data)):
+        if data[i] > data[i - 1]:
+            count += 1
+    return count
+
+
 def solve_task_0(data):
     result = 0
     for x in data:
