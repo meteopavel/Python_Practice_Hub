@@ -32,7 +32,7 @@ if not SESSION_SECRET:
 # работает для локальной разработки, не работает во всех сетях в проде.
 TURN_SECRET = os.environ.get("TURN_SECRET")
 TURN_URLS = os.environ.get("TURN_URLS")
-STUN_URLS = os.environ.get("STUN_URLS", "stun:informatika.meteopavel.space:3478")
+STUN_URLS = os.environ.get("STUN_URLS", "stun:dobrokod.ru:3478")
 
 # tutor-llm — отдельный микросервис на роутере (как executor, см.
 # tutor-llm/). Проксирует запросы тьютора в DeepSeek API. Ключ DeepSeek

@@ -38,6 +38,10 @@
   font-size: var(--fs-md);
   letter-spacing: 0.02em;
   color: var(--c-ink);
+  text-decoration: none;
+}
+.brand:hover .brand-mark {
+  border-color: var(--c-signal);
 }
 /* Знак </>. */
 .brand-mark {

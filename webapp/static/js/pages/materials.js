@@ -18,7 +18,7 @@ async function loadLesson() {
     return;
   }
   const data = await res.json();
-  document.title = `${data.title} — Python Practice Hub`;
+  document.title = `${data.title} — Доброкод`;
   document.getElementById('lesson-title').textContent = data.title;
 
   const cellsEl = document.getElementById('cells');

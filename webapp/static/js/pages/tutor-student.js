@@ -21,7 +21,7 @@ async function loadStudentSwitcher() {
   const students = await res.json();
   const current = students.find(s => s.id === studentId);
   document.getElementById('switcher-current-name').textContent = current ? current.username : '…';
-  document.title = `${current ? current.username : 'Ученик'} — Python Practice Hub`;
+  document.title = `${current ? current.username : 'Ученик'} — Доброкод`;
   const list = document.getElementById('switcher-list');
   const backLink = '<a class="account-menu-item" href="/" style="display: block; text-decoration: none;">← к списку учеников</a><div class="account-menu-divider"></div>';
   const studentsHtml = students.length

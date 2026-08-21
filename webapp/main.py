@@ -10,7 +10,7 @@ from webapp.config import SESSION_SECRET, STATIC_DIR
 from webapp.core.db import Base, engine
 from webapp.routes import auth, hints_api, pages, students, tasks_api, tutor_api, ws
 
-app = FastAPI(title="Python Practice Hub — веб-грейдер")
+app = FastAPI(title="Доброкод — веб-грейдер")
 app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET)
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
