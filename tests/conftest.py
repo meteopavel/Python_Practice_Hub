@@ -22,6 +22,11 @@ import os
 
 os.environ.setdefault("SESSION_SECRET", "test-session-secret-not-for-prod")
 os.environ.setdefault("DATABASE_URL", "sqlite:///:memory:")
+# config.py требует TUTOR_LLM_URL при импорте, но pytest не подставляет
+# переменные из файла окружения (это делает только docker-compose) — без
+# заглушки сьют не стартует локально. Сам сервис в тестах не вызывается,
+# значение неважно.
+os.environ.setdefault("TUTOR_LLM_URL", "http://127.0.0.1:9999")
 
 import pytest  # noqa: E402  (env должен стоять до этого импорта webapp)
 from sqlalchemy import create_engine  # noqa: E402

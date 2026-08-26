@@ -42,6 +42,11 @@ async def session_ws(websocket: WebSocket, student_id: int):
         room.student_ws = websocket
         await safe_send(websocket, {"type": "tutor_status", "online": bool(room.tutor_sockets)})
         await safe_send(websocket, {"type": "tutor_hint", "code": room.last_tutor_hint})
+        # feat.9: тьютор мог отправить ссылку на созвон, пока ученик был
+        # офлайн — доносим сохранённое приглашение при подключении, чтобы
+        # тьютору не нужно было следить, когда ученик пришёл.
+        if room.pending_call_link is not None:
+            await safe_send(websocket, {"type": "call_link", "url": room.pending_call_link})
         for tutor_ws in room.tutor_sockets:
             await safe_send(tutor_ws, {"type": "student_status", "online": True})
 
@@ -49,19 +54,41 @@ async def session_ws(websocket: WebSocket, student_id: int):
         while True:
             data = await websocket.receive_json()
 
+            # Ссылка на созвон (2026-07-22, feat.9) — замена самого WebRTC-звонка
+            # (см. DEPRECATED-пометку в index.html/tutor_student.html): тьютор
+            # созванивается с учеником во внешнем сервисе (Телемост и т.п.) и
+            # присылает ссылку тем же каналом. Ссылка живёт в комнате, пока
+            # ученик её не примет (клик по трубке) или тьютор не отменит —
+            # поэтому офлайн-ученик получает приглашение при подключении, а
+            # F5 у ученика его не теряет. call_link_cancel — отзыв приглашения.
+            # call_link_accepted — ученик кликнул по трубке: сервер сам чистит
+            # pending и сообщает тьюторам («Принято») — отзыв срабатывает и
+            # когда вкладка тьютора уже закрыта.
+            if data.get("type") in ("call_link", "call_link_cancel"):
+                if is_tutor:
+                    if data.get("type") == "call_link":
+                        room.pending_call_link = data.get("url")
+                    else:
+                        room.pending_call_link = None
+                    if room.student_ws is not None:
+                        await safe_send(room.student_ws, data)
+                continue
+            if data.get("type") == "call_link_accepted":
+                if not is_tutor:
+                    room.pending_call_link = None
+                    for tutor_ws in room.tutor_sockets:
+                        await safe_send(tutor_ws, data)
+                continue
+
             # Сигналинг звонка (SDP offer/answer, ICE-кандидаты, завершение) —
             # тот же канал, просто пересылаем сообщение как есть другой стороне
             # комнаты. Медиа (звук) идёт напрямую между браузерами по WebRTC,
             # сервер только сводит вдвоём и дальше не участвует.
-            # call_link (2026-07-22) — замена самого WebRTC-звонка (см.
-            # DEPRECATED-пометку в index.html/tutor_student.html): тьютор
-            # созванивается с учеником во внешнем сервисе (Телемост и т.п.)
-            # и просто присылает ссылку тем же каналом, сервер её ретранслирует
-            # как есть, никакой обработки/хранения. call_link_ack — ученик
-            # подтверждает тьютору, что ссылка реально дошла и отрендерилась.
+            # call_link_ack — ученик подтверждает тьютору, что ссылка реально
+            # дошла и отрендерилась.
             if data.get("type") in (
                 "call_offer", "call_answer", "call_ice", "call_end", "mute_status",
-                "call_link", "call_link_ack", "call_link_cancel",
+                "call_link_ack",
             ):
                 if is_tutor:
                     if room.student_ws is not None:

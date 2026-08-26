@@ -11,6 +11,9 @@
   - рестейты при подключении (тьютор получает последний код/подсказку/статус);
   - live-реле по типам сообщений в обе стороны — главный материал.
 
+Четвёртая группа — ссылка дозвона офлайн-ученику (feat.9): pending живёт в
+комнате, доставка при подключении, отзыв отменой или принятием.
+
 Механика: открываем ДВА одновременных WS-соединения к одной комнате (студент +
 тьютор) через два TestClient с разными session-cookie. ``live_room`` выпивает
 шумные рестейты при подключении, так что дальше обмен идёт чисто: отправил →
@@ -226,9 +229,117 @@ class TestDirectionGates:
 
     def test_hint_revealed_from_tutor_is_dropped(self, app, student_client, tutor_client, student):
         # hint_revealed от тьютора (должен идти от ученика) не доходит до
-        # студента. За ним шлём валидное tutor_hint — студент получает его.
+        # студента. За ним шлём валидный tutor_hint — студент получает его.
         with live_room(student_client, tutor_client, student.id) as (student_ws, tutor_ws):
             tutor_ws.send_json({"type": "hint_revealed", "task_id": 81, "level": 1})  # отфильтровано
+            tutor_ws.send_json({"type": "tutor_hint", "code": "ok"})  # валидное
+            msg = student_ws.receive_json()
+            assert msg == {"type": "tutor_hint", "code": "ok"}
+
+
+# --- Ссылка дозвона: доставка офлайн-ученику (feat.9) -------------------------
+
+class TestCallLinkPending:
+    """feat.9: тьютор отправил ссылку на созвон, пока ученик офлайн.
+
+    Раньше ``call_link`` ретранслировался только в открытый сокет ученика и
+    молча терялся. Теперь ссылка живёт в комнате (``pending_call_link``) и
+    доносится рестейтом при каждом подключении ученика — пока тьютор не отменит
+    её (``call_link_cancel``) или ученик не примет (``call_link_accepted``:
+    сервер сам чистит pending и сообщает тьюторам — отзыв не зависит от того,
+    жива ли ещё вкладка тьютора)."""
+
+    URL = "https://telemost.yandex.ru/join/abc123"
+
+    def test_link_sent_to_offline_student_delivered_on_connect(self, app, student_client, tutor_client, student):
+        # Главный кейс feat.9: тьютор шлёт ссылку в пустую комнату → ученик
+        # подключается → получает call_link третьим сообщением при подключении
+        # (после tutor_status и tutor_hint).
+        with tutor_client.websocket_connect(f"/ws/session/{student.id}") as tutor_ws:
+            _drain(tutor_ws, 3)
+            tutor_ws.send_json({"type": "call_link", "url": self.URL})
+            with student_client.websocket_connect(f"/ws/session/{student.id}") as student_ws:
+                _drain(student_ws, 2)  # tutor_status, tutor_hint
+                msg = student_ws.receive_json()
+                assert msg == {"type": "call_link", "url": self.URL}
+
+    def test_pending_link_survives_student_reconnect(self, app, student_client, tutor_client, student):
+        # Ссылка живёт до отмены/принятия, а не до первой доставки: ученик,
+        # переподключившийся (F5), снова получает её рестейтом.
+        # NB: дисконнектные сообщения (call_end и student_status(online=False)
+        # тьютору из finally ws.py) здесь НЕ проверяем и не дрейним: TestClient
+        # на выходе из with гонится с отменой задачи приложения (starlette
+        # 0.49: close → сразу cs.cancel), и эти две отправки недетерминированы
+        # в тестах — можно зависнуть на receive. Само состояние комнаты к
+        # моменту выхода чисто: __exit__ ждёт отработки finally. Проверяем
+        # только сообщения обработчика ПОДКЛЮЧЕНИЯ — они детерминированы.
+        with tutor_client.websocket_connect(f"/ws/session/{student.id}") as tutor_ws:
+            _drain(tutor_ws, 3)
+            tutor_ws.send_json({"type": "call_link", "url": self.URL})
+            with student_client.websocket_connect(f"/ws/session/{student.id}") as student_ws:
+                _drain(student_ws, 3)  # tutor_status, tutor_hint, call_link
+            # ученик ушёл и зашёл снова (F5) — ссылка всё ещё в комнате
+            with student_client.websocket_connect(f"/ws/session/{student.id}") as student_ws2:
+                _drain(student_ws2, 2)  # tutor_status, tutor_hint
+                msg = student_ws2.receive_json()
+                assert msg == {"type": "call_link", "url": self.URL}
+
+    def test_cancel_before_connect_clears_pending(self, app, student_client, tutor_client, student):
+        # Тьютор передумал до прихода ученика: call_link_cancel чистит pending,
+        # при подключении ученик НЕ получает ссылку. Маркер после подключения
+        # доказывает, что в очереди ничего не стояло (иначе он пришёл бы вторым).
+        with tutor_client.websocket_connect(f"/ws/session/{student.id}") as tutor_ws:
+            _drain(tutor_ws, 3)
+            tutor_ws.send_json({"type": "call_link", "url": self.URL})
+            tutor_ws.send_json({"type": "call_link_cancel"})
+            with student_client.websocket_connect(f"/ws/session/{student.id}") as student_ws:
+                _drain(student_ws, 2)  # только tutor_status, tutor_hint
+                tutor_ws.send_json({"type": "tutor_hint", "code": "маркер"})
+                msg = student_ws.receive_json()
+                assert msg == {"type": "tutor_hint", "code": "маркер"}
+
+    def test_link_relayed_live_when_student_online(self, app, student_client, tutor_client, student):
+        # Онлайн-ученик получает ссылку сразу, как и раньше (live-реле).
+        with live_room(student_client, tutor_client, student.id) as (student_ws, tutor_ws):
+            tutor_ws.send_json({"type": "call_link", "url": self.URL})
+            msg = student_ws.receive_json()
+            assert msg == {"type": "call_link", "url": self.URL}
+
+    def test_accepted_notifies_tutor_and_retracts_pending(self, app, student_client, tutor_client, student):
+        # Ученик кликнул по трубке: тьютор получает call_link_accepted
+        # («Принято»), а сервер сразу чистит pending — переподключившийся
+        # ученик ссылки больше не получает (маркер приходит первым).
+        # Дисконнектные сообщения тьютора не дрейним — см. NB в
+        # test_pending_link_survives_student_reconnect.
+        with tutor_client.websocket_connect(f"/ws/session/{student.id}") as tutor_ws:
+            _drain(tutor_ws, 3)
+            tutor_ws.send_json({"type": "call_link", "url": self.URL})
+            with student_client.websocket_connect(f"/ws/session/{student.id}") as student_ws:
+                _drain(student_ws, 3)  # tutor_status, tutor_hint, call_link
+                _drain(tutor_ws, 1)    # student_status(online=True)
+                student_ws.send_json({"type": "call_link_accepted"})
+                msg = tutor_ws.receive_json()
+                assert msg == {"type": "call_link_accepted"}
+            with student_client.websocket_connect(f"/ws/session/{student.id}") as student_ws2:
+                _drain(student_ws2, 2)  # tutor_status, tutor_hint — ссылки нет
+                tutor_ws.send_json({"type": "tutor_hint", "code": "маркер"})
+                msg = student_ws2.receive_json()
+                assert msg == {"type": "tutor_hint", "code": "маркер"}
+
+    def test_call_link_from_student_is_dropped(self, app, student_client, tutor_client, student):
+        # call_link — только от тьютора: от ученика он не доходит до тьютора.
+        # За ним валидный hint_revealed — тьютор получает ровно его.
+        with live_room(student_client, tutor_client, student.id) as (student_ws, tutor_ws):
+            student_ws.send_json({"type": "call_link", "url": self.URL})  # отфильтровано
+            student_ws.send_json({"type": "hint_revealed", "task_id": 1, "level": 1})
+            msg = tutor_ws.receive_json()
+            assert msg["type"] == "hint_revealed"
+
+    def test_call_link_accepted_from_tutor_is_dropped(self, app, student_client, tutor_client, student):
+        # call_link_accepted — только от ученика: от тьютора он не доходит до
+        # ученика (валидный tutor_hint-маркер приходит первым).
+        with live_room(student_client, tutor_client, student.id) as (student_ws, tutor_ws):
+            tutor_ws.send_json({"type": "call_link_accepted"})  # отфильтровано
             tutor_ws.send_json({"type": "tutor_hint", "code": "ok"})  # валидное
             msg = student_ws.receive_json()
             assert msg == {"type": "tutor_hint", "code": "ok"}

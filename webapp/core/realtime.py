@@ -14,6 +14,11 @@ class Room:
         self.last_student_code = ""
         self.last_student_task_id: int | None = None
         self.last_tutor_hint = ""
+        # Ссылка на созвон, отправленная тьютором (feat.9): живёт в комнате,
+        # пока ученик офлайн (и после его переподключений — до отмены тьютором
+        # или клика ученика), чтобы приглашение не терялось, если тьютор
+        # отправил его до прихода ученика.
+        self.pending_call_link: str | None = None
 
 
 rooms: dict[int, Room] = {}

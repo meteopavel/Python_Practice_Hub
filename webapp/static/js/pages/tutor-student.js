@@ -357,6 +357,8 @@ function connectWs() {
       handleRemoteIce(msg);
     } else if (msg.type === 'call_end') {
       endCall(false);
+    } else if (msg.type === 'call_link_accepted') {
+      onCallLinkAccepted();
     } else if (msg.type === 'student_status') {
       renderStudentOnline(!!msg.online);
     }
@@ -403,6 +405,8 @@ function renderSubmitResult(msg) {
 //   ready   — распознанная ссылка в поле, кнопка "Отправить" акцентным цветом
 //   sent    — "Отправлено" (роль убранного сообщения "ученик получил"),
 //             рядом кнопка "Отменить" в красном
+//   accepted — "Принято" (feat.9): ученик кликнул по трубке; сервер уже сам
+//             отозвал ссылку, через 5 сек форма возвращается в idle
 //   error   — сокет не открыт, кнопка красная "Ошибка, попробовать снова"
 const VIDEO_CALL_LINK_RE = /https?:\/\/(?:[\w-]+\.)?(?:telemost\.yandex\.ru|meet\.google\.com|zoom\.us|teams\.microsoft\.com)\/\S+/i;
 const callLinkInput = document.getElementById('call-link-input');
@@ -412,13 +416,14 @@ let callLinkState = 'idle';
 
 function setCallLinkState(next) {
   callLinkState = next;
+  const locked = next === 'sent' || next === 'accepted';
   callLinkInput.classList.toggle('is-open', next === 'editing' || next === 'ready');
-  callLinkInput.disabled = next === 'sent';
+  callLinkInput.disabled = locked;
   callLinkMainBtn.classList.toggle('btn-primary', next === 'ready');
   callLinkMainBtn.classList.toggle('btn-danger', next === 'error');
-  callLinkMainBtn.disabled = next === 'sent';
+  callLinkMainBtn.disabled = locked;
   callLinkCancelBtn.style.display = (next === 'sent' || next === 'error') ? 'inline-block' : 'none';
-  const labels = {idle: 'Созвониться', editing: 'Созвониться', ready: 'Отправить', sent: 'Отправлено', error: 'Ошибка, попробовать снова'};
+  const labels = {idle: 'Созвониться', editing: 'Созвониться', ready: 'Отправить', sent: 'Отправлено', accepted: 'Принято', error: 'Ошибка, попробовать снова'};
   callLinkMainBtn.textContent = labels[next];
 }
 
@@ -464,6 +469,24 @@ callLinkCancelBtn.addEventListener('click', () => {
   callLinkInput.value = '';
   setCallLinkState('idle');
 });
+
+// feat.9: ученик кликнул по трубке — приглашение принято. Сервер в этот же
+// момент сам отозвал ссылку (pending почистил у комнаты), здесь только
+// показываем "Принято" и через 5 секунд возвращаем форму в idle — поэтому
+// механика не ломается, даже если вкладка тьютора закрыта: просто некому
+// увидеть надпись, а ссылка всё равно отозвана.
+let callLinkAcceptTimer = null;
+
+function onCallLinkAccepted() {
+  if (callLinkState !== 'sent') return;
+  setCallLinkState('accepted');
+  clearTimeout(callLinkAcceptTimer);
+  callLinkAcceptTimer = setTimeout(() => {
+    if (callLinkState !== 'accepted') return;
+    callLinkInput.value = '';
+    setCallLinkState('idle');
+  }, 5000);
+}
 
 // Онлайн-статус ученика в шапке — тот же чип-переключатель, что и раньше,
 // просто перекрашиваем в зелёные тона (тот же язык, что и badge-pass) вместо

@@ -21,8 +21,8 @@ import pytest
 from webapp.content import hints
 from webapp.core.models import HintReveal
 
-HINTED_TASK = 81   # входит в HINTED_TASK_IDS (1..100)
-NON_HINTED = 101   # вне HINTED_TASK_IDS → has_hints → False → 404
+HINTED_TASK = 81   # входит в HINTED_TASK_IDS (1..120)
+NON_HINTED = 121   # вне HINTED_TASK_IDS (вырос до 120 в feat.10) → has_hints → False → 404
 
 
 @pytest.fixture
