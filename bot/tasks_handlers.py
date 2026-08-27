@@ -1,3 +1,5 @@
+"""Хендлеры команд /task_N: фабрика собирает их из банка TASKS в tasks.json
+(по одному хендлеру на задание, регистрируются в bot.py)."""
 from telegram import Update
 from telegram.ext import ContextTypes
 
@@ -5,6 +7,8 @@ from load_tasks_from_json import INPUT_HINTS, TASKS
 
 
 def make_task_handler(task_num):
+    """Хендлер /task_N: показать условие, формат входа и пример; перевести
+    диалог в режим ожидания данных (awaiting_task)."""
     async def task_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         task = TASKS[task_num]
         input_type = task['type']

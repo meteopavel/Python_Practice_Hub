@@ -19,6 +19,7 @@ VALID_ROLES = (ROLE_STUDENT, ROLE_TUTOR)
 
 
 def main() -> None:
+    """Разбор аргументов, интерактивный ввод пароля и создание пользователя."""
     if len(sys.argv) not in (2, 3):
         print(f"Использование: python -m webapp.scripts.create_user <username> [{'|'.join(VALID_ROLES)}]")
         sys.exit(1)

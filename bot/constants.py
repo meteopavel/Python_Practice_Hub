@@ -1,3 +1,5 @@
+"""Банк заданий — ИСТОЧНИК для генератора export_tasks_to_json.py, который
+упаковывает TASKS/INPUT_HINTS в bot/tasks.json."""
 # ВНИМАНИЕ: этот файл — ИСТОЧНИК для генератора export_tasks_to_json.py, который
 # упаковывает TASKS/INPUT_HINTS в bot/tasks.json. После правки здесь нужно
 # перегенерировать tasks.json (python bot/export_tasks_to_json.py).

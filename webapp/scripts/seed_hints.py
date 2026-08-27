@@ -236,6 +236,7 @@ HINTS_DATA: dict[int, dict[int, str]] = {
 
 
 def main() -> None:
+    """Залить курированные тексты подсказок в БД (upsert по task_id+level)."""
     Base.metadata.create_all(bind=engine)  # на случай запуска до старта приложения
     db = SessionLocal()
     created = updated = 0

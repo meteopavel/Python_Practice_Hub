@@ -1,58 +1,56 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-28T11:47:58.044754+00:00",
+  "generated_at": "2026-08-27T08:38:01.029870+00:00",
   "generator": "tools/extract_api_map.py",
   "target": "bot",
   "scanned_python_files": 6,
-  "files_count": 5,
-  "skipped_files_count": 1,
-  "skipped_files": [
-    "bot/export_tasks_to_json.py"
-  ],
+  "files_count": 6,
+  "skipped_files_count": 0,
+  "skipped_files": [],
   "stats": {
-    "modules": 5,
+    "modules": 6,
     "classes": 0,
     "dataclasses": 0,
-    "functions": 105,
+    "functions": 126,
     "methods": 0,
     "constants": 5
   },
   "modules": [
     {
       "path": "bot/bot.py",
-      "module_docstring": null,
-      "module_summary": null,
+      "module_docstring": "Легаси Telegram-бот «задача → ответ»: команда /task_N выдаёт условие,\nследующее сообщение ученика парсится как вход и прогоняется через эталон.\nПроект начинался с него; продукт теперь — веб-грейдер (webapp/), но банк\nзаданий (tasks.json, solvers.py) общий для обоих контуров.",
+      "module_summary": "Легаси Telegram-бот «задача → ответ»: команда /task_N выдаёт условие,",
       "classes": [],
       "functions": [
         {
           "name": "extract_literals",
           "signature": "extract_literals(text)",
-          "docstring": null,
-          "summary": null,
+          "docstring": "Разобрать ввод ученика: питоновские литералы через ';' (или списки,\nвытащенные из свободного текста).",
+          "summary": "Разобрать ввод ученика: питоновские литералы через ';' (или списки,",
           "kind": "function",
           "decorators": [],
-          "lineno": 21,
-          "end_lineno": 36
+          "lineno": 25,
+          "end_lineno": 42
         },
         {
           "name": "handle_message",
           "signature": "handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE)",
-          "docstring": null,
-          "summary": null,
+          "docstring": "Ответ на данные ждущего задания: разобрать вход, прогнать эталон,\nприслать ответ (диалог одноразовый — ожидание сбрасывается).",
+          "summary": "Ответ на данные ждущего задания: разобрать вход, прогнать эталон,",
           "kind": "async_function",
           "decorators": [],
-          "lineno": 39,
-          "end_lineno": 51
+          "lineno": 45,
+          "end_lineno": 59
         },
         {
           "name": "start",
           "signature": "start(update: Update, context: ContextTypes.DEFAULT_TYPE)",
-          "docstring": null,
-          "summary": null,
+          "docstring": "Приветствие на /start.",
+          "summary": "Приветствие на /start.",
           "kind": "async_function",
           "decorators": [],
-          "lineno": 54,
-          "end_lineno": 56
+          "lineno": 62,
+          "end_lineno": 65
         }
       ],
       "constants": [
@@ -60,7 +58,7 @@
           "name": "TOKEN",
           "annotation": null,
           "value_repr": "os.getenv('TOKEN')",
-          "lineno": 18
+          "lineno": 22
         }
       ],
       "stats": {
@@ -73,8 +71,8 @@
     },
     {
       "path": "bot/constants.py",
-      "module_docstring": null,
-      "module_summary": null,
+      "module_docstring": "Банк заданий — ИСТОЧНИК для генератора export_tasks_to_json.py, который\nупаковывает TASKS/INPUT_HINTS в bot/tasks.json.",
+      "module_summary": "Банк заданий — ИСТОЧНИК для генератора export_tasks_to_json.py, который",
       "classes": [],
       "functions": [],
       "constants": [
@@ -82,13 +80,13 @@
           "name": "INPUT_HINTS",
           "annotation": null,
           "value_repr": "{'number': 'Введите число в формате:', 'word': 'Введите слово в формате:', 'list_of_numbers': 'Введите числа в формате:', 'lists': 'Введите списки в формате:', 'list_and_number': 'Введите список и число в формате:', 'list_of_words': 'Введите слова в формате:', 'words_and_numbers': 'Введите слова и числа в формате:'}",
-          "lineno": 7
+          "lineno": 9
         },
         {
           "name": "TASKS",
           "annotation": null,
-          "value_repr": "{1: {'description': 'Удалить дубликаты из списка, сохранив порядок.', 'example': '[3, 2, 2, 1, 5, 3] → [3, 2, 1, 5]', 'type': 'list_of_numbers'}, 2: {'description': 'Найти сумму всех чётных чисел в списке.', 'example': '[1, 2, 3, 4, 5, 6] → 12', 'type': 'list_of_numbers'}, 3: {'description': 'Развернуть список (в порядке обратном исходному).', 'example': '[1, 2, 3, 4, 5] → [5, 4, 3, 2, 1]', 'type': 'list_of_numbers'}, 4: {'description': 'Найти максимальный элемент в списке, не используя max()', 'example': '[10, 3, 5, 6, 9, 8] → 10', 'type': 'list_of_numbers'}, 5: {'description': 'Объединить два списка в один, удалив повторяющиеся элементы.', 'example': '[1, 2, 3] [3, 4, 5] → [1, 2, 3, 4, 5]', 'type': 'lists'}, 6: {'description': 'Проверить, отсортирован ли список по возрастанию.', 'example': '\\n[1, 2, 3] → ✅ Список сортирован\\n[3, 2, 1] → ❌ Список не сортирован', 'type': 'list_of_numbers'}, 7: {'description': 'Вставить число в список на позицию, равную его значению.', 'example': '[10, 20, 30]; 2 → [10, 20, 2, 30]', 'type': 'list_and_number'}, 8: {'description': 'Удалить первое вхождение минимального элемента из списка.', 'example': '[5, 3, 2, 8, 2, 10] → [5, 3, 8, 2, 10]', 'type': 'list_of_numbers'}, 9: {'description': 'Сложить стоящие по соседству числа.', 'example': '[1, 2, 3, 4] → [2, 4, 6, 3];\\nобъяснение: [2, 1+3=4, 2+4=6, 3]', 'type': 'list_of_numbers'}, 10: {'description': 'Переместить нули в конец списка.', 'example': '[0, 1, 0, 3, 12] → [1, 3, 12, 0, 0]', 'type': 'list_of_numbers'}, 11: {'description': 'Объединить списки в кортеж.', 'example': \"['Alice', 'Bob', 'Charlie'] [25, 30, 28] → [(Alice, 25), (Bob, 30), (Charlie, 28)]\", 'type': 'words_and_numbers'}, 12: {'description': 'Найти элемент списка, который встречается чаще всего.', 'example': \"['apple', 'banana', 'apple', 'orange', 'banana', 'apple'] → apple\", 'type': 'list_of_words'}, 13: {'description': 'Разбить список на подсписки заданной длины.', 'example': '[1, 2, 3, 4, 5, 6, 7]; 3 → [[1, 2, 3], [4, 5, 6], [7]]', 'type': 'list_and_number'}, 14: {'description': 'Проверить наличие дубликатов.', 'example': '[1, 2, 3, 2] → ✅ Повторы есть; ❌ Повторов нету', 'type': 'list_of_numbers'}, 15: {'description': 'Найти среднее арифметическое.', 'example': '[1, 2, 3, 4, 5] → 3.0', 'type': 'list_of_numbers'}, 16: {'description': 'Удалить минимальный элемент.', 'example': '[5, 2, 8, 2, 1] → [5, 2, 8, 2]', 'type': 'list_of_numbers'}, 17: {'description': 'Сдвинуть элементы вправо.', 'example': '[1, 2, 3, 4, 5]; 6 → [4, 5, 1, 2, 3]', 'type': 'list_and_number'}, 18: {'description': 'Посчитать уникальные элементы .', 'example': '[1, 2, 2, 3, 4, 4, 4, 5] → 5', 'type': 'list_of_numbers'}, 19: {'description': 'Проверить на палиндром .', 'example': \"['radar'] → ✅ Слово палиндром; ❌ Слово не палиндром\", 'type': 'list_of_words'}, 20: {'description': 'Найти пару с заданной суммой.', 'example': '[1, 2, 3, 4, 5]; 5 → [(1, 4), (2, 3)]', 'type': 'list_and_number'}, 21: {'description': 'Сгруппировать по длине строки.', 'example': \"['apple', 'bat', 'car', 'ant', 'orange'] → {5: ['apple'], 3: ['bat', 'car', 'ant'], 6: ['orange']}\", 'type': 'list_of_words'}, 22: {'description': 'Объединить списки без повторений и сортировкой.', 'example': '[3, 2, 1] [2, 4, 5] [5, 6, 3] → [1, 2, 3, 4, 5, 6]', 'type': 'list_of_numbers'}, 23: {'description': 'Найти самый длинный подряд идущий подсписок.', 'example': '[1, 1, 2, 2, 2, 3, 3, 1, 1, 1, 1] → [1, 1, 1, 1]', 'type': 'lists'}, 24: {'description': 'Найти элемент, встречающийся ровно один раз.', 'example': '[4, 3, 2, 4, 1, 3, 2] → 1', 'type': 'lists'}, 25: {'description': 'Найти все элементы в порядке возрастания частоты.', 'example': \"['a', 'b', 'c', 'a', 'b', 'a'] → ['c', 'b', 'b', 'a', 'a', 'a']\", 'type': 'list_of_words'}, 26: {'description': 'Проверить, является ли список \"пилообразным\".', 'example': '[1, 3, 2, 4, 1] → ✅ Список пилообразный; ❌ Список не пилообразный', 'type': 'lists'}, 27: {'description': 'Разделить на чётные и нечётные.', 'example': '[1, 2, 3, 4, 5, 6] → [2, 4, 6, 1, 3, 5]', 'type': 'lists'}, 28: {'description': 'Найти ближайшее число.', 'example': '[10, 3, 8, 15]; 7 → 8', 'type': 'list_and_number'}, 29: {'description': 'Найти все пары с разностью.', 'example': '[1, 3, 5, 7]; 2 → [(1, 3), (3, 5), (5, 7)]', 'type': 'list_and_number'}, 30: {'description': 'Сгруппировать по первому символу.', 'example': \"['apple', 'ant', 'banana', 'bee', 'cat'] → {'a': ['apple', 'ant'], 'b': ['banana', 'bee'], 'c': ['cat']}\", 'type': 'list_of_words'}, 31: {'description': 'Найти все чётные числа в списке.', 'example': '[1, 2, 3, 4, 5, 6] → [2, 4, 6]', 'type': 'list_of_numbers'}, 32: {'description': 'Проверить, все ли элементы списка положительные.', 'example': '[1, 2, 3] → ✅ Все положительные\\n[-1, 2, 3] → ❌ Есть отрицательные', 'type': 'list_of_numbers'}, 33: {'description': 'Найти самое длинное слово в списке.', 'example': \"['cat', 'elephant', 'dog'] → elephant\", 'type': 'list_of_words'}, 34: {'description': 'Создать список квадратов чисел.', 'example': '[1, 2, 3, 4] → [1, 4, 9, 16]', 'type': 'list_of_numbers'}, 35: {'description': 'Объединить два списка в один, чередуя элементы.', 'example': '[1, 2, 3] [10, 20] → [1, 10, 2, 20, 3]', 'type': 'lists'}, 36: {'description': 'Найти все гласные буквы в слове.', 'example': \"'hello' → ['e', 'o']\", 'type': 'word'}, 37: {'description': 'Проверить, является ли число простым.', 'example': '7 → ✅ Простое число\\n8 → ❌ Не простое число', 'type': 'number'}, 38: {'description': 'Отсортировать слова по алфавиту.', 'example': \"['banana', 'apple', 'cherry'] → ['apple', 'banana', 'cherry']\", 'type': 'list_of_words'}, 39: {'description': 'Найти сумму всех элементов вложенных списков.', 'example': '[1, [2, 3], [4, [5]]] → 15', 'type': 'lists'}, 40: {'description': 'Удалить все отрицательные числа из списка.', 'example': '[-1, 2, -3, 4, 0] → [2, 4, 0]', 'type': 'list_of_numbers'}, 41: {'description': 'Найти все согласные буквы в слове.', 'example': \"['hello'] → ['h', 'l', 'l']\", 'type': 'list_of_words'}, 42: {'description': 'Проверить, является ли строка анаграммой другой строки.', 'example': \"['listen', 'silent'] → ✅ Анаграммы\\n['hello', 'world'] → ❌ Не анаграммы\", 'type': 'lists'}, 43: {'description': 'Найти факториал числа.', 'example': '[5] → 120', 'type': 'list_of_numbers'}, 44: {'description': 'Заменить все гласные в слове на символ \"*\".', 'example': \"['programming'] → pr*gr*mm*ng\", 'type': 'list_of_words'}, 45: {'description': 'Найти НОД (наибольший общий делитель) двух чисел.', 'example': '[48, 18] → 6', 'type': 'lists'}, 46: {'description': 'Проверить, состоит ли строка только из цифр.', 'example': \"['12345'] → ✅ Только цифры\\n['abc123'] → ❌ Содержит нецифровые символы\", 'type': 'list_of_words'}, 47: {'description': 'Найти наименьшее общее кратное (НОК) двух чисел.', 'example': '[12, 18] → 36', 'type': 'lists'}, 48: {'description': 'Подсчитать количество слов в строке.', 'example': \"['Hello world from Python'] → 4\", 'type': 'list_of_words'}, 49: {'description': 'Удалить все дубликаты из вложенного списка, сохранив порядок.', 'example': '[1, [2, 2], [3, [1, 1]]] → [1, [2], [3, [1]]]', 'type': 'lists'}, 50: {'description': 'Проверить, является ли список симметричным (зеркальным).', 'example': '[1, 2, 3, 2, 1] → ✅ Симметричный\\n[1, 2, 3, 4] → ❌ Не симметричный', 'type': 'list_of_numbers'}, 51: {'description': 'Проверить, все ли слова в списке начинаются с заглавной буквы.', 'example': \"['Apple', 'Banana', 'Cherry'] → ✅ Все с заглавной\\n['apple', 'Banana'] → ❌ Не все с заглавной\", 'type': 'list_of_words'}, 52: {'description': 'Найти произведение всех положительных чисел в списке.', 'example': '[2, -3, 4, 0, 5] → 40', 'type': 'list_of_numbers'}, 53: {'description': 'Объединить два списка в один, чередуя элементы до конца самого длинного.', 'example': '[1, 2] [10, 20, 30, 40] → [1, 10, 2, 20, 30, 40]', 'type': 'lists'}, 54: {'description': 'Заменить каждое число в списке на его абсолютное значение.', 'example': '[-1, 2, -3, 4] → [1, 2, 3, 4]', 'type': 'list_of_numbers'}, 55: {'description': 'Проверить, является ли список строго возрастающим (без равных элементов).', 'example': '[1, 2, 3, 4, 6] → ✅ Строго возрастает\\n[1, 2, 2, 3] → ❌ Не строго возрастает', 'type': 'list_of_numbers'}, 56: {'description': 'Найти второй по величине элемент в списке.', 'example': '[10, 5, 8, 12, 3] → 10', 'type': 'list_of_numbers'}, 57: {'description': 'Подсчитать, сколько раз каждый элемент встречается в списке.', 'example': '[1, 2, 2, 3, 1, 1] → {1: 3, 2: 2, 3: 1}', 'type': 'list_of_numbers'}, 58: {'description': 'Поменять местами минимальный и максимальный элементы списка.', 'example': '[4, 1, 7, 3] → [4, 7, 1, 3]', 'type': 'list_of_numbers'}, 59: {'description': 'Удалить из списка все элементы, которые встречаются более одного раза.', 'example': '[1, 2, 2, 3, 4, 4, 5] → [1, 3, 5]', 'type': 'list_of_numbers'}, 60: {'description': 'Найти общие элементы двух списков без повторений.', 'example': '[1, 2, 3, 4] [3, 4, 4, 5, 6] → [3, 4]', 'type': 'lists'}, 61: {'description': 'Разделить список на элементы с чётным и нечётным индексом.', 'example': '[10, 20, 30, 40, 50] → [[10, 30, 50], [20, 40]]', 'type': 'list_of_numbers'}, 62: {'description': 'Найти первый элемент, который повторяется.', 'example': '[3, 1, 4, 2, 1, 5, 3] → 3', 'type': 'list_of_numbers'}, 63: {'description': 'Заменить каждый элемент списка на разницу с предыдущим.', 'example': '[10, 13, 15, 20] → [10, 3, 2, 5]', 'type': 'list_of_numbers'}, 64: {'description': 'Проверить, можно ли из слова составить другое слово, используя его буквы.', 'example': \"['listen', 'silent'] → ✅ Можно\\n['cat', 'cast'] → ❌ Нельзя\", 'type': 'lists'}, 65: {'description': 'Найти количество гласных в каждом слове списка.', 'example': \"['apple', 'sky', 'orange'] → [2, 0, 3]\", 'type': 'list_of_words'}, 66: {'description': 'Удалить из строки все пробелы и знаки препинания.', 'example': \"['Hello, world!'] → Helloworld\", 'type': 'list_of_words'}, 67: {'description': 'Найти все числа, которые делятся на заданное число без остатка.', 'example': '[3, 5, 10, 12, 15]; 5 → [5, 10, 15]', 'type': 'list_and_number'}, 68: {'description': 'Преобразовать список чисел в строку через запятую.', 'example': '[1, 2, 3, 4] → \"1,2,3,4\"', 'type': 'list_of_numbers'}, 69: {'description': 'Разбить слово на пары соседних букв.', 'example': \"['python'] → ['py', 'th', 'on']\", 'type': 'list_of_words'}, 70: {'description': 'Найти сумму цифр каждого числа в списке.', 'example': '[12, 305, 47] → [3, 8, 11]', 'type': 'list_of_numbers'}, 71: {'description': 'Проверить, чередуются ли чётные и нечётные числа в списке.', 'example': '[2, 3, 4, 5, 6] → ✅ Чередуются\\n[2, 4, 5, 7] → ❌ Не чередуются', 'type': 'list_of_numbers'}, 72: {'description': 'Найти индекс последнего вхождения заданного элемента.', 'example': '[1, 2, 3, 2, 4]; 2 → 3', 'type': 'list_and_number'}, 73: {'description': 'Сделать список циклическим: последний элемент поставить в начало.', 'example': '[1, 2, 3, 4] → [4, 1, 2, 3]', 'type': 'list_of_numbers'}, 74: {'description': 'Удвоить все элементы списка, которые меньше заданного числа.', 'example': '[1, 5, 2, 8, 3]; 4 → [2, 5, 4, 8, 6]', 'type': 'list_and_number'}, 75: {'description': 'Найти самую короткую строку в списке.', 'example': \"['elephant', 'cat', 'dog', 'a'] → a\", 'type': 'list_of_words'}, 76: {'description': 'Проверить, есть ли в слове хотя бы одна повторяющаяся буква.', 'example': \"['letter'] → ✅ Есть\\n['dog'] → ❌ Нет\", 'type': 'list_of_words'}, 77: {'description': 'Заменить повторяющиеся элементы списка на строку \"dup\", начиная со второго появления.', 'example': \"[1, 2, 1, 3, 2, 2] → [1, 2, 'dup', 3, 'dup', 'dup']\", 'type': 'list_of_numbers'}, 78: {'description': 'Найти все слова, длина которых больше среднего.', 'example': \"['hi', 'python', 'cat', 'elephant'] → ['python', 'elephant']\", 'type': 'list_of_words'}, 79: {'description': 'Сжать список: заменить подряд идущие одинаковые элементы на пары (элемент, количество).', 'example': '[1, 1, 1, 2, 2, 3] → [(1, 3), (2, 2), (3, 1)]', 'type': 'list_of_numbers'}, 80: {'description': 'Восстановить список из пар (элемент, количество).', 'example': '[(1, 3), (2, 2), (3, 1)] → [1, 1, 1, 2, 2, 3]', 'type': 'lists'}, 81: {'description': 'Найти все пары соседних элементов списка — каждый элемент, кроме последнего, образует пару со следующим за ним по порядку.', 'example': '[1, 2, 3, 4] → [(1, 2), (2, 3), (3, 4)]', 'type': 'list_of_numbers'}, 82: {'description': 'Проверить, является ли список арифметической прогрессией.', 'example': '[2, 4, 6, 8] → ✅ Да\\n[1, 2, 4, 8] → ❌ Нет', 'type': 'list_of_numbers'}, 83: {'description': 'Найти слово с наибольшим количеством гласных.', 'example': \"['sky', 'banana', 'apple'] → banana\", 'type': 'list_of_words'}, 84: {'description': 'Удалить из списка все элементы, стоящие на нечётных позициях.', 'example': '[10, 20, 30, 40, 50, 60] → [10, 30, 50]', 'type': 'list_of_numbers'}, 85: {'description': 'Перевернуть буквы в каждом слове списка.', 'example': \"['cat', 'python'] → ['tac', 'nohtyp']\", 'type': 'list_of_words'}, 86: {'description': 'Найти число, у которого самая большая сумма цифр.', 'example': '[12, 99, 123, 40] → 99', 'type': 'list_of_numbers'}, 87: {'description': 'Проверить, одинаково ли количество чётных и нечётных чисел в списке.', 'example': '[1, 2, 3, 4] → ✅ Одинаково\\n[1, 2, 4, 6] → ❌ Не одинаково', 'type': 'list_of_numbers'}, 88: {'description': 'Сгруппировать числа по остатку от деления на 3.', 'example': '[1, 2, 3, 4, 5, 6, 7] → {0: [3, 6], 1: [1, 4, 7], 2: [2, 5]}', 'type': 'list_of_numbers'}, 89: {'description': 'Найти все префиксы слова.', 'example': \"['code'] → ['c', 'co', 'cod', 'code']\", 'type': 'list_of_words'}, 90: {'description': 'Найти все суффиксы слова.', 'example': \"['code'] → ['code', 'ode', 'de', 'e']\", 'type': 'list_of_words'}, 91: {'description': 'Проверить, можно ли разбить список на две части с одинаковой суммой.', 'example': '[1, 2, 3, 4] → ✅ Можно\\n[1, 2, 3, 5] → ❌ Нельзя', 'type': 'list_of_numbers'}, 92: {'description': 'Найти зеркальные пары в списке.', 'example': '[1, 2, 3, 2, 1] → [(1, 1), (2, 2)]', 'type': 'list_of_numbers'}, 93: {'description': 'Преобразовать список слов в словарь вида {слово: длина}.', 'example': \"['cat', 'elephant', 'dog'] → {'cat': 3, 'elephant': 8, 'dog': 3}\", 'type': 'list_of_words'}, 94: {'description': 'Найти все элементы, которые больше обоих своих соседей.', 'example': '[1, 5, 2, 7, 3, 6, 1] → [5, 7, 6]', 'type': 'list_of_numbers'}, 95: {'description': 'Заменить каждое слово в списке на его первую и последнюю букву.', 'example': \"['apple', 'banana', 'cat'] → ['ae', 'ba', 'ct']\", 'type': 'list_of_words'}, 96: {'description': 'Удалить подряд идущие дубликаты, оставив по одному.', 'example': '[1, 1, 2, 2, 2, 3, 1, 1] → [1, 2, 3, 1]', 'type': 'list_of_numbers'}, 97: {'description': 'Найти длину самой длинной серии одинаковых элементов подряд.', 'example': '[1, 1, 2, 2, 2, 3, 3] → 3', 'type': 'list_of_numbers'}, 98: {'description': 'Проверить, можно ли получить список, удалив ровно один элемент, чтобы он стал возрастающим.', 'example': '[1, 2, 5, 3, 4] → ✅ Можно\\n[5, 1, 2, 0] → ❌ Нельзя', 'type': 'list_of_numbers'}, 99: {'description': 'Построить лестницу из чисел: первый подсписок длины 1, второй — длины 2 и так далее.', 'example': '[1, 2, 3, 4, 5, 6] → [[1], [2, 3], [4, 5, 6]]', 'type': 'list_of_numbers'}, 100: {'description': 'Найти все элементы, которые встречаются в списке более одного раза, без повторов в ответе.', 'example': '[1, 2, 3, 2, 4, 1, 1] → [1, 2]', 'type': 'list_of_numbers'}}",
-          "lineno": 17
+          "value_repr": "{1: {'description': 'Удалить дубликаты из списка, сохранив порядок.', 'example': '[3, 2, 2, 1, 5, 3] → [3, 2, 1, 5]', 'type': 'list_of_numbers'}, 2: {'description': 'Найти сумму всех чётных чисел в списке.', 'example': '[1, 2, 3, 4, 5, 6] → 12', 'type': 'list_of_numbers'}, 3: {'description': 'Развернуть список (в порядке обратном исходному).', 'example': '[1, 2, 3, 4, 5] → [5, 4, 3, 2, 1]', 'type': 'list_of_numbers'}, 4: {'description': 'Найти максимальный элемент в списке, не используя max()', 'example': '[10, 3, 5, 6, 9, 8] → 10', 'type': 'list_of_numbers'}, 5: {'description': 'Объединить два списка в один, удалив повторяющиеся элементы.', 'example': '[1, 2, 3] [3, 4, 5] → [1, 2, 3, 4, 5]', 'type': 'lists'}, 6: {'description': 'Проверить, отсортирован ли список по возрастанию.', 'example': '\\n[1, 2, 3] → ✅ Список сортирован\\n[3, 2, 1] → ❌ Список не сортирован', 'type': 'list_of_numbers'}, 7: {'description': 'Вставить число в список на позицию, равную его значению.', 'example': '[10, 20, 30]; 2 → [10, 20, 2, 30]', 'type': 'list_and_number'}, 8: {'description': 'Удалить первое вхождение минимального элемента из списка.', 'example': '[5, 3, 2, 8, 2, 10] → [5, 3, 8, 2, 10]', 'type': 'list_of_numbers'}, 9: {'description': 'Сложить стоящие по соседству числа.', 'example': '[1, 2, 3, 4] → [2, 4, 6, 3];\\nобъяснение: [2, 1+3=4, 2+4=6, 3]', 'type': 'list_of_numbers'}, 10: {'description': 'Переместить нули в конец списка.', 'example': '[0, 1, 0, 3, 12] → [1, 3, 12, 0, 0]', 'type': 'list_of_numbers'}, 11: {'description': 'Объединить списки в кортеж.', 'example': \"['Alice', 'Bob', 'Charlie'] [25, 30, 28] → [(Alice, 25), (Bob, 30), (Charlie, 28)]\", 'type': 'words_and_numbers'}, 12: {'description': 'Найти элемент списка, который встречается чаще всего.', 'example': \"['apple', 'banana', 'apple', 'orange', 'banana', 'apple'] → apple\", 'type': 'list_of_words'}, 13: {'description': 'Разбить список на подсписки заданной длины.', 'example': '[1, 2, 3, 4, 5, 6, 7]; 3 → [[1, 2, 3], [4, 5, 6], [7]]', 'type': 'list_and_number'}, 14: {'description': 'Проверить наличие дубликатов.', 'example': '[1, 2, 3, 2] → ✅ Повторы есть; ❌ Повторов нету', 'type': 'list_of_numbers'}, 15: {'description': 'Найти среднее арифметическое.', 'example': '[1, 2, 3, 4, 5] → 3.0', 'type': 'list_of_numbers'}, 16: {'description': 'Удалить минимальный элемент.', 'example': '[5, 2, 8, 2, 1] → [5, 2, 8, 2]', 'type': 'list_of_numbers'}, 17: {'description': 'Сдвинуть элементы вправо.', 'example': '[1, 2, 3, 4, 5]; 6 → [4, 5, 1, 2, 3]', 'type': 'list_and_number'}, 18: {'description': 'Посчитать уникальные элементы .', 'example': '[1, 2, 2, 3, 4, 4, 4, 5] → 5', 'type': 'list_of_numbers'}, 19: {'description': 'Проверить на палиндром .', 'example': \"['radar'] → ✅ Слово палиндром; ❌ Слово не палиндром\", 'type': 'list_of_words'}, 20: {'description': 'Найти пару с заданной суммой.', 'example': '[1, 2, 3, 4, 5]; 5 → [(1, 4), (2, 3)]', 'type': 'list_and_number'}, 21: {'description': 'Сгруппировать по длине строки.', 'example': \"['apple', 'bat', 'car', 'ant', 'orange'] → {5: ['apple'], 3: ['bat', 'car', 'ant'], 6: ['orange']}\", 'type': 'list_of_words'}, 22: {'description': 'Объединить списки без повторений и сортировкой.', 'example': '[3, 2, 1] [2, 4, 5] [5, 6, 3] → [1, 2, 3, 4, 5, 6]', 'type': 'list_of_numbers'}, 23: {'description': 'Найти самый длинный подряд идущий подсписок.', 'example': '[1, 1, 2, 2, 2, 3, 3, 1, 1, 1, 1] → [1, 1, 1, 1]', 'type': 'lists'}, 24: {'description': 'Найти элемент, встречающийся ровно один раз.', 'example': '[4, 3, 2, 4, 1, 3, 2] → 1', 'type': 'lists'}, 25: {'description': 'Найти все элементы в порядке возрастания частоты.', 'example': \"['a', 'b', 'c', 'a', 'b', 'a'] → ['c', 'b', 'b', 'a', 'a', 'a']\", 'type': 'list_of_words'}, 26: {'description': 'Проверить, является ли список \"пилообразным\".', 'example': '[1, 3, 2, 4, 1] → ✅ Список пилообразный; ❌ Список не пилообразный', 'type': 'lists'}, 27: {'description': 'Разделить на чётные и нечётные.', 'example': '[1, 2, 3, 4, 5, 6] → [2, 4, 6, 1, 3, 5]', 'type': 'lists'}, 28: {'description': 'Найти ближайшее число.', 'example': '[10, 3, 8, 15]; 7 → 8', 'type': 'list_and_number'}, 29: {'description': 'Найти все пары с разностью.', 'example': '[1, 3, 5, 7]; 2 → [(1, 3), (3, 5), (5, 7)]', 'type': 'list_and_number'}, 30: {'description': 'Сгруппировать по первому символу.', 'example': \"['apple', 'ant', 'banana', 'bee', 'cat'] → {'a': ['apple', 'ant'], 'b': ['banana', 'bee'], 'c': ['cat']}\", 'type': 'list_of_words'}, 31: {'description': 'Найти все чётные числа в списке.', 'example': '[1, 2, 3, 4, 5, 6] → [2, 4, 6]', 'type': 'list_of_numbers'}, 32: {'description': 'Проверить, все ли элементы списка положительные.', 'example': '[1, 2, 3] → ✅ Все положительные\\n[-1, 2, 3] → ❌ Есть отрицательные', 'type': 'list_of_numbers'}, 33: {'description': 'Найти самое длинное слово в списке.', 'example': \"['cat', 'elephant', 'dog'] → elephant\", 'type': 'list_of_words'}, 34: {'description': 'Создать список квадратов чисел.', 'example': '[1, 2, 3, 4] → [1, 4, 9, 16]', 'type': 'list_of_numbers'}, 35: {'description': 'Объединить два списка в один, чередуя элементы.', 'example': '[1, 2, 3] [10, 20] → [1, 10, 2, 20, 3]', 'type': 'lists'}, 36: {'description': 'Найти все гласные буквы в слове.', 'example': \"'hello' → ['e', 'o']\", 'type': 'word'}, 37: {'description': 'Проверить, является ли число простым.', 'example': '7 → ✅ Простое число\\n8 → ❌ Не простое число', 'type': 'number'}, 38: {'description': 'Отсортировать слова по алфавиту.', 'example': \"['banana', 'apple', 'cherry'] → ['apple', 'banana', 'cherry']\", 'type': 'list_of_words'}, 39: {'description': 'Найти сумму всех элементов вложенных списков.', 'example': '[1, [2, 3], [4, [5]]] → 15', 'type': 'lists'}, 40: {'description': 'Удалить все отрицательные числа из списка.', 'example': '[-1, 2, -3, 4, 0] → [2, 4, 0]', 'type': 'list_of_numbers'}, 41: {'description': 'Найти все согласные буквы в слове.', 'example': \"['hello'] → ['h', 'l', 'l']\", 'type': 'list_of_words'}, 42: {'description': 'Проверить, является ли строка анаграммой другой строки.', 'example': \"['listen', 'silent'] → ✅ Анаграммы\\n['hello', 'world'] → ❌ Не анаграммы\", 'type': 'lists'}, 43: {'description': 'Найти факториал числа.', 'example': '[5] → 120', 'type': 'list_of_numbers'}, 44: {'description': 'Заменить все гласные в слове на символ \"*\".', 'example': \"['programming'] → pr*gr*mm*ng\", 'type': 'list_of_words'}, 45: {'description': 'Найти НОД (наибольший общий делитель) двух чисел.', 'example': '[48, 18] → 6', 'type': 'lists'}, 46: {'description': 'Проверить, состоит ли строка только из цифр.', 'example': \"['12345'] → ✅ Только цифры\\n['abc123'] → ❌ Содержит нецифровые символы\", 'type': 'list_of_words'}, 47: {'description': 'Найти наименьшее общее кратное (НОК) двух чисел.', 'example': '[12, 18] → 36', 'type': 'lists'}, 48: {'description': 'Подсчитать количество слов в строке.', 'example': \"['Hello world from Python'] → 4\", 'type': 'list_of_words'}, 49: {'description': 'Удалить все дубликаты из вложенного списка, сохранив порядок.', 'example': '[1, [2, 2], [3, [1, 1]]] → [1, [2], [3, [1]]]', 'type': 'lists'}, 50: {'description': 'Проверить, является ли список симметричным (зеркальным).', 'example': '[1, 2, 3, 2, 1] → ✅ Симметричный\\n[1, 2, 3, 4] → ❌ Не симметричный', 'type': 'list_of_numbers'}, 51: {'description': 'Проверить, все ли слова в списке начинаются с заглавной буквы.', 'example': \"['Apple', 'Banana', 'Cherry'] → ✅ Все с заглавной\\n['apple', 'Banana'] → ❌ Не все с заглавной\", 'type': 'list_of_words'}, 52: {'description': 'Найти произведение всех положительных чисел в списке.', 'example': '[2, -3, 4, 0, 5] → 40', 'type': 'list_of_numbers'}, 53: {'description': 'Объединить два списка в один, чередуя элементы до конца самого длинного.', 'example': '[1, 2] [10, 20, 30, 40] → [1, 10, 2, 20, 30, 40]', 'type': 'lists'}, 54: {'description': 'Заменить каждое число в списке на его абсолютное значение.', 'example': '[-1, 2, -3, 4] → [1, 2, 3, 4]', 'type': 'list_of_numbers'}, 55: {'description': 'Проверить, является ли список строго возрастающим (без равных элементов).', 'example': '[1, 2, 3, 4, 6] → ✅ Строго возрастает\\n[1, 2, 2, 3] → ❌ Не строго возрастает', 'type': 'list_of_numbers'}, 56: {'description': 'Найти второй по величине элемент в списке.', 'example': '[10, 5, 8, 12, 3] → 10', 'type': 'list_of_numbers'}, 57: {'description': 'Подсчитать, сколько раз каждый элемент встречается в списке.', 'example': '[1, 2, 2, 3, 1, 1] → {1: 3, 2: 2, 3: 1}', 'type': 'list_of_numbers'}, 58: {'description': 'Поменять местами минимальный и максимальный элементы списка.', 'example': '[4, 1, 7, 3] → [4, 7, 1, 3]', 'type': 'list_of_numbers'}, 59: {'description': 'Удалить из списка все элементы, которые встречаются более одного раза.', 'example': '[1, 2, 2, 3, 4, 4, 5] → [1, 3, 5]', 'type': 'list_of_numbers'}, 60: {'description': 'Найти общие элементы двух списков без повторений.', 'example': '[1, 2, 3, 4] [3, 4, 4, 5, 6] → [3, 4]', 'type': 'lists'}, 61: {'description': 'Разделить список на элементы с чётным и нечётным индексом.', 'example': '[10, 20, 30, 40, 50] → [[10, 30, 50], [20, 40]]', 'type': 'list_of_numbers'}, 62: {'description': 'Найти первый элемент, который повторяется.', 'example': '[3, 1, 4, 2, 1, 5, 3] → 3', 'type': 'list_of_numbers'}, 63: {'description': 'Заменить каждый элемент списка на разницу с предыдущим.', 'example': '[10, 13, 15, 20] → [10, 3, 2, 5]', 'type': 'list_of_numbers'}, 64: {'description': 'Проверить, можно ли из слова составить другое слово, используя его буквы.', 'example': \"['listen', 'silent'] → ✅ Можно\\n['cat', 'cast'] → ❌ Нельзя\", 'type': 'lists'}, 65: {'description': 'Найти количество гласных в каждом слове списка.', 'example': \"['apple', 'sky', 'orange'] → [2, 0, 3]\", 'type': 'list_of_words'}, 66: {'description': 'Удалить из строки все пробелы и знаки препинания.', 'example': \"['Hello, world!'] → Helloworld\", 'type': 'list_of_words'}, 67: {'description': 'Найти все числа, которые делятся на заданное число без остатка.', 'example': '[3, 5, 10, 12, 15]; 5 → [5, 10, 15]', 'type': 'list_and_number'}, 68: {'description': 'Преобразовать список чисел в строку через запятую.', 'example': '[1, 2, 3, 4] → \"1,2,3,4\"', 'type': 'list_of_numbers'}, 69: {'description': 'Разбить слово на пары соседних букв.', 'example': \"['python'] → ['py', 'th', 'on']\", 'type': 'list_of_words'}, 70: {'description': 'Найти сумму цифр каждого числа в списке.', 'example': '[12, 305, 47] → [3, 8, 11]', 'type': 'list_of_numbers'}, 71: {'description': 'Проверить, чередуются ли чётные и нечётные числа в списке.', 'example': '[2, 3, 4, 5, 6] → ✅ Чередуются\\n[2, 4, 5, 7] → ❌ Не чередуются', 'type': 'list_of_numbers'}, 72: {'description': 'Найти индекс последнего вхождения заданного элемента.', 'example': '[1, 2, 3, 2, 4]; 2 → 3', 'type': 'list_and_number'}, 73: {'description': 'Сделать список циклическим: последний элемент поставить в начало.', 'example': '[1, 2, 3, 4] → [4, 1, 2, 3]', 'type': 'list_of_numbers'}, 74: {'description': 'Удвоить все элементы списка, которые меньше заданного числа.', 'example': '[1, 5, 2, 8, 3]; 4 → [2, 5, 4, 8, 6]', 'type': 'list_and_number'}, 75: {'description': 'Найти самую короткую строку в списке.', 'example': \"['elephant', 'cat', 'dog', 'a'] → a\", 'type': 'list_of_words'}, 76: {'description': 'Проверить, есть ли в слове хотя бы одна повторяющаяся буква.', 'example': \"['letter'] → ✅ Есть\\n['dog'] → ❌ Нет\", 'type': 'list_of_words'}, 77: {'description': 'Заменить повторяющиеся элементы списка на строку \"dup\", начиная со второго появления.', 'example': \"[1, 2, 1, 3, 2, 2] → [1, 2, 'dup', 3, 'dup', 'dup']\", 'type': 'list_of_numbers'}, 78: {'description': 'Найти все слова, длина которых больше среднего.', 'example': \"['hi', 'python', 'cat', 'elephant'] → ['python', 'elephant']\", 'type': 'list_of_words'}, 79: {'description': 'Сжать список: заменить подряд идущие одинаковые элементы на пары (элемент, количество).', 'example': '[1, 1, 1, 2, 2, 3] → [(1, 3), (2, 2), (3, 1)]', 'type': 'list_of_numbers'}, 80: {'description': 'Восстановить список из пар (элемент, количество).', 'example': '[(1, 3), (2, 2), (3, 1)] → [1, 1, 1, 2, 2, 3]', 'type': 'lists'}, 81: {'description': 'Найти все пары соседних элементов списка — каждый элемент, кроме последнего, образует пару со следующим за ним по порядку.', 'example': '[1, 2, 3, 4] → [(1, 2), (2, 3), (3, 4)]', 'type': 'list_of_numbers'}, 82: {'description': 'Проверить, является ли список арифметической прогрессией.', 'example': '[2, 4, 6, 8] → ✅ Да\\n[1, 2, 4, 8] → ❌ Нет', 'type': 'list_of_numbers'}, 83: {'description': 'Найти слово с наибольшим количеством гласных.', 'example': \"['sky', 'banana', 'apple'] → banana\", 'type': 'list_of_words'}, 84: {'description': 'Удалить из списка все элементы, стоящие на нечётных позициях.', 'example': '[10, 20, 30, 40, 50, 60] → [10, 30, 50]', 'type': 'list_of_numbers'}, 85: {'description': 'Перевернуть буквы в каждом слове списка.', 'example': \"['cat', 'python'] → ['tac', 'nohtyp']\", 'type': 'list_of_words'}, 86: {'description': 'Найти число, у которого самая большая сумма цифр.', 'example': '[12, 99, 123, 40] → 99', 'type': 'list_of_numbers'}, 87: {'description': 'Проверить, одинаково ли количество чётных и нечётных чисел в списке.', 'example': '[1, 2, 3, 4] → ✅ Одинаково\\n[1, 2, 4, 6] → ❌ Не одинаково', 'type': 'list_of_numbers'}, 88: {'description': 'Сгруппировать числа по остатку от деления на 3.', 'example': '[1, 2, 3, 4, 5, 6, 7] → {0: [3, 6], 1: [1, 4, 7], 2: [2, 5]}', 'type': 'list_of_numbers'}, 89: {'description': 'Найти все префиксы слова.', 'example': \"['code'] → ['c', 'co', 'cod', 'code']\", 'type': 'list_of_words'}, 90: {'description': 'Найти все суффиксы слова.', 'example': \"['code'] → ['code', 'ode', 'de', 'e']\", 'type': 'list_of_words'}, 91: {'description': 'Проверить, можно ли разбить список на две части с одинаковой суммой.', 'example': '[1, 2, 3, 4] → ✅ Можно\\n[1, 2, 3, 5] → ❌ Нельзя', 'type': 'list_of_numbers'}, 92: {'description': 'Найти зеркальные пары в списке.', 'example': '[1, 2, 3, 2, 1] → [(1, 1), (2, 2)]', 'type': 'list_of_numbers'}, 93: {'description': 'Преобразовать список слов в словарь вида {слово: длина}.', 'example': \"['cat', 'elephant', 'dog'] → {'cat': 3, 'elephant': 8, 'dog': 3}\", 'type': 'list_of_words'}, 94: {'description': 'Найти все элементы, которые больше обоих своих соседей.', 'example': '[1, 5, 2, 7, 3, 6, 1] → [5, 7, 6]', 'type': 'list_of_numbers'}, 95: {'description': 'Заменить каждое слово в списке на его первую и последнюю букву.', 'example': \"['apple', 'banana', 'cat'] → ['ae', 'ba', 'ct']\", 'type': 'list_of_words'}, 96: {'description': 'Удалить подряд идущие дубликаты, оставив по одному.', 'example': '[1, 1, 2, 2, 2, 3, 1, 1] → [1, 2, 3, 1]', 'type': 'list_of_numbers'}, 97: {'description': 'Найти длину самой длинной серии одинаковых элементов подряд.', 'example': '[1, 1, 2, 2, 2, 3, 3] → 3', 'type': 'list_of_numbers'}, 98: {'description': 'Проверить, можно ли получить список, удалив ровно один элемент, чтобы он стал возрастающим.', 'example': '[1, 2, 5, 3, 4] → ✅ Можно\\n[5, 1, 2, 0] → ❌ Нельзя', 'type': 'list_of_numbers'}, 99: {'description': 'Построить лестницу из чисел: первый подсписок длины 1, второй — длины 2 и так далее.', 'example': '[1, 2, 3, 4, 5, 6] → [[1], [2, 3], [4, 5, 6]]', 'type': 'list_of_numbers'}, 100: {'description': 'Найти все элементы, которые встречаются в списке более одного раза, без повторов в ответе.', 'example': '[1, 2, 3, 2, 4, 1, 1] → [1, 2]', 'type': 'list_of_numbers'}, 101: {'description': 'Найти разницу между максимальным и минимальным элементами списка.', 'example': '[3, 7, 1, 9, 4] → 8', 'type': 'list_of_numbers'}, 102: {'description': 'Посчитать количество положительных чисел в списке (ноль — не положительное).', 'example': '[-2, 5, 0, 3, -1, 7] → 3', 'type': 'list_of_numbers'}, 103: {'description': 'Заменить все отрицательные числа в списке нулями.', 'example': '[-1, 2, -3, 0, 5] → [0, 2, 0, 0, 5]', 'type': 'list_of_numbers'}, 104: {'description': 'Найти индекс максимального элемента списка (первое вхождение).', 'example': '[4, 9, 2, 9, 7] → 1', 'type': 'list_of_numbers'}, 105: {'description': 'Проверить, все ли числа в списке чётные.', 'example': '[2, 4, 6] → ✅ Все чётные\\n[2, 3, 8] → ❌ Есть нечётные', 'type': 'list_of_numbers'}, 106: {'description': 'Посчитать, сколько раз заданное число встречается в списке, не используя count().', 'example': '[1, 2, 2, 3, 2]; 2 → 3', 'type': 'list_and_number'}, 107: {'description': 'Прибавить заданное число к каждому элементу списка.', 'example': '[1, 2, 3]; 10 → [11, 12, 13]', 'type': 'list_and_number'}, 108: {'description': 'Найти сумму элементов с чётными индексами (0, 2, 4, …).', 'example': '[5, 1, 7, 2, 9] → 21', 'type': 'list_of_numbers'}, 109: {'description': 'Найти сумму всех двузначных чисел в списке (от 10 до 99 включительно).', 'example': '[5, 23, 100, 47, 8] → 70', 'type': 'list_of_numbers'}, 110: {'description': 'Посчитать, сколько элементов списка равны своему индексу.', 'example': '[0, 3, 2, 7, 4] → 3', 'type': 'list_of_numbers'}, 111: {'description': 'Сделать первую букву каждого слова заглавной.', 'example': \"['cat', 'dog', 'bird'] → ['Cat', 'Dog', 'Bird']\", 'type': 'list_of_words'}, 112: {'description': 'Собрать все слова списка в одну строку через пробел.', 'example': \"['Hello', 'world'] → 'Hello world'\", 'type': 'list_of_words'}, 113: {'description': 'Посчитать общее количество букв во всех словах списка.', 'example': \"['cat', 'dog', 'bird'] → 10\", 'type': 'list_of_words'}, 114: {'description': 'Проверить, начинается ли слово с гласной буквы (a, e, i, o, u).', 'example': \"['apple'] → ✅ Начинается с гласной\\n['dog'] → ❌ Начинается с согласной\", 'type': 'list_of_words'}, 115: {'description': 'Удвоить каждую букву слова.', 'example': \"['cat'] → 'ccaatt'\", 'type': 'list_of_words'}, 116: {'description': 'Построить словарь «буква → сколько раз она встречается в слове».', 'example': \"['banana'] → {'b': 1, 'a': 3, 'n': 2}\", 'type': 'list_of_words'}, 117: {'description': 'Посчитать, сколько слов в списке являются палиндромами.', 'example': \"['radar', 'cat', 'level', 'dog'] → 2\", 'type': 'list_of_words'}, 118: {'description': 'Заменить каждое число на 1, если оно положительное, на -1, если отрицательное, и на 0, если равно нулю.', 'example': '[-5, 3, 0, 7, -2] → [-1, 1, 0, 1, -1]', 'type': 'list_of_numbers'}, 119: {'description': 'Почленно сложить два списка одинаковой длины.', 'example': '[1, 2, 3] [10, 20, 30] → [11, 22, 33]', 'type': 'lists'}, 120: {'description': 'Посчитать, сколько раз следующий элемент списка больше предыдущего.', 'example': '[1, 3, 2, 5, 4] → 2', 'type': 'list_of_numbers'}, 0: {'description': 'Найти сумму всех элементов списка.', 'example': '[1, 2, 3] → 6', 'type': 'list_of_numbers'}}",
+          "lineno": 19
         }
       ],
       "stats": {
@@ -100,9 +98,24 @@
       }
     },
     {
+      "path": "bot/export_tasks_to_json.py",
+      "module_docstring": "Перегенерировать bot/tasks.json из constants.py — запускать после каждой\nправки банка заданий (подробности — в шапке constants.py).",
+      "module_summary": "Перегенерировать bot/tasks.json из constants.py — запускать после каждой",
+      "classes": [],
+      "functions": [],
+      "constants": [],
+      "stats": {
+        "classes": 0,
+        "dataclasses": 0,
+        "functions": 0,
+        "methods": 0,
+        "constants": 0
+      }
+    },
+    {
       "path": "bot/load_tasks_from_json.py",
-      "module_docstring": null,
-      "module_summary": null,
+      "module_docstring": "Загрузка банка заданий из tasks.json — единый источник и для бота, и для\nwebapp (через grading/bot_bridge.py).",
+      "module_summary": "Загрузка банка заданий из tasks.json — единый источник и для бота, и для",
       "classes": [],
       "functions": [],
       "constants": [
@@ -110,13 +123,13 @@
           "name": "INPUT_HINTS",
           "annotation": null,
           "value_repr": "data['input_hints']",
-          "lineno": 7
+          "lineno": 9
         },
         {
           "name": "TASKS",
           "annotation": null,
           "value_repr": "{}",
-          "lineno": 9
+          "lineno": 11
         }
       ],
       "stats": {
@@ -129,8 +142,8 @@
     },
     {
       "path": "bot/solvers.py",
-      "module_docstring": null,
-      "module_summary": null,
+      "module_docstring": "Эталонные решения всех заданий: solve_task_N(data) → эталонный ответ,\nget_solver(task_num) — диспетчер. Это генерируемый банк данных, а не API —\nдокстринги на каждой solve_task_* не нужны (их 121+).",
+      "module_summary": "Эталонные решения всех заданий: solve_task_N(data) → эталонный ответ,",
       "classes": [],
       "functions": [
         {
@@ -140,8 +153,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 4,
-          "end_lineno": 6
+          "lineno": 7,
+          "end_lineno": 9
         },
         {
           "name": "solve_task_1",
@@ -150,8 +163,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 9,
-          "end_lineno": 14
+          "lineno": 12,
+          "end_lineno": 17
         },
         {
           "name": "solve_task_2",
@@ -160,8 +173,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 17,
-          "end_lineno": 22
+          "lineno": 20,
+          "end_lineno": 25
         },
         {
           "name": "solve_task_3",
@@ -170,8 +183,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 25,
-          "end_lineno": 29
+          "lineno": 28,
+          "end_lineno": 32
         },
         {
           "name": "solve_task_4",
@@ -180,8 +193,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 32,
-          "end_lineno": 37
+          "lineno": 35,
+          "end_lineno": 40
         },
         {
           "name": "solve_task_5",
@@ -190,8 +203,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 40,
-          "end_lineno": 47
+          "lineno": 43,
+          "end_lineno": 50
         },
         {
           "name": "solve_task_6",
@@ -200,8 +213,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 50,
-          "end_lineno": 54
+          "lineno": 53,
+          "end_lineno": 57
         },
         {
           "name": "solve_task_7",
@@ -210,8 +223,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 57,
-          "end_lineno": 60
+          "lineno": 60,
+          "end_lineno": 63
         },
         {
           "name": "solve_task_8",
@@ -220,8 +233,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 63,
-          "end_lineno": 66
+          "lineno": 66,
+          "end_lineno": 69
         },
         {
           "name": "solve_task_9",
@@ -230,8 +243,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 69,
-          "end_lineno": 78
+          "lineno": 72,
+          "end_lineno": 81
         },
         {
           "name": "solve_task_10",
@@ -240,8 +253,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 81,
-          "end_lineno": 89
+          "lineno": 84,
+          "end_lineno": 92
         },
         {
           "name": "solve_task_11",
@@ -250,8 +263,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 92,
-          "end_lineno": 96
+          "lineno": 95,
+          "end_lineno": 99
         },
         {
           "name": "solve_task_12",
@@ -260,8 +273,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 99,
-          "end_lineno": 104
+          "lineno": 102,
+          "end_lineno": 107
         },
         {
           "name": "solve_task_13",
@@ -270,8 +283,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 107,
-          "end_lineno": 111
+          "lineno": 110,
+          "end_lineno": 114
         },
         {
           "name": "solve_task_14",
@@ -280,8 +293,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 114,
-          "end_lineno": 118
+          "lineno": 117,
+          "end_lineno": 121
         },
         {
           "name": "solve_task_15",
@@ -290,8 +303,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 121,
-          "end_lineno": 122
+          "lineno": 124,
+          "end_lineno": 125
         },
         {
           "name": "solve_task_16",
@@ -300,8 +313,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 125,
-          "end_lineno": 132
+          "lineno": 128,
+          "end_lineno": 135
         },
         {
           "name": "solve_task_17",
@@ -310,8 +323,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 135,
-          "end_lineno": 138
+          "lineno": 138,
+          "end_lineno": 141
         },
         {
           "name": "solve_task_18",
@@ -320,8 +333,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 141,
-          "end_lineno": 142
+          "lineno": 144,
+          "end_lineno": 145
         },
         {
           "name": "solve_task_19",
@@ -330,8 +343,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 145,
-          "end_lineno": 149
+          "lineno": 148,
+          "end_lineno": 152
         },
         {
           "name": "solve_task_20",
@@ -340,8 +353,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 152,
-          "end_lineno": 158
+          "lineno": 155,
+          "end_lineno": 161
         },
         {
           "name": "solve_task_21",
@@ -350,8 +363,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 161,
-          "end_lineno": 168
+          "lineno": 164,
+          "end_lineno": 171
         },
         {
           "name": "solve_task_22",
@@ -360,8 +373,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 171,
-          "end_lineno": 176
+          "lineno": 174,
+          "end_lineno": 179
         },
         {
           "name": "solve_task_23",
@@ -370,8 +383,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 179,
-          "end_lineno": 195
+          "lineno": 182,
+          "end_lineno": 198
         },
         {
           "name": "solve_task_24",
@@ -380,8 +393,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 198,
-          "end_lineno": 204
+          "lineno": 201,
+          "end_lineno": 207
         },
         {
           "name": "solve_task_25",
@@ -390,8 +403,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 207,
-          "end_lineno": 212
+          "lineno": 210,
+          "end_lineno": 215
         },
         {
           "name": "solve_task_26",
@@ -400,8 +413,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 215,
-          "end_lineno": 222
+          "lineno": 218,
+          "end_lineno": 225
         },
         {
           "name": "solve_task_27",
@@ -410,8 +423,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 225,
-          "end_lineno": 228
+          "lineno": 228,
+          "end_lineno": 231
         },
         {
           "name": "solve_task_28",
@@ -420,8 +433,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 231,
-          "end_lineno": 232
+          "lineno": 234,
+          "end_lineno": 235
         },
         {
           "name": "solve_task_29",
@@ -430,8 +443,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 235,
-          "end_lineno": 241
+          "lineno": 238,
+          "end_lineno": 244
         },
         {
           "name": "solve_task_30",
@@ -440,8 +453,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 244,
-          "end_lineno": 251
+          "lineno": 247,
+          "end_lineno": 254
         },
         {
           "name": "solve_task_31",
@@ -450,8 +463,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 254,
-          "end_lineno": 259
+          "lineno": 257,
+          "end_lineno": 262
         },
         {
           "name": "solve_task_32",
@@ -460,8 +473,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 262,
-          "end_lineno": 266
+          "lineno": 265,
+          "end_lineno": 269
         },
         {
           "name": "solve_task_33",
@@ -470,8 +483,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 269,
-          "end_lineno": 278
+          "lineno": 272,
+          "end_lineno": 281
         },
         {
           "name": "solve_task_34",
@@ -480,8 +493,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 281,
-          "end_lineno": 284
+          "lineno": 284,
+          "end_lineno": 287
         },
         {
           "name": "solve_task_35",
@@ -490,8 +503,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 287,
-          "end_lineno": 295
+          "lineno": 290,
+          "end_lineno": 298
         },
         {
           "name": "solve_task_36",
@@ -500,8 +513,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 298,
-          "end_lineno": 304
+          "lineno": 301,
+          "end_lineno": 307
         },
         {
           "name": "solve_task_37",
@@ -510,8 +523,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 307,
-          "end_lineno": 311
+          "lineno": 310,
+          "end_lineno": 314
         },
         {
           "name": "solve_task_38",
@@ -520,8 +533,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 314,
-          "end_lineno": 317
+          "lineno": 317,
+          "end_lineno": 320
         },
         {
           "name": "solve_task_39",
@@ -530,8 +543,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 320,
-          "end_lineno": 329
+          "lineno": 323,
+          "end_lineno": 332
         },
         {
           "name": "solve_task_40",
@@ -540,8 +553,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 332,
-          "end_lineno": 337
+          "lineno": 335,
+          "end_lineno": 340
         },
         {
           "name": "solve_task_41",
@@ -550,8 +563,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 340,
-          "end_lineno": 343
+          "lineno": 343,
+          "end_lineno": 346
         },
         {
           "name": "solve_task_42",
@@ -560,8 +573,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 346,
-          "end_lineno": 348
+          "lineno": 349,
+          "end_lineno": 351
         },
         {
           "name": "solve_task_43",
@@ -570,8 +583,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 351,
-          "end_lineno": 355
+          "lineno": 354,
+          "end_lineno": 358
         },
         {
           "name": "solve_task_44",
@@ -580,8 +593,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 358,
-          "end_lineno": 363
+          "lineno": 361,
+          "end_lineno": 366
         },
         {
           "name": "solve_task_45",
@@ -590,8 +603,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 366,
-          "end_lineno": 372
+          "lineno": 369,
+          "end_lineno": 375
         },
         {
           "name": "solve_task_46",
@@ -600,8 +613,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 375,
-          "end_lineno": 378
+          "lineno": 378,
+          "end_lineno": 381
         },
         {
           "name": "solve_task_47",
@@ -610,8 +623,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 381,
-          "end_lineno": 388
+          "lineno": 384,
+          "end_lineno": 391
         },
         {
           "name": "solve_task_48",
@@ -620,8 +633,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 391,
-          "end_lineno": 393
+          "lineno": 394,
+          "end_lineno": 396
         },
         {
           "name": "solve_task_49",
@@ -630,8 +643,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 396,
-          "end_lineno": 409
+          "lineno": 399,
+          "end_lineno": 412
         },
         {
           "name": "solve_task_50",
@@ -640,8 +653,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 412,
-          "end_lineno": 413
+          "lineno": 415,
+          "end_lineno": 416
         },
         {
           "name": "solve_task_51",
@@ -650,8 +663,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 416,
-          "end_lineno": 420
+          "lineno": 419,
+          "end_lineno": 423
         },
         {
           "name": "solve_task_52",
@@ -660,8 +673,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 423,
-          "end_lineno": 428
+          "lineno": 426,
+          "end_lineno": 431
         },
         {
           "name": "solve_task_53",
@@ -670,8 +683,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 431,
-          "end_lineno": 442
+          "lineno": 434,
+          "end_lineno": 445
         },
         {
           "name": "solve_task_54",
@@ -680,8 +693,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 445,
-          "end_lineno": 449
+          "lineno": 448,
+          "end_lineno": 452
         },
         {
           "name": "solve_task_55",
@@ -690,8 +703,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 452,
-          "end_lineno": 456
+          "lineno": 455,
+          "end_lineno": 459
         },
         {
           "name": "solve_task_56",
@@ -700,8 +713,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 459,
-          "end_lineno": 461
+          "lineno": 462,
+          "end_lineno": 464
         },
         {
           "name": "solve_task_57",
@@ -710,8 +723,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 464,
-          "end_lineno": 471
+          "lineno": 467,
+          "end_lineno": 474
         },
         {
           "name": "solve_task_58",
@@ -720,8 +733,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 474,
-          "end_lineno": 485
+          "lineno": 477,
+          "end_lineno": 488
         },
         {
           "name": "solve_task_59",
@@ -730,8 +743,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 488,
-          "end_lineno": 489
+          "lineno": 491,
+          "end_lineno": 492
         },
         {
           "name": "solve_task_60",
@@ -740,8 +753,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 492,
-          "end_lineno": 497
+          "lineno": 495,
+          "end_lineno": 500
         },
         {
           "name": "solve_task_61",
@@ -750,8 +763,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 500,
-          "end_lineno": 504
+          "lineno": 503,
+          "end_lineno": 507
         },
         {
           "name": "solve_task_62",
@@ -760,8 +773,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 507,
-          "end_lineno": 511
+          "lineno": 510,
+          "end_lineno": 514
         },
         {
           "name": "solve_task_63",
@@ -770,8 +783,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 514,
-          "end_lineno": 521
+          "lineno": 517,
+          "end_lineno": 524
         },
         {
           "name": "solve_task_64",
@@ -780,8 +793,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 524,
-          "end_lineno": 531
+          "lineno": 527,
+          "end_lineno": 534
         },
         {
           "name": "solve_task_65",
@@ -790,8 +803,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 534,
-          "end_lineno": 543
+          "lineno": 537,
+          "end_lineno": 546
         },
         {
           "name": "solve_task_66",
@@ -800,8 +813,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 546,
-          "end_lineno": 548
+          "lineno": 549,
+          "end_lineno": 551
         },
         {
           "name": "solve_task_67",
@@ -810,8 +823,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 551,
-          "end_lineno": 552
+          "lineno": 554,
+          "end_lineno": 555
         },
         {
           "name": "solve_task_68",
@@ -820,8 +833,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 555,
-          "end_lineno": 556
+          "lineno": 558,
+          "end_lineno": 559
         },
         {
           "name": "solve_task_69",
@@ -830,8 +843,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 559,
-          "end_lineno": 561
+          "lineno": 562,
+          "end_lineno": 564
         },
         {
           "name": "solve_task_70",
@@ -840,8 +853,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 564,
-          "end_lineno": 571
+          "lineno": 567,
+          "end_lineno": 574
         },
         {
           "name": "solve_task_71",
@@ -850,8 +863,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 574,
-          "end_lineno": 581
+          "lineno": 577,
+          "end_lineno": 584
         },
         {
           "name": "solve_task_72",
@@ -860,8 +873,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 584,
-          "end_lineno": 585
+          "lineno": 587,
+          "end_lineno": 588
         },
         {
           "name": "solve_task_73",
@@ -870,8 +883,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 588,
-          "end_lineno": 592
+          "lineno": 591,
+          "end_lineno": 595
         },
         {
           "name": "solve_task_74",
@@ -880,8 +893,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 595,
-          "end_lineno": 596
+          "lineno": 598,
+          "end_lineno": 599
         },
         {
           "name": "solve_task_75",
@@ -890,8 +903,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 599,
-          "end_lineno": 604
+          "lineno": 602,
+          "end_lineno": 607
         },
         {
           "name": "solve_task_76",
@@ -900,8 +913,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 607,
-          "end_lineno": 611
+          "lineno": 610,
+          "end_lineno": 614
         },
         {
           "name": "solve_task_77",
@@ -910,8 +923,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 614,
-          "end_lineno": 624
+          "lineno": 617,
+          "end_lineno": 627
         },
         {
           "name": "solve_task_78",
@@ -920,8 +933,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 627,
-          "end_lineno": 633
+          "lineno": 630,
+          "end_lineno": 636
         },
         {
           "name": "solve_task_79",
@@ -930,8 +943,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 636,
-          "end_lineno": 650
+          "lineno": 639,
+          "end_lineno": 653
         },
         {
           "name": "solve_task_80",
@@ -940,8 +953,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 653,
-          "end_lineno": 657
+          "lineno": 656,
+          "end_lineno": 660
         },
         {
           "name": "solve_task_81",
@@ -950,8 +963,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 660,
-          "end_lineno": 661
+          "lineno": 663,
+          "end_lineno": 664
         },
         {
           "name": "solve_task_82",
@@ -960,8 +973,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 664,
-          "end_lineno": 671
+          "lineno": 667,
+          "end_lineno": 674
         },
         {
           "name": "solve_task_83",
@@ -970,8 +983,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 674,
-          "end_lineno": 683
+          "lineno": 677,
+          "end_lineno": 686
         },
         {
           "name": "solve_task_84",
@@ -980,8 +993,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 686,
-          "end_lineno": 687
+          "lineno": 689,
+          "end_lineno": 690
         },
         {
           "name": "solve_task_85",
@@ -990,8 +1003,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 690,
-          "end_lineno": 691
+          "lineno": 693,
+          "end_lineno": 694
         },
         {
           "name": "solve_task_86",
@@ -1000,8 +1013,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 694,
-          "end_lineno": 704
+          "lineno": 697,
+          "end_lineno": 707
         },
         {
           "name": "solve_task_87",
@@ -1010,8 +1023,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 707,
-          "end_lineno": 710
+          "lineno": 710,
+          "end_lineno": 713
         },
         {
           "name": "solve_task_88",
@@ -1020,8 +1033,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 713,
-          "end_lineno": 718
+          "lineno": 716,
+          "end_lineno": 721
         },
         {
           "name": "solve_task_89",
@@ -1030,8 +1043,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 721,
-          "end_lineno": 723
+          "lineno": 724,
+          "end_lineno": 726
         },
         {
           "name": "solve_task_90",
@@ -1040,8 +1053,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 726,
-          "end_lineno": 728
+          "lineno": 729,
+          "end_lineno": 731
         },
         {
           "name": "solve_task_91",
@@ -1050,8 +1063,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 731,
-          "end_lineno": 741
+          "lineno": 734,
+          "end_lineno": 744
         },
         {
           "name": "solve_task_92",
@@ -1060,8 +1073,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 744,
-          "end_lineno": 746
+          "lineno": 747,
+          "end_lineno": 749
         },
         {
           "name": "solve_task_93",
@@ -1070,8 +1083,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 749,
-          "end_lineno": 750
+          "lineno": 752,
+          "end_lineno": 753
         },
         {
           "name": "solve_task_94",
@@ -1080,8 +1093,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 753,
-          "end_lineno": 758
+          "lineno": 756,
+          "end_lineno": 761
         },
         {
           "name": "solve_task_95",
@@ -1090,8 +1103,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 761,
-          "end_lineno": 762
+          "lineno": 764,
+          "end_lineno": 765
         },
         {
           "name": "solve_task_96",
@@ -1100,8 +1113,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 765,
-          "end_lineno": 772
+          "lineno": 768,
+          "end_lineno": 775
         },
         {
           "name": "solve_task_97",
@@ -1110,8 +1123,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 775,
-          "end_lineno": 785
+          "lineno": 778,
+          "end_lineno": 788
         },
         {
           "name": "solve_task_98",
@@ -1120,8 +1133,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 788,
-          "end_lineno": 794
+          "lineno": 791,
+          "end_lineno": 797
         },
         {
           "name": "solve_task_99",
@@ -1130,8 +1143,8 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 797,
-          "end_lineno": 805
+          "lineno": 800,
+          "end_lineno": 808
         },
         {
           "name": "solve_task_100",
@@ -1140,34 +1153,244 @@
           "summary": null,
           "kind": "function",
           "decorators": [],
-          "lineno": 808,
-          "end_lineno": 816
+          "lineno": 811,
+          "end_lineno": 819
+        },
+        {
+          "name": "solve_task_101",
+          "signature": "solve_task_101(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 822,
+          "end_lineno": 830
+        },
+        {
+          "name": "solve_task_102",
+          "signature": "solve_task_102(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 833,
+          "end_lineno": 838
+        },
+        {
+          "name": "solve_task_103",
+          "signature": "solve_task_103(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 841,
+          "end_lineno": 848
+        },
+        {
+          "name": "solve_task_104",
+          "signature": "solve_task_104(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 851,
+          "end_lineno": 856
+        },
+        {
+          "name": "solve_task_105",
+          "signature": "solve_task_105(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 859,
+          "end_lineno": 863
+        },
+        {
+          "name": "solve_task_106",
+          "signature": "solve_task_106(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 866,
+          "end_lineno": 871
+        },
+        {
+          "name": "solve_task_107",
+          "signature": "solve_task_107(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 874,
+          "end_lineno": 878
+        },
+        {
+          "name": "solve_task_108",
+          "signature": "solve_task_108(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 881,
+          "end_lineno": 885
+        },
+        {
+          "name": "solve_task_109",
+          "signature": "solve_task_109(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 888,
+          "end_lineno": 893
+        },
+        {
+          "name": "solve_task_110",
+          "signature": "solve_task_110(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 896,
+          "end_lineno": 901
+        },
+        {
+          "name": "solve_task_111",
+          "signature": "solve_task_111(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 904,
+          "end_lineno": 908
+        },
+        {
+          "name": "solve_task_112",
+          "signature": "solve_task_112(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 911,
+          "end_lineno": 917
+        },
+        {
+          "name": "solve_task_113",
+          "signature": "solve_task_113(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 920,
+          "end_lineno": 924
+        },
+        {
+          "name": "solve_task_114",
+          "signature": "solve_task_114(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 927,
+          "end_lineno": 931
+        },
+        {
+          "name": "solve_task_115",
+          "signature": "solve_task_115(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 934,
+          "end_lineno": 939
+        },
+        {
+          "name": "solve_task_116",
+          "signature": "solve_task_116(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 942,
+          "end_lineno": 949
+        },
+        {
+          "name": "solve_task_117",
+          "signature": "solve_task_117(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 952,
+          "end_lineno": 957
+        },
+        {
+          "name": "solve_task_118",
+          "signature": "solve_task_118(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 960,
+          "end_lineno": 969
+        },
+        {
+          "name": "solve_task_119",
+          "signature": "solve_task_119(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 972,
+          "end_lineno": 976
+        },
+        {
+          "name": "solve_task_120",
+          "signature": "solve_task_120(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 979,
+          "end_lineno": 984
+        },
+        {
+          "name": "solve_task_0",
+          "signature": "solve_task_0(data)",
+          "docstring": null,
+          "summary": null,
+          "kind": "function",
+          "decorators": [],
+          "lineno": 987,
+          "end_lineno": 991
         }
       ],
       "constants": [],
       "stats": {
         "classes": 0,
         "dataclasses": 0,
-        "functions": 101,
+        "functions": 122,
         "methods": 0,
         "constants": 0
       }
     },
     {
       "path": "bot/tasks_handlers.py",
-      "module_docstring": null,
-      "module_summary": null,
+      "module_docstring": "Хендлеры команд /task_N: фабрика собирает их из банка TASKS в tasks.json\n(по одному хендлеру на задание, регистрируются в bot.py).",
+      "module_summary": "Хендлеры команд /task_N: фабрика собирает их из банка TASKS в tasks.json",
       "classes": [],
       "functions": [
         {
           "name": "make_task_handler",
           "signature": "make_task_handler(task_num)",
-          "docstring": null,
-          "summary": null,
+          "docstring": "Хендлер /task_N: показать условие, формат входа и пример; перевести\nдиалог в режим ожидания данных (awaiting_task).",
+          "summary": "Хендлер /task_N: показать условие, формат входа и пример; перевести",
           "kind": "function",
           "decorators": [],
-          "lineno": 8,
-          "end_lineno": 22
+          "lineno": 9,
+          "end_lineno": 25
         }
       ],
       "constants": [],

@@ -37,6 +37,7 @@ def render_insert(table, row: dict) -> str:
 
 
 def main() -> None:
+    """Обойти таблицы в FK-порядке и напечатать INSERT-ы (см. модуль)."""
     print("-- Дамп БД (INSERT-ы без схемы; таблицы создаёт create_all)")
     print(f"-- generated: {datetime.now(timezone.utc).isoformat()}")
     total = 0

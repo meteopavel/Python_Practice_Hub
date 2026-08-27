@@ -1,3 +1,7 @@
+"""Легаси Telegram-бот «задача → ответ»: команда /task_N выдаёт условие,
+следующее сообщение ученика парсится как вход и прогоняется через эталон.
+Проект начинался с него; продукт теперь — веб-грейдер (webapp/), но банк
+заданий (tasks.json, solvers.py) общий для обоих контуров."""
 import ast
 import logging
 import os
@@ -19,6 +23,8 @@ TOKEN = os.getenv('TOKEN')
 
 
 def extract_literals(text):
+    """Разобрать ввод ученика: питоновские литералы через ';' (или списки,
+    вытащенные из свободного текста)."""
     text = re.sub(r'\s*;\s*', ';', text)
     parts = [part.strip() for part in text.split(';') if part.strip()]
     result = []
@@ -37,6 +43,8 @@ def extract_literals(text):
 
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Ответ на данные ждущего задания: разобрать вход, прогнать эталон,
+    прислать ответ (диалог одноразовый — ожидание сбрасывается)."""
     if 'awaiting_task' not in context.user_data:
         return
     user_input = update.message.text.strip()
@@ -52,6 +60,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Приветствие на /start."""
     user = update.effective_user
     await update.message.reply_html(rf'Привет {user.mention_html()}!',)
 

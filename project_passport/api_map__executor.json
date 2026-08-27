@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-28T11:47:58.117500+00:00",
+  "generated_at": "2026-08-27T08:38:01.106087+00:00",
   "generator": "tools/extract_api_map.py",
   "target": "executor",
   "scanned_python_files": 2,
@@ -18,14 +18,14 @@
   "modules": [
     {
       "path": "executor/main.py",
-      "module_docstring": "Исполнитель — работает только внутри тоннеля (10.0.0.1 на роутере),\nнаружу не смотрит. Единственная задача: безопасно прогнать код ученика\nи вернуть результат. Ничего не знает про задания/эталоны — это забота\nфронта (webapp/), который живёт на Frankfurt.",
-      "module_summary": "Исполнитель — работает только внутри тоннеля (10.0.0.1 на роутере),",
+      "module_docstring": "Исполнитель — работает только внутри тоннеля на роутере,\nнаружу не смотрит. Единственная задача: безопасно прогнать код ученика\nи вернуть результат. Ничего не знает про задания/эталоны — это забота\nфронта (webapp/), который живёт на VPS.",
+      "module_summary": "Исполнитель — работает только внутри тоннеля на роутере,",
       "classes": [
         {
           "name": "RunRequest",
           "signature": "RunRequest(BaseModel)",
-          "docstring": null,
-          "summary": null,
+          "docstring": "Прогон задания: код ученика (обязан определить solve) + тестовый вход.",
+          "summary": "Прогон задания: код ученика (обязан определить solve) + тестовый вход.",
           "kind": "class",
           "bases": [
             "BaseModel"
@@ -36,24 +36,24 @@
               "name": "code",
               "annotation": "str",
               "value_repr": null,
-              "lineno": 15
+              "lineno": 17
             },
             {
               "name": "test_input",
               "annotation": "object",
               "value_repr": null,
-              "lineno": 16
+              "lineno": 18
             }
           ],
           "methods": [],
           "lineno": 14,
-          "end_lineno": 16
+          "end_lineno": 18
         },
         {
           "name": "RunFreeRequest",
           "signature": "RunFreeRequest(BaseModel)",
-          "docstring": null,
-          "summary": null,
+          "docstring": "Свободный прогон: только код, без входа и харнесса.",
+          "summary": "Свободный прогон: только код, без входа и харнесса.",
           "kind": "class",
           "bases": [
             "BaseModel"
@@ -64,50 +64,50 @@
               "name": "code",
               "annotation": "str",
               "value_repr": null,
-              "lineno": 20
+              "lineno": 24
             }
           ],
           "methods": [],
-          "lineno": 19,
-          "end_lineno": 20
+          "lineno": 21,
+          "end_lineno": 24
         }
       ],
       "functions": [
         {
           "name": "run",
           "signature": "run(payload: RunRequest)",
-          "docstring": null,
-          "summary": null,
+          "docstring": "Прогон кода с входом через харнесс (sandbox.run_student_code).",
+          "summary": "Прогон кода с входом через харнесс (sandbox.run_student_code).",
           "kind": "function",
           "decorators": [
             "app.post('/run')"
           ],
-          "lineno": 24,
-          "end_lineno": 25
+          "lineno": 28,
+          "end_lineno": 30
         },
         {
           "name": "run_free",
           "signature": "run_free(payload: RunFreeRequest)",
-          "docstring": null,
-          "summary": null,
+          "docstring": "Свободный прогон без харнесса (sandbox.run_free_code).",
+          "summary": "Свободный прогон без харнесса (sandbox.run_free_code).",
           "kind": "function",
           "decorators": [
             "app.post('/run_free')"
           ],
-          "lineno": 29,
-          "end_lineno": 30
+          "lineno": 34,
+          "end_lineno": 36
         },
         {
           "name": "health",
           "signature": "health()",
-          "docstring": null,
-          "summary": null,
+          "docstring": "Живость исполнителя — для деплоя и мониторинга.",
+          "summary": "Живость исполнителя — для деплоя и мониторинга.",
           "kind": "function",
           "decorators": [
             "app.get('/health')"
           ],
-          "lineno": 34,
-          "end_lineno": 35
+          "lineno": 40,
+          "end_lineno": 42
         }
       ],
       "constants": [],
@@ -121,29 +121,29 @@
     },
     {
       "path": "executor/sandbox.py",
-      "module_docstring": "Исполнение кода ученика в изолированном процессе.\n\nЭто ядро проверки: код ученика никогда не выполняется в процессе веб-сервера.\nОн пишется во временный файл, оборачивается в харнесс, который читает вход из\nstdin и печатает результат в JSON, и запускается отдельным интерпретатором\npython с ограничением по времени, по памяти и с урезанным окружением (чтобы\nкод ученика не мог прочитать переменные окружения сервера, например токены).\n\nЭто слой изоляции на УРОВНЕ ПРОЦЕССА. Сетевая/файловая изоляция живёт на\nодин уровень выше — в контейнере Docker, в котором крутится сам этот сервис\n(read-only rootfs + tmpfs на /tmp + cap_drop ALL + запрещённая исходящая\nсеть через iptables DOCKER-USER, см. executor/docker-compose.yml). Таким\nобразом, даже если код ученика попытается открыть сокет или потрогать диск,\nконтейнер его остановит. Эфемерности (свежий контейнер на каждый прогон)\nпока нет — контейнер переиспользуется, теоретический след в /tmp возможен\n(см. PLATFORM_PLAN.md, осознанный пробел под одного ученика).",
+      "module_docstring": "Исполнение кода ученика в изолированном процессе.\n\nЭто ядро проверки: код ученика никогда не выполняется в процессе веб-сервера.\nОн пишется во временный файл, оборачивается в харнесс, который читает вход из\nstdin и печатает результат в JSON, и запускается отдельным интерпретатором\npython с ограничением по времени, по памяти и с урезанным окружением (чтобы\nкод ученика не мог прочитать переменные окружения сервера, например токены).\n\nЭто слой изоляции на УРОВНЕ ПРОЦЕССА. Сетевая/файловая изоляция живёт на\nодин уровень выше — в контейнере Docker, в котором крутится сам этот сервис\n(read-only rootfs + tmpfs на /tmp + cap_drop ALL + запрещённая исходящая\nсеть через iptables DOCKER-USER, см. executor/docker-compose.yml). Таким\nобразом, даже если код ученика попытается открыть сокет или потрогать диск,\nконтейнер его остановит. Эфемерности (свежий контейнер на каждый прогон)\nпока нет — контейнер переиспользуется, теоретический след в /tmp возможен\n(см. docs/decisions.md, осознанный пробел под одного ученика).",
       "module_summary": "Исполнение кода ученика в изолированном процессе.",
       "classes": [],
       "functions": [
         {
           "name": "_limit_resources",
           "signature": "_limit_resources()",
-          "docstring": null,
-          "summary": null,
+          "docstring": "Лимиты CPU/памяти на процесс кода ученика; вызывается как preexec_fn\n(в дочернем после fork, до exec) — сервер не затрагивается.",
+          "summary": "Лимиты CPU/памяти на процесс кода ученика; вызывается как preexec_fn",
           "kind": "function",
           "decorators": [],
           "lineno": 51,
-          "end_lineno": 61
+          "end_lineno": 63
         },
         {
           "name": "run_student_code",
           "signature": "run_student_code(code: str, test_input) -> dict",
-          "docstring": "Ученик обязан определить функцию solve(data). Возвращает\n{\"ok\": True, \"value\": ...} либо {\"ok\": False, \"error\": \"...\"}.",
+          "docstring": "Ученик обязан определить функцию solve(data). Возвращает\n{\"ok\": True, \"value\": ..., \"stdout\": ...} либо {\"ok\": False, \"error\": \"...\",\n\"stdout\": ...} — stdout несёт то, что код напечатал сам (до маркера\nрезультата), нужен «Запустить» с данными на входе (bug.4).",
           "summary": "Ученик обязан определить функцию solve(data). Возвращает",
           "kind": "function",
           "decorators": [],
-          "lineno": 64,
-          "end_lineno": 99
+          "lineno": 66,
+          "end_lineno": 106
         },
         {
           "name": "run_free_code",
@@ -152,8 +152,8 @@
           "summary": "Свободный запуск без эталона и без ожидания solve(data) — код",
           "kind": "function",
           "decorators": [],
-          "lineno": 102,
-          "end_lineno": 129
+          "lineno": 109,
+          "end_lineno": 136
         }
       ],
       "constants": [

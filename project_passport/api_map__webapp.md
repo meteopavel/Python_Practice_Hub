@@ -1,85 +1,239 @@
 # API map: webapp
 
-Просканировано Python-файлов: 10
-Включено в карту: 10
-Пропущено без значимой API-информации: 0
+Просканировано Python-файлов: 28
+Включено в карту: 22
+Пропущено без значимой API-информации: 6
 
 Сводная статистика:
-- модулей: 10
-- классов: 9
+- модулей: 22
+- классов: 16
 - dataclass: 0
-- функций: 53
+- функций: 86
 - методов: 1
-- констант: 18
+- констант: 26
 
 ---
 
-# webapp/auth.py
+# webapp/config.py
+
+Модуль:
+Чтение конфигурации из окружения. Импортируется main.py и роутами.
+
+Константы:
+- `STATIC_DIR = Path(__file__).resolve().parent / 'static'`
+- `TEMPLATES_DIR = Path(__file__).resolve().parent / 'templates'`
+- `SESSION_SECRET = os.environ.get('SESSION_SECRET')`
+- `TURN_SECRET = os.environ.get('TURN_SECRET')`
+- `TURN_URLS = os.environ.get('TURN_URLS')`
+- `STUN_URLS = os.environ.get('STUN_URLS', 'stun:dobrokod.ru:3478')`
+- `TUTOR_LLM_URL = os.environ.get('TUTOR_LLM_URL')`
+
+---
+
+# webapp/content/hints.py
+
+Модуль:
+Многоступенчатые подсказки к заданиям (курированный контент — 0, 81..120).
+
+Три уровня на каждое задание:
+  1 — абстрактная: куда двигаться, на что обратить внимание.
+  2 — конкретная со ссылками на материалы/функции; доступна через 7 минут
+      после раскрытия 1-й.
+  3 — почти готовое решение с пометками что доделать; доступна ещё через
+      15 минут после раскрытия 2-й.
+
+Тайминг считается ТОЛЬКО на сервере — по отметкам HintReveal. Клиентскому
+таймеру верить нельзя: часы на устройстве ученика тривиально подменить,
+поэтому «когда уровень стал доступен» определяется revealed_at предыдущего
+уровня, а не временем, пришедшим из браузера.
+
+Контент (Hint) правит тьютор через админку; здесь — только логика доступа
+и мини-markdown-рендерер (в духе materials.py: проект избегает тяжёлых
+зависимостей).
+
+Константы:
+- `HINTED_TASK_IDS: Iterable[int] = [0, *range(1, 121)]`
+- `LEVELS = (1, 2, 3)`
+- `HINT_DELAYS: dict[int, timedelta] = {1: timedelta(0), 2: timedelta(minutes=7), 3: timedelta(minutes=15)}`
+- `_INLINE_PATTERNS = [(re.compile('`([^`]+)`'), '<code class="inline">\\1</code>'), (re.compile('\\*\\*([^*]+)\\*\\*'), …`
+- `_LINK_RE = re.compile('\\[([^\\]]+)\\]\\((https?://[^\\s)]+)\\)')`
+
+Функции:
+
+- `has_hints(task_id: int) -> bool`
+  Есть ли у задания вообще механика подсказок (см. HINTED_TASK_IDS).
+
+- `_now(db: Session) -> datetime`
+  «Сейчас» берём ИЗ БД (SELECT NOW()), а не из Python. БД хостинга
+  работает в локальной зоне (MSK), её func.now() — локальное время; и
+  revealed_at пишется тоже func.now()-сервером. Сравнивая обе стороны в
+  зоне БД, мы независимы от того, в какой именно зоне работает инстанс:
+  разность корректна всегда. datetime.now(utc) тут использовать нельзя —
+  получили бы сдвиг в 3 часа против локального revealed_at.
+
+- `get_hint_content(db: Session, task_id: int) -> dict[int, str]`
+  Все тексты уровней для задания: {level: markdown}. Уровни без записи
+  отсутствуют в словаре (фронт считает их пустыми/незаведёнными).
+
+- `get_revealed_levels(db: Session, user_id: int, task_id: int) -> dict[int, datetime]`
+  {level: revealed_at} для уже раскрытых учеником уровней. Время — в
+  зоне БД (как есть, без приведения к UTC): сравниваем с _now(db) тоже в
+  зоне БД, так обе стороны в одной шкале.
+
+- `_level_state(level, revealed: dict[int, datetime], now: datetime)`
+  Внутренняя: статус одного уровня без контента.
+  
+  Возвращает (status, available_at):
+    locked   — предыдущий уровень ещё не раскрыт, этот недоступен.
+    ready    — доступен к раскрытию учеником (задержка прошла / её нет).
+    revealed — уже раскрыт.
+    waiting  — задержка ещё не прошла, ждём; available_at — когда станет ready
+               (в зоне БД; для API переводится в UTC отдельно).
+  
+  now — «сейчас» в зоне БД (из _now), revealed — тоже в зоне БД: сравнение
+  корректно при любой зоне инстанса.
+
+- `_available_at_utc(db: Session, available_at_local: datetime) -> str`
+  Перевод available_at (зона БД, naive) в UTC ISO-строку для API.
+  
+  Таймзону инстанса из приложения надёжно не узнать, поэтому вычисляем
+  смещение эмпирически: db_offset = NOW(БД) − utcnow(). Для MSK это +3ч.
+  Вычитая его из локальной метки, получаем честный абсолютный момент в UTC,
+  и фронт рисует корректный обратный отсчёт при любой зоне инстанса.
+
+- `available_levels(db: Session, user_id: int, task_id: int) -> list[dict]`
+  Полное состояние подсказок задания для ученика.
+  
+  Контент отдаётся ТОЛЬКО для revealed — остальные уровни ученик не должен
+  видеть даже пустыми (статус готовности не должен раскрывать суть).
+  available_at (ISO-строка UTC) отдаётся для waiting, чтобы фронт нарисовал
+  обратный отсчёт; для waiting сервер — источник правды о готовности,
+  фронт по достижении нуля перезапрашивает состояние.
+
+- `can_reveal(db: Session, user_id: int, task_id: int, level: int) -> bool`
+  Можно ли раскрыть уровень сейчас: не заблокирован предыдущим и
+  задержка прошла (или её нет). Уже раскрытый тоже «можно» — идемпотентно.
+
+- `record_reveal(db: Session, user_id: int, task_id: int, level: int) -> None`
+  Фиксируем раскрытие уровня. Идемпотентно: повторный клик по уже
+  раскрытому не создаёт дубль (UNIQUE-ограничение) и НЕ сдвигает
+  revealed_at — иначе можно было бы обнулить таймер следующего уровня.
+  
+  revealed_at НЕ задаём явно — пусть ставит server_default=func.now(),
+  то есть локальное время БД. Сравниваем затем с _now(db) (тоже зона БД),
+  так обе стороны в одной шкале и зона инстанса не имеет значения.
+  Раньше писали datetime.now(utc) и сравнивали с локальным — был сдвиг 3ч.
+
+- `reset_reveal(db: Session, user_id: int, task_id: int, level: int) -> None`
+  Стирает раскрытие уровня (удаляет HintReveal-строку). После удаления
+  статус пересчитывается из оставшихся строк: уровень снова становится
+  locked/ready/waiting, как будто ученик его не открывал. revealed_at живёт
+  на той же строке, поэтому таймер следующего уровня тоже обнуляется.
+  
+  Идемпотентно: несуществующей строки нет — DELETE молча ничего не делает.
+
+- `reset_reveal_cascade(db: Session, user_id: int, task_id: int, level: int) -> None`
+  Сбрасывает уровень level И все раскрытые уровни выше него по цепочке.
+  
+  Зачем каскад: ученик не мог открыть уровень N+1, не открыв N (таков
+  инвариант _level_state). Если тьютор сбрасывает N, оставив N+1 раскрытым,
+  получится невозможное состояние «старший открыт, а его якорь закрыт».
+  Поэтому при сбросе N заодно сбрасываем каждый вышестоящий раскрытый
+  уровень — ровно один проход вверх по LEVELS.
+
+- `_escape(text: str) -> str`
+  HTML-экранирование текста (включая кавычки — текст попадает и в атрибуты).
+
+- `_render_inline(text: str) -> str`
+  Инлайн-markdown → HTML (только ссылки): сначала экранируем всё,
+  подставляем лишь известные теги с отдельно экранированными значениями.
+
+- `render_markdown(text: str) -> str`
+  Рендерит markdown в HTML-фрагмент (без <p>-обёртки верхнего уровня).
+
+---
+
+# webapp/content/materials.py
+
+Модуль:
+Справочные материалы — учебные ноутбуки (1_introduction/,
+2_loops_and_conditions/ и т.д. в `webapp/content/notebooks/`), что и раньше
+лежали только как Jupyter-тетрадки. Здесь не БД и не отдельный конвертированный
+формат — .ipynb читается напрямую (это просто JSON), один раз при старте
+приложения, и держится в памяти. Ноутбуки маленькие (~470KB на все 36),
+без картинок/attachments — только code-ячейки, объяснение зашито в них
+как строки-докстринги. Собственный парсер вместо nbconvert: контента
+слишком мало и однообразно, чтобы тащить чужой шаблон/CSS, который потом
+пришлось бы перекраивать под дизайн-систему сайта.
+
+Константы:
+- `_ROOT = Path(__file__).resolve().parent / 'notebooks'`
+- `_MODULE_TITLES = {'1_introduction': 'Введение', '2_loops_and_conditions': 'Циклы и условия', '3_functions': 'Функции…`
+- `_TITLE_OVERRIDES = {('1_introduction', '0_venv_install'): 'Установка и работа с venv', ('1_introduction', '1_intro'): …`
+- `_NUM_PREFIX = re.compile('^(\\d+)_')`
+
+Функции:
+
+- `_sort_key(filename: str) -> tuple`
+  Порядок уроков внутри модуля: по числовому префиксу имени файла;
+  без префикса — в конец, по алфавиту.
+
+- `_extract_title(module: str, slug: str, first_cell_source: str) -> str`
+  Заголовок урока: ручной override → первая markdown-строка первой
+  code-ячейки → человекочитанный slug (последняя надежда).
+
+- `_load_notebook(path: Path) -> list`
+  Возвращает список ячеек: [{"code": str, "output": str|None, "is_error": bool}].
+
+- `_build_manifest()`
+  Один проход по notebooks/ при старте: манифест {модуль: [уроки]} для
+  оглавления и содержимое всех уроков в память (ноутбуки крошечные).
+
+- `get_lesson(module: str, slug: str)`
+  Урок (module, slug) → {"title", "cells"} из памяти; None, если нет.
+
+---
+
+# webapp/core/auth.py
 
 Модуль:
 Простая авторизация логин/пароль + сессия по подписанной cookie.
 Ученики заводятся вручную (см. create_user.py) — самостоятельной регистрации нет.
 
+Константы:
+- `MIN_PASSWORD_LENGTH = 8`
+
 Функции:
+
+- `password_policy_error(password: str) -> str | None`
+  Текст ошибки, если пароль не проходит политику (минимальная длина),
+  иначе None.
 
 - `hash_password(password: str) -> str`
-  Нет докстринга.
+  bcrypt-хэш пароля (соль генерируется и хранится внутри хэша).
 
 - `verify_password(password: str, password_hash: str) -> bool`
-  Нет докстринга.
+  Сверка пароля с хэшем.
 
 - `authenticate(db: Session, username: str, password: str) -> User | None`
-  Нет докстринга.
+  User по логину+паролю или None (не различаем «нет юзера» и «не тот
+  пароль», чтобы не подсказывать перебор).
 
 - `current_user_id(request: Request) -> int | None`
-  Нет докстринга.
+  id пользователя из сессии или None (аноним).
 
 - `current_user_role(request: Request) -> str | None`
-  Нет докстринга.
+  Роль из сессии ('student'/'tutor') или None (аноним).
 
 - `unauthorized() -> JSONResponse`
-  Нет докстринга.
+  Стандартный 401 для API-роутов.
 
 - `forbidden() -> JSONResponse`
-  Нет докстринга.
+  Стандартный 403: роут только для репетитора.
 
 ---
 
-# webapp/bot_bridge.py
-
-Модуль:
-Мост к банку заданий и эталонных решений в bot/ — общий источник
-для Telegram-бота и веб-грейдера, чтобы не дублировать содержимое.
-
-Константы:
-- `_BOT_DIR = Path(__file__).resolve().parent.parent / 'bot'`
-- `TASKS = {int(k): v for (k, v) in _data['tasks'].items()}`
-
----
-
-# webapp/create_user.py
-
-Модуль:
-Завести пользователя вручную (самостоятельной регистрации нет).
-
-Использование (внутри контейнера app):
-    docker exec -it python_practice_hub-app-1 python -m webapp.scripts.create_user <username> [role]
-
-role: student (по умолчанию) | tutor
-
-Спросит пароль интерактивно (не через argv — не светится в истории/логах/ps).
-
-Константы:
-- `VALID_ROLES = (ROLE_STUDENT, ROLE_TUTOR)`
-
-Функции:
-
-- `main() -> None`
-  Нет докстринга.
-
----
-
-# webapp/db.py
+# webapp/core/db.py
 
 Модуль:
 Подключение к БД: движок + фабрика сессий SQLAlchemy.
@@ -90,11 +244,83 @@ role: student (по умолчанию) | tutor
 Функции:
 
 - `get_db()`
-  Нет докстринга.
+  Зависимость FastAPI: своя сессия на каждый запрос, гарантированно
+  закрывается в finally.
 
 ---
 
-# webapp/grading.py
+# webapp/core/models.py
+
+Модуль:
+Модели: пользователи (ученики и репетитор, заводятся вручную) и попытки решения.
+
+Константы:
+- `ROLE_STUDENT = 'student'`
+- `ROLE_TUTOR = 'tutor'`
+
+Классы:
+
+- `User(Base)`
+  Пользователь: ученик или тьютор (role). Заводится вручную (create_user.py
+  или API тьютора) — самостоятельной регистрации нет.
+
+- `Attempt(Base)`
+  Одна попытка решения: код целиком + прошёл ли все тесты. История только
+  пополняется (удалить может лишь тьютор), статус задания — производное.
+
+- `Hint(Base)`
+  Текст уровня подсказки (markdown) — курированный контент, правится
+  тьютором через админку. Одна запись на (task_id, level).
+
+- `HintReveal(Base)`
+  Отметка «ученик раскрыл уровень во столько-то» — сервер считает по ним
+  тайминги доступности следующих уровней (клиентским часам не верим).
+
+---
+
+# webapp/core/realtime.py
+
+Модуль:
+In-memory realtime-комнаты для живых сессий тьютор-ученик.
+
+Комната = один ученик. Состояние живёт, пока жив процесс приложения — рестарт
+контейнера просто обнуляет текущие live-сессии, и это ожидаемо: это сиюминутное
+состояние (кто сейчас печатает), а не история попыток (та в БД).
+
+Классы:
+
+- `Room`
+  Комната одного ученика: его WebSocket, сокеты тьюторов, последние
+  код/задание/подсказка и висящее приглашение на созвон (feat.9).
+  Методы:
+  - `__init__(self)`
+    Пустая комната: никого нет, кодов нет, звонка нет.
+
+Функции:
+
+- `get_room(student_id: int) -> Room`
+  Комната ученика; создаётся по первому обращению и живёт до рестарта
+  процесса (это сиюминутное состояние, не история).
+
+- `safe_send(websocket: WebSocket, payload: dict) -> None`
+  Отправка соседу по комнате не должна ронять цикл отправителя, если
+  сосед уже отвалился, а disconnect ещё не долетел до finally.
+
+---
+
+# webapp/grading/bot_bridge.py
+
+Модуль:
+Мост к банку заданий и эталонных решений в bot/ — общий источник
+для Telegram-бота и веб-грейдера, чтобы не дублировать содержимое.
+
+Константы:
+- `_BOT_DIR = Path(__file__).resolve().parent.parent.parent / 'bot'`
+- `TASKS = {int(k): v for (k, v) in _data['tasks'].items()}`
+
+---
+
+# webapp/grading/grading.py
 
 Модуль:
 Grading engine: сверяет код ученика с эталонным решением на курированных
@@ -111,12 +337,14 @@ Grading engine: сверяет код ученика с эталонным ре�
 Классы:
 
 - `ExecutorUnavailable(Exception)`
-  Нет докстринга.
+  Исполнитель (executor на роутере) не ответил — проверка невозможна.
+  Это системный сбой, а не вина ученика: попытка в этом случае не пишется.
 
 Функции:
 
 - `_run_student_code(code: str, test_input) -> dict`
-  Нет докстринга.
+  Один прогон кода ученика в исполнителе на заданном входе; сетевой сбой
+  на роутере/тоннеле → ExecutorUnavailable.
 
 - `_normalize(value)`
   Эталон вызывается в процессе напрямую (без сериализации), а решение
@@ -128,259 +356,22 @@ Grading engine: сверяет код ученика с эталонным ре�
   Свободный запуск кода без сверки с эталоном — для подсказки, где
   тьютору нужно просто показать вывод print(), а не пройти тесты.
 
+- `run_with_sample(task_id: int, code: str) -> dict`
+  «Запустить» у ученика: код гоняется через тот же харнесс, что и при
+  проверке, с первым курированным входом — без сверки с эталоном. Без этого
+  решение-задание (def solve(data)) молча не печатало ничего: solve() никто
+  не звал (bug.4). Возвращает вход, print-вывод и результат solve().
+
 - `grade(task_id: int, code: str) -> dict`
-  Нет докстринга.
+  Проверка решения: каждый тестовый вход прогоняется и в исполнителе
+  (код ученика), и в эталоне; сравнение — после JSON-нормализации типов
+  (_normalize). Возвращает {'all_passed', 'total', 'passed', 'results'};
+  системные проблемы (нет тестов/эталона, исполнитель лежит) — {'error': …}
+  без 'all_passed', по ним попытка не записывается.
 
 ---
 
-# webapp/main.py
-
-Модуль:
-FastAPI-приложение веб-грейдера. Оболочка: отдаёт список заданий,
-логин/сессию и принимает решение ученика. Вся логика проверки —
-в grading.py/sandbox.py, вся модель данных — в models.py.
-
-Константы:
-- `SESSION_SECRET = os.environ.get('SESSION_SECRET')`
-- `TURN_SECRET = os.environ.get('TURN_SECRET')`
-- `TURN_URLS = os.environ.get('TURN_URLS')`
-- `STUN_URLS = os.environ.get('STUN_URLS', 'stun:informatika.meteopavel.space:3478')`
-- `TUTOR_LLM_URL = os.environ.get('TUTOR_LLM_URL', 'http://10.0.0.1:8011')`
-- `STATIC_DIR = Path(__file__).resolve().parent / 'static'`
-
-Классы:
-
-- `SubmissionRequest(BaseModel)`
-  Нет докстринга.
-  Поля:
-  - `task_id: int`
-  - `code: str`
-
-- `HintFreeRunRequest(BaseModel)`
-  Нет докстринга.
-  Поля:
-  - `code: str`
-
-- `TutorAskRequest(BaseModel)`
-  Запрос тьютора к ИИ-помощнику. task_context/student_code опциональны —
-  можно спросить и без них. question обязателен.
-  Поля:
-  - `task_context: str | None = None`
-  - `student_code: str | None = None`
-  - `question: str`
-
-- `CreateStudentRequest(BaseModel)`
-  Нет докстринга.
-  Поля:
-  - `username: str`
-  - `password: str`
-
-- `SetPasswordRequest(BaseModel)`
-  Нет докстринга.
-  Поля:
-  - `password: str`
-
-Функции:
-
-- `create_tables()`
-  Нет докстринга.
-
-- `login_page()`
-  Нет докстринга.
-
-- `login_submit(request: Request, username: str = Form(...), password: str = Form(...), db: Session = Depends(get_db))`
-  Нет докстринга.
-
-- `logout(request: Request)`
-  Нет докстринга.
-
-- `index(request: Request, db: Session = Depends(get_db))`
-  Нет докстринга.
-
-- `tutor_page(request: Request)`
-  Нет докстринга.
-
-- `tutor_student_page(student_id: int, request: Request)`
-  Нет докстринга.
-
-- `start_impersonation(student_id: int, request: Request, db: Session = Depends(get_db))`
-  Нет докстринга.
-
-- `stop_impersonation(request: Request)`
-  Нет докстринга.
-
-- `materials_page(module: str, lesson: str, request: Request)`
-  Нет докстринга.
-
-- `effective_identity(request: Request, db: Session)`
-  Для тьютора в режиме "посмотреть как ученик" подменяет личность только
-  для student-facing данных (список заданий/свои попытки) — НЕ для
-  авторизации, та остаётся на реальной роли из сессии.
-
-- `list_tasks(request: Request)`
-  Нет докстринга.
-
-- `list_materials(request: Request)`
-  Нет докстринга.
-
-- `get_material(module: str, lesson: str, request: Request)`
-  Нет докстринга.
-
-- `get_solution(task_id: int, request: Request)`
-  Нет докстринга.
-
-- `turn_credentials(request: Request)`
-  Нет докстринга.
-
-- `me(request: Request, db: Session = Depends(get_db))`
-  Нет докстринга.
-
-- `_task_status_map(db: Session, user_id: int) -> dict`
-  task_id -> 'pass'/'fail' по всей истории попыток пользователя — 'pass'
-  если хоть одна попытка когда-либо прошла. Общий код для своей истории
-  (эффективная личность) и истории конкретного ученика (вид тьютора).
-
-- `_task_attempts(db: Session, user_id: int, task_id: int) -> list`
-  Нет докстринга.
-
-- `my_attempts(request: Request, db: Session = Depends(get_db))`
-  Нет докстринга.
-
-- `my_task_attempts(task_id: int, request: Request, db: Session = Depends(get_db))`
-  Нет докстринга.
-
-- `list_students(request: Request, db: Session = Depends(get_db))`
-  Нет докстринга.
-
-- `create_student(payload: CreateStudentRequest, request: Request, db: Session = Depends(get_db))`
-  Нет докстринга.
-
-- `set_student_password(student_id: int, payload: SetPasswordRequest, request: Request, db: Session = Depends(get_db))`
-  Нет докстринга.
-
-- `_require_student(db: Session, student_id: int)`
-  Нет докстринга.
-
-- `student_task_status(student_id: int, request: Request, db: Session = Depends(get_db))`
-  Нет докстринга.
-
-- `student_task_attempts(student_id: int, task_id: int, request: Request, db: Session = Depends(get_db))`
-  Нет докстринга.
-
-- `session_ws(websocket: WebSocket, student_id: int)`
-  Живая комната одного ученика: сам ученик + один или несколько тьюторов,
-  которые сейчас смотрят его экран. Тьютор пишет — ученик видит подсказку,
-  ученик печатает — тьютор видит код в реальном времени.
-
-- `run_solve_code_free(payload: HintFreeRunRequest, request: Request)`
-  Свободный запуск кода ученика в его собственном редакторе — без сверки
-  с эталоном, чтобы можно было просто написать print(...) и посмотреть вывод.
-
-- `submit(payload: SubmissionRequest, request: Request, db: Session = Depends(get_db))`
-  Нет докстринга.
-
-- `run_hint_code(payload: SubmissionRequest, request: Request)`
-  Тьютор проверяет код прямо в редакторе подсказки — тот же grade(),
-  но без записи Attempt: это демонстрация ученику, а не его попытка.
-
-- `run_hint_code_free(payload: HintFreeRunRequest, request: Request)`
-  Свободный запуск кода в подсказке — без сверки с эталоном, просто
-  исполняет код как есть (print() и любые операторы отрабатывают).
-
-- `tutor_ask(payload: TutorAskRequest, request: Request)`
-  Тьютор спрашивает ИИ-помощника (DeepSeek через микросервис tutor-llm
-  на роутере). Прокси: webapp не знает ключ DeepSeek, он только пересылает
-  структурированный запрос в tutor-llm по внутренней сети (как executor).
-  Только для роли tutor.
-
----
-
-# webapp/materials.py
-
-Модуль:
-Справочные материалы — те же учебные ноутбуки (1_introduction/,
-2_loops_and_conditions/ и т.д. в корне репозитория), что и раньше лежали
-только как Jupyter-тетрадки. Здесь не БД и не отдельный конвертированный
-формат — .ipynb читается напрямую (это просто JSON), один раз при старте
-приложения, и держится в памяти. Ноутбуки маленькие (~470KB на все 36),
-без картинок/attachments — только code-ячейки, объяснение зашито в них
-как строки-докстринги. Собственный парсер вместо nbconvert: контента
-слишком мало и однообразно, чтобы тащить чужой шаблон/CSS, который потом
-пришлось бы перекраивать под дизайн-систему сайта.
-
-Константы:
-- `_ROOT = Path(__file__).resolve().parent.parent`
-- `_MODULE_TITLES = {'1_introduction': 'Введение', '2_loops_and_conditions': 'Циклы и условия', '3_functions': 'Функции…`
-- `_TITLE_OVERRIDES = {('1_introduction', '0_venv_install'): 'Установка и работа с venv', ('1_introduction', '1_intro'): …`
-- `_NUM_PREFIX = re.compile('^(\\d+)_')`
-
-Функции:
-
-- `_sort_key(filename: str) -> tuple`
-  Нет докстринга.
-
-- `_extract_title(module: str, slug: str, first_cell_source: str) -> str`
-  Нет докстринга.
-
-- `_load_notebook(path: Path) -> list`
-  Возвращает список ячеек: [{"code": str, "output": str|None, "is_error": bool}].
-
-- `_build_manifest()`
-  Нет докстринга.
-
-- `get_lesson(module: str, slug: str)`
-  Нет докстринга.
-
----
-
-# webapp/models.py
-
-Модуль:
-Модели: пользователи (ученики и репетитор, заводятся вручную) и попытки решения.
-
-Константы:
-- `ROLE_STUDENT = 'student'`
-- `ROLE_TUTOR = 'tutor'`
-
-Классы:
-
-- `User(Base)`
-  Нет докстринга.
-
-- `Attempt(Base)`
-  Нет докстринга.
-
----
-
-# webapp/realtime.py
-
-Модуль:
-In-memory realtime-комнаты для живых сессий тьютор-ученик.
-
-Комната = один ученик. Состояние живёт, пока жив процесс приложения — рестарт
-контейнера просто обнуляет текущие live-сессии, и это ожидаемо: это сиюминутное
-состояние (кто сейчас печатает), а не история попыток (та в БД).
-
-Классы:
-
-- `Room`
-  Нет докстринга.
-  Методы:
-  - `__init__(self)`
-    Нет докстринга.
-
-Функции:
-
-- `get_room(student_id: int) -> Room`
-  Нет докстринга.
-
-- `safe_send(websocket: WebSocket, payload: dict) -> None`
-  Отправка соседу по комнате не должна ронять цикл отправителя, если
-  сосед уже отвалился, а disconnect ещё не долетел до finally.
-
----
-
-# webapp/test_cases.py
+# webapp/grading/test_cases.py
 
 Модуль:
 Курированные тестовые входы для веб-грейдера.
@@ -400,3 +391,460 @@ max_delim % data[0]) — цикл while True никогда не заверша�
 
 Константы:
 - `TEST_CASES = {1: [[3, 2, 2, 1, 5, 3], [1, 1, 1], [4, 4, 4, 2, 1, 2]], 2: [[1, 2, 3, 4, 5, 6], [1, 3, 5], [0, -2,…`
+
+---
+
+# webapp/main.py
+
+Модуль:
+FastAPI-приложение веб-грейдера. Создаёт app, монтирует статику, сессию и
+роутеры. Вся логика проверки — в grading/, модель данных — в core/models.py,
+роуты — в routes/.
+
+Функции:
+
+- `cache_policy(request: Request, call_next)`
+  Cache-Control: no-cache для /static/ и HTML — браузер ревалидирует
+  (дешёвый 304 по ETag), а не держит старые JS/CSS после деплоя (bug.15).
+
+- `create_tables()`
+  Создать отсутствующие таблицы на старте (create_all идемпотентен;
+  системы миграций в проекте нет).
+
+---
+
+# webapp/routes/_common.py
+
+Модуль:
+Общее для нескольких модулей роутов: эффективная личность (имперсонация),
+агрегаты попыток, ответ подсказок и Pydantic-модели запросов, которые
+переиспользуются между доменами (submit/run_free — у ученика и у тьютора).
+
+Классы:
+
+- `SubmissionRequest(BaseModel)`
+  Отправка решения: задание + код ученика целиком.
+  Поля:
+  - `task_id: int`
+  - `code: str`
+
+- `HintFreeRunRequest(BaseModel)`
+  Свободный запуск кода без привязки к заданию (print и любые операторы).
+  Поля:
+  - `code: str`
+
+Функции:
+
+- `effective_identity(request: Request, db: Session)`
+  Для тьютора в режиме "посмотреть как ученик" подменяет личность только
+  для student-facing данных (список заданий/свои попытки) — НЕ для
+  авторизации, та остаётся на реальной роли из сессии.
+
+- `task_status_map(db: Session, user_id: int) -> dict`
+  task_id -> 'pass'/'fail' по всей истории попыток пользователя — 'pass'
+  если хоть одна попытка когда-либо прошла. Общий код для своей истории
+  (эффективная личность) и истории конкретного ученика (вид тьютора).
+
+- `task_attempts(db: Session, user_id: int, task_id: int) -> list`
+  Все попытки пользователя по одному заданию в хронологии — общий вид
+  для своей истории (ученик) и истории конкретного ученика (тьютор).
+
+- `hints_response(db: Session, user_id: int, task_id: int) -> dict`
+  Общий вид ответа с состоянием подсказок для ученика — используется и в
+  GET, и в POST /reveal, чтобы контракт был единый. Контент рендерим в HTML
+  только для revealed (ученик видит готовый текст, не сырой markdown).
+
+- `require_student(db: Session, student_id: int)`
+  User по id, если это ученик, иначе None (вызывающий отдаёт 404).
+
+---
+
+# webapp/routes/auth.py
+
+Модуль:
+Роуты авторизации: вход/выход, текущий пользователь, режим «посмотреть как
+ученик» (имперсонация).
+
+Классы:
+
+- `ChangePasswordRequest(BaseModel)`
+  Смена собственного пароля: подтверждение текущим + новый.
+  Поля:
+  - `current_password: str`
+  - `new_password: str`
+
+Функции:
+
+- `login_page(request: Request)`
+  Страница входа (форма логин/пароль).
+
+- `login_submit(request: Request, username: str = Form(...), password: str = Form(...), db: Session = Depends(get_db))`
+  Вход по логину/паролю: при успехе user_id/username/role пишутся в
+  подписанную сессионную cookie; при неудаче — назад на /login?error=1.
+
+- `logout(request: Request)`
+  Выход: сессия очищается целиком (включая флаг имперсонации).
+
+- `me(request: Request, db: Session = Depends(get_db))`
+  Текущий пользователь для фронта: эффективные имя/роль (при
+  имперсонации — ученик), факт подмены и реальное имя тьютора.
+
+- `change_own_password(payload: ChangePasswordRequest, request: Request, db: Session = Depends(get_db))`
+  Смена собственного пароля — доступна любой роли (и тьютору, и ученику).
+  Требует текущий пароль, новый проходит политику минимальной длины
+  (password_policy_error). Другие активные сессии пользователя при этом не
+  инвалидируются: сессия — stateless подписанная cookie, от пароля не
+  зависит (см. docs/decisions.md, bug.9).
+
+- `start_impersonation(student_id: int, request: Request, db: Session = Depends(get_db))`
+  Войти в режим «посмотреть как ученик»: в сессию пишется
+  impersonate_student_id, student-facing данные показываются от лица
+  ученика; авторизация тьюторских роутов остаётся на реальной роли.
+
+- `stop_impersonation(request: Request)`
+  Выйти из режима имперсонации — возврат на страницу этого ученика.
+
+---
+
+# webapp/routes/hints_api.py
+
+Модуль:
+Роуты многоступенчатых подсказок: ученические (GET/reveal) и админка
+тьютора (редактирование текстов уровней). Логика тайминга и доступа — в
+content/hints.py, здесь только авторизация и валидация task_id/level.
+
+Классы:
+
+- `HintRevealRequest(BaseModel)`
+  Ученик запрашивает раскрытие уровня подсказки. level — 1|2|3.
+  Поля:
+  - `level: int`
+
+- `HintContentRequest(BaseModel)`
+  Тьютор сохраняет текст уровня (markdown).
+  Поля:
+  - `content: str = ''`
+
+Функции:
+
+- `get_hints(task_id: int, request: Request, db: Session = Depends(get_db))`
+  Состояние подсказок задания для ученика: по уровню — статус (locked /
+  waiting / ready / revealed), для revealed — отрендеренный HTML контента,
+  для waiting — available_at (когда станет ready, сервер считает тайминг).
+  
+  Контент отдаётся только для уже раскрытых уровней; для waiting сервер
+  остаётся источником правды о готовности — фронт по обнулении таймера
+  перезапрашивает это состояние.
+
+- `reveal_hint(task_id: int, payload: HintRevealRequest, request: Request, db: Session = Depends(get_db))`
+  Ученик раскрывает уровень подсказки. Сервер решает, можно ли сейчас
+  раскрыть (предыдущий уровень раскрыт И его задержка прошла), иначе 409.
+  Повторный запрос на уже раскрытый уровень — идемпотентен (не создаёт
+  дубль и не сдвигает revealed_at).
+
+- `_require_tutor(request: Request)`
+  JSONResponse-ошибка (401/403), если запрос не от тьютора, иначе None
+  (тот же контракт, что у students._require_tutor).
+
+- `admin_list_hints(request: Request, task_id: int, db: Session = Depends(get_db))`
+  Текст всех трёх уровней задания (включая пустые) — для редактора
+  тьютора. Отдаём сырой markdown, не HTML: в форме его правят как текст.
+
+- `admin_save_hint(task_id: int, level: int, payload: HintContentRequest, request: Request, db: Session = Depends(get_db))`
+  Сохранить (upsert) текст уровня подсказки. Контент — markdown,
+  правит тьютор. Создание/обновление одной записью на (task_id, level).
+
+- `admin_hinted_tasks(request: Request)`
+  Задания, к которым привязаны подсказки (id + условие) — для селектора
+  в админке, чтобы тьютор понимал, какое задание правит.
+
+---
+
+# webapp/routes/pages.py
+
+Модуль:
+Страничные роуты: отдача Jinja2-шаблонов (практика, тьютор, материалы).
+
+Функции:
+
+- `index(request: Request, db: Session = Depends(get_db))`
+  Главная: тьютору — список учеников (tutor.html, его основная страница),
+  ученику — практика (index.html).
+
+- `tutor_page(request: Request)`
+  Легаси /tutor — постоянный редирект на главную (отдельной тьюторской
+  страницы больше нет, список учеников теперь и есть главная тьютора).
+
+- `tutor_student_page(student_id: int, request: Request)`
+  Страница тьютора по конкретному ученику: живой мониторинг, попытки,
+  подсказки (данные грузятся отдельными API).
+
+- `tutor_hints_page(request: Request)`
+  Админка подсказок для заданий 81..100 — тьютор правит тексты уровней.
+
+- `materials_page(module: str, lesson: str, request: Request)`
+  Страница урока материалов (существование проверяем по манифесту,
+  содержимое фронт грузит отдельным API).
+
+---
+
+# webapp/routes/students.py
+
+Модуль:
+Роуты тьютора по ученикам: список, создание, смена пароля, попытки и
+состояние подсказок конкретного ученика (мониторинг + сброс).
+
+Классы:
+
+- `CreateStudentRequest(BaseModel)`
+  Завести ученика: логин + стартовый пароль.
+  Поля:
+  - `username: str`
+  - `password: str`
+
+- `SetPasswordRequest(BaseModel)`
+  Тьютор задаёт ученику новый пароль (старый не нужен — это тьютор).
+  Поля:
+  - `password: str`
+
+- `HintResetRequest(BaseModel)`
+  Тьютор сбрасывает раскрытый уровень подсказки ученика (level — 1|2|3).
+  Сбрасывается сам уровень и все раскрытые уровни выше него по цепочке.
+  Поля:
+  - `level: int`
+
+Функции:
+
+- `_require_tutor(request: Request)`
+  Возвращает JSONResponse-ошибку (401/403), если запрос не от тьютора,
+  иначе None. Каждый роут ниже начинает с `if (err := _require_tutor(...)): return err`.
+
+- `list_students(request: Request, db: Session = Depends(get_db))`
+  Все ученики тьютора + агрегаты по попыткам (сколько всего, когда
+  последняя) — одним запросом, без N+1.
+
+- `create_student(payload: CreateStudentRequest, request: Request, db: Session = Depends(get_db))`
+  Создать ученика: логин уникален, пароль проходит политику, в БД —
+  bcrypt-хэш.
+
+- `set_student_password(student_id: int, payload: SetPasswordRequest, request: Request, db: Session = Depends(get_db))`
+  Сменить пароль ученика (роль всегда student; политика проверяется).
+
+- `student_task_status(student_id: int, request: Request, db: Session = Depends(get_db))`
+  Статус всех заданий ученика ('pass'/'fail') — для монитора тьютора.
+
+- `student_task_attempts(student_id: int, task_id: int, request: Request, db: Session = Depends(get_db))`
+  Все попытки ученика по одному заданию: код, passed, время.
+
+- `student_hints(student_id: int, task_id: int, request: Request, db: Session = Depends(get_db))`
+  Состояние подсказок задания для конкретного ученика — глазами тьютора
+  (мониторинг прогресса раскрытия, без reveal-кнопок). Та же логика, что у
+  ученического GET /api/hints, но user_id берётся явно из student_id, а не
+  из effective_identity. Контент отдаётся для revealed (тьютор видит, что
+  именно ученик уже прочитал).
+
+- `reset_student_hint(student_id: int, task_id: int, payload: HintResetRequest, request: Request, db: Session = Depends(get_db))`
+  Тьютор сбрасывает раскрытый уровень подсказки ученика — ученик снова
+  увидит его закрытым (как будто не открывал). Сбрасывается сам уровень и
+  каскадно все раскрытые уровни выше, чтобы не получить невозможное
+  состояние «старший открыт, а его якорь закрыт». Действие необратимо:
+  истории раскрытия в БД нет. Возвращает свежее состояние подсказок.
+
+- `delete_student_attempt(student_id: int, attempt_id: int, request: Request, db: Session = Depends(get_db))`
+  Тьютор удаляет одну попытку ученика — удачную или нет, в любом порядке.
+  Статус решённости — производное от Attempt.passed (task_status_map в
+  _common.py: 'pass' если хоть одна попытка прошла), поэтому удаление
+  последней удачной попытки делает задание снова нерешённым ('fail', если
+  остались неудачные), а удаление всех — возвращает в начальное состояние
+  (статус пропадает, индикатор исчезает). Возвращает свежий статус задачи,
+  чтобы фронт сразу перекрасил точку и перезагрузил список попыток.
+
+---
+
+# webapp/routes/tasks_api.py
+
+Модуль:
+API заданий и student-facing данных: список заданий, материалы, попытки
+ученика, TURN-креды, отправка и свободный запуск кода.
+
+Классы:
+
+- `SolveRunFreeRequest(BaseModel)`
+  Код + опциональный task_id: с задачей «Запустить» гоняет код через
+  харнесс с первым входом (run_with_sample), без задачи — как plain-скрипт
+  (run_free, прежнее поведение).
+  Поля:
+  - `code: str`
+  - `task_id: int | None = None`
+
+Функции:
+
+- `list_tasks(request: Request)`
+  Каталог заданий: id, условие, пример (только задания с тест-кейсами).
+
+- `list_materials(request: Request)`
+  Манифест материалов: модули → уроки (без содержимого уроков).
+
+- `get_material(module: str, lesson: str, request: Request)`
+  Один урок материалов: code-ячейки ноутбука с выводами (из памяти,
+  см. content/materials.py).
+
+- `turn_credentials(request: Request)`
+  ICE-серверы для WebRTC-звонка: STUN всегда; TURN — временная учётка
+  (см. схему в коде ниже), статического пароля во фронте нет.
+
+- `my_attempts(request: Request, db: Session = Depends(get_db))`
+  Статус своих заданий ('pass'/'fail'); при имперсонации — задания
+  ученика (effective_identity).
+
+- `my_task_attempts(task_id: int, request: Request, db: Session = Depends(get_db))`
+  Свои попытки по одному заданию; при имперсонации — ученика.
+
+- `run_solve_code_free(payload: SolveRunFreeRequest, request: Request)`
+  Свободный запуск кода ученика в его собственном редакторе. Для кода
+  конкретного задания — с данными на входе (solve() вызывается харнессом),
+  для свободного print-кода — без входа, как раньше.
+
+- `submit(payload: SubmissionRequest, request: Request, db: Session = Depends(get_db))`
+  Отправка решения на проверку (центральный эндпоинт грейдера): grade()
+  прогоняет код на всех тестах; Attempt записывается только при реальном
+  вердикте (не системной ошибке). В режиме имперсонации запрещено — тьютор
+  не должен решать за ученика.
+
+---
+
+# webapp/routes/tutor_api.py
+
+Модуль:
+Тьюторские API: проверка/запуск кода из редактора подсказки и прокси к
+ИИ-ассистенту (DeepSeek через tutor-llm).
+
+Классы:
+
+- `TutorAskRequest(BaseModel)`
+  Запрос тьютора к ИИ-помощнику. task_context/student_code опциональны —
+  можно спросить и без них. question обязателен.
+  Поля:
+  - `task_context: str | None = None`
+  - `student_code: str | None = None`
+  - `question: str`
+
+Функции:
+
+- `_require_tutor(request: Request)`
+  JSONResponse-ошибка (401/403), если запрос не от тьютора, иначе None
+  (тот же контракт, что у students._require_tutor).
+
+- `run_hint_code(payload: SubmissionRequest, request: Request)`
+  Тьютор проверяет код прямо в редакторе подсказки — тот же grade(),
+  но без записи Attempt: это демонстрация ученику, а не его попытка.
+
+- `run_hint_code_free(payload: HintFreeRunRequest, request: Request)`
+  Свободный запуск кода в подсказке — без сверки с эталоном, просто
+  исполняет код как есть (print() и любые операторы отрабатывают).
+
+- `tutor_ask(payload: TutorAskRequest, request: Request)`
+  Тьютор спрашивает ИИ-помощника (DeepSeek через микросервис tutor-llm
+  на роутере). Прокси: webapp не знает ключ DeepSeek, он только пересылает
+  структурированный запрос в tutor-llm по внутренней сети (как executor).
+  Только для роли tutor.
+
+---
+
+# webapp/routes/ws.py
+
+Модуль:
+WebSocket живой сессии тьютор↔ученик: мультиплексирует live-код, подсказки,
+результаты проверок и сигналинг звонка/ссылки на созвон.
+
+Функции:
+
+- `session_ws(websocket: WebSocket, student_id: int)`
+  Живая комната одного ученика: сам ученик + один или несколько тьюторов,
+  которые сейчас смотрят его экран. Тьютор пишет — ученик видит подсказку,
+  ученик печатает — тьютор видит код в реальном времени.
+
+---
+
+# webapp/scripts/create_user.py
+
+Модуль:
+Завести пользователя вручную (самостоятельной регистрации нет).
+
+Использование (внутри контейнера app, WORKDIR=/app):
+    docker exec -it python_practice_hub-app-1 python -m webapp.scripts.create_user <username> [role]
+
+role: student (по умолчанию) | tutor
+
+Спросит пароль интерактивно (не через argv — не светится в истории/логах/ps).
+
+Константы:
+- `VALID_ROLES = (ROLE_STUDENT, ROLE_TUTOR)`
+
+Функции:
+
+- `main() -> None`
+  Разбор аргументов, интерактивный ввод пароля и создание пользователя.
+
+---
+
+# webapp/scripts/dump_db.py
+
+Модуль:
+Дамп всех таблиц БД в виде SQL INSERT-ов (в stdout).
+
+Схему не дампим: она живёт в webapp/core/models.py и пересоздаётся
+Base.metadata.create_all при старте приложения. Восстановление — поднять
+чистую БД, запустить приложение (создаст таблицы), затем залить дамп:
+    mysql -u <логин> -p <база> < dobrokod-db.sql
+
+Использование (на проде — из контейнера app на Frankfurt, БД доступна
+только оттуда):
+    docker compose exec -T app python -m webapp.scripts.dump_db > dobrokod-db.sql
+
+SQL пишется в stdout, сводка «таблица → строк» — в stderr, чтобы вывод
+можно было перенаправлять в файл не фильтруя. Таблицы идут в порядке
+FK-зависимостей (users раньше attempts/hint_reveals) — дамп заливается
+как есть, без выключения проверок внешних ключей.
+
+Функции:
+
+- `render_insert(table, row: dict) -> str`
+  Скомпилировать INSERT для одной строки с литеральными значениями.
+  
+  literal_binds против диалекта движка даёт корректное экранирование
+  строк/дат/NULL без ручной возни с кавычками.
+
+- `main() -> None`
+  Обойти таблицы в FK-порядке и напечатать INSERT-ы (см. модуль).
+
+---
+
+# webapp/scripts/seed_hints.py
+
+Модуль:
+Одноразовая загрузка курированных подсказок для заданий 0, 81..100 и 101..120.
+
+Запуск (внутри контейнера app на Frankfurt, WORKDIR=/app):
+    docker compose exec app python -m webapp.scripts.seed_hints
+
+Идемпотентно: для каждой пары (task_id, level) делает upsert — повторный
+запуск обновит тексты, не создавая дублей (UNIQUE(task_id, level) в модели
+Hint). Если тьютор уже отредактировал подсказку через админку, этот скрипт
+ПЕРЕЗАПИШЕТ её — поэтому запускать стоит только для начального наполнения
+или осознанного сброса к эталонному тексту.
+
+Три уровня на задание:
+  1 — абстракция: куда двигаться, на что обратить внимание.
+  2 — конкретика со ссылками на документацию Python.
+  3 — почти готовое решение с пометками TODO что доделать.
+
+Формат контента — markdown (см. content/hints.py render_markdown).
+
+Константы:
+- `HINTS_DATA: dict[int, dict[int, str]] = {0: {1: 'Нужно сложить все элементы списка. Заведи переменную-аккумулятор (начни с 0) и проходи по …`
+
+Функции:
+
+- `main() -> None`
+  Залить курированные тексты подсказок в БД (upsert по task_id+level).

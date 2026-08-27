@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-28T11:47:58.189653+00:00",
+  "generated_at": "2026-08-27T08:38:01.177872+00:00",
   "generator": "tools/extract_api_map.py",
   "target": "tutor-llm",
   "scanned_python_files": 1,
@@ -18,7 +18,7 @@
   "modules": [
     {
       "path": "tutor-llm/main.py",
-      "module_docstring": "Tutor-LLM — прокси к DeepSeek API для тьютора.\n\nЖивёт на роутере (как executor), доступен только внутри тоннеля\n(10.0.0.1:8011). Единственная задача: принять структурированный\nзапрос {task_context, student_code, question} от webapp'а на Frankfurt,\nсобрать промпт, сходить в DeepSeek, вернуть ответ. Ключ DEEPSEEK_API_KEY\nживёт только в этом контейнере — наружу (во webapp, в браузер) не уходит.\n\nВ будущем здесь же вырастет RAG: добавится обращение к векторной БД,\nпромпт будет заземляться найденными чанками методики. Пока — чистый\nLLM-вызов для проверки базовой связки end-to-end.",
+      "module_docstring": "Tutor-LLM — прокси к DeepSeek API для тьютора.\n\nЖивёт на роутере (как executor), доступен только внутри тоннеля\n(порт 8011). Единственная задача: принять структурированный\nзапрос {task_context, student_code, question} от webapp'а на Frankfurt,\nсобрать промпт, сходить в DeepSeek, вернуть ответ. Ключ DEEPSEEK_API_KEY\nживёт только в этом контейнере — наружу (во webapp, в браузер) не уходит.\n\nВ будущем здесь же вырастет RAG: добавится обращение к векторной БД,\nпромпт будет заземляться найденными чанками методики. Пока — чистый\nLLM-вызов для проверки базовой связки end-to-end.",
       "module_summary": "Tutor-LLM — прокси к DeepSeek API для тьютора.",
       "classes": [
         {
@@ -70,14 +70,14 @@
         {
           "name": "ask",
           "signature": "ask(payload: AskRequest)",
-          "docstring": null,
-          "summary": null,
+          "docstring": "Спросить DeepSeek: системный промпт репетитора + блоки задача/код/вопрос.\nОшибки API и сети наружу отдаются как 502, отсутствие ключа — 500.",
+          "summary": "Спросить DeepSeek: системный промпт репетитора + блоки задача/код/вопрос.",
           "kind": "function",
           "decorators": [
             "app.post('/ask')"
           ],
           "lineno": 59,
-          "end_lineno": 116
+          "end_lineno": 118
         },
         {
           "name": "health",
@@ -88,8 +88,8 @@
           "decorators": [
             "app.get('/health')"
           ],
-          "lineno": 120,
-          "end_lineno": 122
+          "lineno": 122,
+          "end_lineno": 124
         }
       ],
       "constants": [

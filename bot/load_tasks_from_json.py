@@ -1,3 +1,5 @@
+"""Загрузка банка заданий из tasks.json — единый источник и для бота, и для
+webapp (через grading/bot_bridge.py)."""
 import json
 
 

@@ -1,3 +1,5 @@
+"""Перегенерировать bot/tasks.json из constants.py — запускать после каждой
+правки банка заданий (подробности — в шапке constants.py)."""
 import json
 from constants import TASKS, INPUT_HINTS
 

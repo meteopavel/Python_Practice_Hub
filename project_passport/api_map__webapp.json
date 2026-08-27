@@ -1,125 +1,76 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-28T11:47:57.971416+00:00",
+  "generated_at": "2026-08-27T08:38:00.946297+00:00",
   "generator": "tools/extract_api_map.py",
   "target": "webapp",
-  "scanned_python_files": 10,
-  "files_count": 10,
-  "skipped_files_count": 0,
-  "skipped_files": [],
+  "scanned_python_files": 28,
+  "files_count": 22,
+  "skipped_files_count": 6,
+  "skipped_files": [
+    "webapp/__init__.py",
+    "webapp/content/__init__.py",
+    "webapp/core/__init__.py",
+    "webapp/grading/__init__.py",
+    "webapp/routes/__init__.py",
+    "webapp/scripts/__init__.py"
+  ],
   "stats": {
-    "modules": 10,
-    "classes": 9,
+    "modules": 22,
+    "classes": 16,
     "dataclasses": 0,
-    "functions": 53,
+    "functions": 86,
     "methods": 1,
-    "constants": 18
+    "constants": 26
   },
   "modules": [
     {
-      "path": "webapp/auth.py",
-      "module_docstring": "Простая авторизация логин/пароль + сессия по подписанной cookie.\nУченики заводятся вручную (см. create_user.py) — самостоятельной регистрации нет.",
-      "module_summary": "Простая авторизация логин/пароль + сессия по подписанной cookie.",
-      "classes": [],
-      "functions": [
-        {
-          "name": "hash_password",
-          "signature": "hash_password(password: str) -> str",
-          "docstring": null,
-          "summary": null,
-          "kind": "function",
-          "decorators": [],
-          "lineno": 12,
-          "end_lineno": 13
-        },
-        {
-          "name": "verify_password",
-          "signature": "verify_password(password: str, password_hash: str) -> bool",
-          "docstring": null,
-          "summary": null,
-          "kind": "function",
-          "decorators": [],
-          "lineno": 16,
-          "end_lineno": 17
-        },
-        {
-          "name": "authenticate",
-          "signature": "authenticate(db: Session, username: str, password: str) -> User | None",
-          "docstring": null,
-          "summary": null,
-          "kind": "function",
-          "decorators": [],
-          "lineno": 20,
-          "end_lineno": 26
-        },
-        {
-          "name": "current_user_id",
-          "signature": "current_user_id(request: Request) -> int | None",
-          "docstring": null,
-          "summary": null,
-          "kind": "function",
-          "decorators": [],
-          "lineno": 29,
-          "end_lineno": 30
-        },
-        {
-          "name": "current_user_role",
-          "signature": "current_user_role(request: Request) -> str | None",
-          "docstring": null,
-          "summary": null,
-          "kind": "function",
-          "decorators": [],
-          "lineno": 33,
-          "end_lineno": 34
-        },
-        {
-          "name": "unauthorized",
-          "signature": "unauthorized() -> JSONResponse",
-          "docstring": null,
-          "summary": null,
-          "kind": "function",
-          "decorators": [],
-          "lineno": 37,
-          "end_lineno": 38
-        },
-        {
-          "name": "forbidden",
-          "signature": "forbidden() -> JSONResponse",
-          "docstring": null,
-          "summary": null,
-          "kind": "function",
-          "decorators": [],
-          "lineno": 41,
-          "end_lineno": 42
-        }
-      ],
-      "constants": [],
-      "stats": {
-        "classes": 0,
-        "dataclasses": 0,
-        "functions": 7,
-        "methods": 0,
-        "constants": 0
-      }
-    },
-    {
-      "path": "webapp/bot_bridge.py",
-      "module_docstring": "Мост к банку заданий и эталонных решений в bot/ — общий источник\nдля Telegram-бота и веб-грейдера, чтобы не дублировать содержимое.",
-      "module_summary": "Мост к банку заданий и эталонных решений в bot/ — общий источник",
+      "path": "webapp/config.py",
+      "module_docstring": "Чтение конфигурации из окружения. Импортируется main.py и роутами.",
+      "module_summary": "Чтение конфигурации из окружения. Импортируется main.py и роутами.",
       "classes": [],
       "functions": [],
       "constants": [
         {
-          "name": "_BOT_DIR",
+          "name": "STATIC_DIR",
           "annotation": null,
-          "value_repr": "Path(__file__).resolve().parent.parent / 'bot'",
-          "lineno": 8
+          "value_repr": "Path(__file__).resolve().parent / 'static'",
+          "lineno": 19
         },
         {
-          "name": "TASKS",
+          "name": "TEMPLATES_DIR",
           "annotation": null,
-          "value_repr": "{int(k): v for (k, v) in _data['tasks'].items()}",
-          "lineno": 17
+          "value_repr": "Path(__file__).resolve().parent / 'templates'",
+          "lineno": 20
+        },
+        {
+          "name": "SESSION_SECRET",
+          "annotation": null,
+          "value_repr": "os.environ.get('SESSION_SECRET')",
+          "lineno": 26
+        },
+        {
+          "name": "TURN_SECRET",
+          "annotation": null,
+          "value_repr": "os.environ.get('TURN_SECRET')",
+          "lineno": 33
+        },
+        {
+          "name": "TURN_URLS",
+          "annotation": null,
+          "value_repr": "os.environ.get('TURN_URLS')",
+          "lineno": 34
+        },
+        {
+          "name": "STUN_URLS",
+          "annotation": null,
+          "value_repr": "os.environ.get('STUN_URLS', 'stun:dobrokod.ru:3478')",
+          "lineno": 35
+        },
+        {
+          "name": "TUTOR_LLM_URL",
+          "annotation": null,
+          "value_repr": "os.environ.get('TUTOR_LLM_URL')",
+          "lineno": 40
         }
       ],
       "stats": {
@@ -127,44 +78,392 @@
         "dataclasses": 0,
         "functions": 0,
         "methods": 0,
-        "constants": 2
+        "constants": 7
       }
     },
     {
-      "path": "webapp/create_user.py",
-      "module_docstring": "Завести пользователя вручную (самостоятельной регистрации нет).\n\nИспользование (внутри контейнера app):\n    docker exec -it python_practice_hub-app-1 python create_user.py <username> [role]\n\nrole: student (по умолчанию) | tutor\n\nСпросит пароль интерактивно (не через argv — не светится в истории/логах/ps).",
-      "module_summary": "Завести пользователя вручную (самостоятельной регистрации нет).",
+      "path": "webapp/content/hints.py",
+      "module_docstring": "Многоступенчатые подсказки к заданиям (курированный контент — 0, 81..120).\n\nТри уровня на каждое задание:\n  1 — абстрактная: куда двигаться, на что обратить внимание.\n  2 — конкретная со ссылками на материалы/функции; доступна через 7 минут\n      после раскрытия 1-й.\n  3 — почти готовое решение с пометками что доделать; доступна ещё через\n      15 минут после раскрытия 2-й.\n\nТайминг считается ТОЛЬКО на сервере — по отметкам HintReveal. Клиентскому\nтаймеру верить нельзя: часы на устройстве ученика тривиально подменить,\nпоэтому «когда уровень стал доступен» определяется revealed_at предыдущего\nуровня, а не временем, пришедшим из браузера.\n\nКонтент (Hint) правит тьютор через админку; здесь — только логика доступа\nи мини-markdown-рендерер (в духе materials.py: проект избегает тяжёлых\nзависимостей).",
+      "module_summary": "Многоступенчатые подсказки к заданиям (курированный контент — 0, 81..120).",
       "classes": [],
       "functions": [
         {
-          "name": "main",
-          "signature": "main() -> None",
-          "docstring": null,
-          "summary": null,
+          "name": "has_hints",
+          "signature": "has_hints(task_id: int) -> bool",
+          "docstring": "Есть ли у задания вообще механика подсказок (см. HINTED_TASK_IDS).",
+          "summary": "Есть ли у задания вообще механика подсказок (см. HINTED_TASK_IDS).",
           "kind": "function",
           "decorators": [],
-          "lineno": 21,
-          "end_lineno": 48
+          "lineno": 50,
+          "end_lineno": 52
+        },
+        {
+          "name": "_now",
+          "signature": "_now(db: Session) -> datetime",
+          "docstring": "«Сейчас» берём ИЗ БД (SELECT NOW()), а не из Python. БД хостинга\nработает в локальной зоне (MSK), её func.now() — локальное время; и\nrevealed_at пишется тоже func.now()-сервером. Сравнивая обе стороны в\nзоне БД, мы независимы от того, в какой именно зоне работает инстанс:\nразность корректна всегда. datetime.now(utc) тут использовать нельзя —\nполучили бы сдвиг в 3 часа против локального revealed_at.",
+          "summary": "«Сейчас» берём ИЗ БД (SELECT NOW()), а не из Python. БД хостинга",
+          "kind": "function",
+          "decorators": [],
+          "lineno": 55,
+          "end_lineno": 62
+        },
+        {
+          "name": "get_hint_content",
+          "signature": "get_hint_content(db: Session, task_id: int) -> dict[int, str]",
+          "docstring": "Все тексты уровней для задания: {level: markdown}. Уровни без записи\nотсутствуют в словаре (фронт считает их пустыми/незаведёнными).",
+          "summary": "Все тексты уровней для задания: {level: markdown}. Уровни без записи",
+          "kind": "function",
+          "decorators": [],
+          "lineno": 65,
+          "end_lineno": 71
+        },
+        {
+          "name": "get_revealed_levels",
+          "signature": "get_revealed_levels(db: Session, user_id: int, task_id: int) -> dict[int, datetime]",
+          "docstring": "{level: revealed_at} для уже раскрытых учеником уровней. Время — в\nзоне БД (как есть, без приведения к UTC): сравниваем с _now(db) тоже в\nзоне БД, так обе стороны в одной шкале.",
+          "summary": "{level: revealed_at} для уже раскрытых учеником уровней. Время — в",
+          "kind": "function",
+          "decorators": [],
+          "lineno": 74,
+          "end_lineno": 83
+        },
+        {
+          "name": "_level_state",
+          "signature": "_level_state(level, revealed: dict[int, datetime], now: datetime)",
+          "docstring": "Внутренняя: статус одного уровня без контента.\n\nВозвращает (status, available_at):\n  locked   — предыдущий уровень ещё не раскрыт, этот недоступен.\n  ready    — доступен к раскрытию учеником (задержка прошла / её нет).\n  revealed — уже раскрыт.\n  waiting  — задержка ещё не прошла, ждём; available_at — когда станет ready\n             (в зоне БД; для API переводится в UTC отдельно).\n\nnow — «сейчас» в зоне БД (из _now), revealed — тоже в зоне БД: сравнение\nкорректно при любой зоне инстанса.",
+          "summary": "Внутренняя: статус одного уровня без контента.",
+          "kind": "function",
+          "decorators": [],
+          "lineno": 86,
+          "end_lineno": 110
+        },
+        {
+          "name": "_available_at_utc",
+          "signature": "_available_at_utc(db: Session, available_at_local: datetime) -> str",
+          "docstring": "Перевод available_at (зона БД, naive) в UTC ISO-строку для API.\n\nТаймзону инстанса из приложения надёжно не узнать, поэтому вычисляем\nсмещение эмпирически: db_offset = NOW(БД) − utcnow(). Для MSK это +3ч.\nВычитая его из локальной метки, получаем честный абсолютный момент в UTC,\nи фронт рисует корректный обратный отсчёт при любой зоне инстанса.",
+          "summary": "Перевод available_at (зона БД, naive) в UTC ISO-строку для API.",
+          "kind": "function",
+          "decorators": [],
+          "lineno": 113,
+          "end_lineno": 125
+        },
+        {
+          "name": "available_levels",
+          "signature": "available_levels(db: Session, user_id: int, task_id: int) -> list[dict]",
+          "docstring": "Полное состояние подсказок задания для ученика.\n\nКонтент отдаётся ТОЛЬКО для revealed — остальные уровни ученик не должен\nвидеть даже пустыми (статус готовности не должен раскрывать суть).\navailable_at (ISO-строка UTC) отдаётся для waiting, чтобы фронт нарисовал\nобратный отсчёт; для waiting сервер — источник правды о готовности,\nфронт по достижении нуля перезапрашивает состояние.",
+          "summary": "Полное состояние подсказок задания для ученика.",
+          "kind": "function",
+          "decorators": [],
+          "lineno": 128,
+          "end_lineno": 149
+        },
+        {
+          "name": "can_reveal",
+          "signature": "can_reveal(db: Session, user_id: int, task_id: int, level: int) -> bool",
+          "docstring": "Можно ли раскрыть уровень сейчас: не заблокирован предыдущим и\nзадержка прошла (или её нет). Уже раскрытый тоже «можно» — идемпотентно.",
+          "summary": "Можно ли раскрыть уровень сейчас: не заблокирован предыдущим и",
+          "kind": "function",
+          "decorators": [],
+          "lineno": 152,
+          "end_lineno": 158
+        },
+        {
+          "name": "record_reveal",
+          "signature": "record_reveal(db: Session, user_id: int, task_id: int, level: int) -> None",
+          "docstring": "Фиксируем раскрытие уровня. Идемпотентно: повторный клик по уже\nраскрытому не создаёт дубль (UNIQUE-ограничение) и НЕ сдвигает\nrevealed_at — иначе можно было бы обнулить таймер следующего уровня.\n\nrevealed_at НЕ задаём явно — пусть ставит server_default=func.now(),\nто есть локальное время БД. Сравниваем затем с _now(db) (тоже зона БД),\nтак обе стороны в одной шкале и зона инстанса не имеет значения.\nРаньше писали datetime.now(utc) и сравнивали с локальным — был сдвиг 3ч.",
+          "summary": "Фиксируем раскрытие уровня. Идемпотентно: повторный клик по уже",
+          "kind": "function",
+          "decorators": [],
+          "lineno": 161,
+          "end_lineno": 180
+        },
+        {
+          "name": "reset_reveal",
+          "signature": "reset_reveal(db: Session, user_id: int, task_id: int, level: int) -> None",
+          "docstring": "Стирает раскрытие уровня (удаляет HintReveal-строку). После удаления\nстатус пересчитывается из оставшихся строк: уровень снова становится\nlocked/ready/waiting, как будто ученик его не открывал. revealed_at живёт\nна той же строке, поэтому таймер следующего уровня тоже обнуляется.\n\nИдемпотентно: несуществующей строки нет — DELETE молча ничего не делает.",
+          "summary": "Стирает раскрытие уровня (удаляет HintReveal-строку). После удаления",
+          "kind": "function",
+          "decorators": [],
+          "lineno": 183,
+          "end_lineno": 197
+        },
+        {
+          "name": "reset_reveal_cascade",
+          "signature": "reset_reveal_cascade(db: Session, user_id: int, task_id: int, level: int) -> None",
+          "docstring": "Сбрасывает уровень level И все раскрытые уровни выше него по цепочке.\n\nЗачем каскад: ученик не мог открыть уровень N+1, не открыв N (таков\nинвариант _level_state). Если тьютор сбрасывает N, оставив N+1 раскрытым,\nполучится невозможное состояние «старший открыт, а его якорь закрыт».\nПоэтому при сбросе N заодно сбрасываем каждый вышестоящий раскрытый\nуровень — ровно один проход вверх по LEVELS.",
+          "summary": "Сбрасывает уровень level И все раскрытые уровни выше него по цепочке.",
+          "kind": "function",
+          "decorators": [],
+          "lineno": 200,
+          "end_lineno": 215
+        },
+        {
+          "name": "_escape",
+          "signature": "_escape(text: str) -> str",
+          "docstring": "HTML-экранирование текста (включая кавычки — текст попадает и в атрибуты).",
+          "summary": "HTML-экранирование текста (включая кавычки — текст попадает и в атрибуты).",
+          "kind": "function",
+          "decorators": [],
+          "lineno": 241,
+          "end_lineno": 243
+        },
+        {
+          "name": "_render_inline",
+          "signature": "_render_inline(text: str) -> str",
+          "docstring": "Инлайн-markdown → HTML (только ссылки): сначала экранируем всё,\nподставляем лишь известные теги с отдельно экранированными значениями.",
+          "summary": "Инлайн-markdown → HTML (только ссылки): сначала экранируем всё,",
+          "kind": "function",
+          "decorators": [],
+          "lineno": 246,
+          "end_lineno": 258
+        },
+        {
+          "name": "render_markdown",
+          "signature": "render_markdown(text: str) -> str",
+          "docstring": "Рендерит markdown в HTML-фрагмент (без <p>-обёртки верхнего уровня).",
+          "summary": "Рендерит markdown в HTML-фрагмент (без <p>-обёртки верхнего уровня).",
+          "kind": "function",
+          "decorators": [],
+          "lineno": 261,
+          "end_lineno": 326
         }
       ],
       "constants": [
         {
-          "name": "VALID_ROLES",
+          "name": "HINTED_TASK_IDS",
+          "annotation": "Iterable[int]",
+          "value_repr": "[0, *range(1, 121)]",
+          "lineno": 37
+        },
+        {
+          "name": "LEVELS",
           "annotation": null,
-          "value_repr": "(ROLE_STUDENT, ROLE_TUTOR)",
-          "lineno": 18
+          "value_repr": "(1, 2, 3)",
+          "lineno": 39
+        },
+        {
+          "name": "HINT_DELAYS",
+          "annotation": "dict[int, timedelta]",
+          "value_repr": "{1: timedelta(0), 2: timedelta(minutes=7), 3: timedelta(minutes=15)}",
+          "lineno": 43
+        },
+        {
+          "name": "_INLINE_PATTERNS",
+          "annotation": null,
+          "value_repr": "[(re.compile('`([^`]+)`'), '<code class=\"inline\">\\\\1</code>'), (re.compile('\\\\*\\\\*([^*]+)\\\\*\\\\*'), '<strong>\\\\1</strong>')]",
+          "lineno": 229
+        },
+        {
+          "name": "_LINK_RE",
+          "annotation": null,
+          "value_repr": "re.compile('\\\\[([^\\\\]]+)\\\\]\\\\((https?://[^\\\\s)]+)\\\\)')",
+          "lineno": 238
         }
       ],
       "stats": {
         "classes": 0,
         "dataclasses": 0,
-        "functions": 1,
+        "functions": 14,
+        "methods": 0,
+        "constants": 5
+      }
+    },
+    {
+      "path": "webapp/content/materials.py",
+      "module_docstring": "Справочные материалы — учебные ноутбуки (1_introduction/,\n2_loops_and_conditions/ и т.д. в `webapp/content/notebooks/`), что и раньше\nлежали только как Jupyter-тетрадки. Здесь не БД и не отдельный конвертированный\nформат — .ipynb читается напрямую (это просто JSON), один раз при старте\nприложения, и держится в памяти. Ноутбуки маленькие (~470KB на все 36),\nбез картинок/attachments — только code-ячейки, объяснение зашито в них\nкак строки-докстринги. Собственный парсер вместо nbconvert: контента\nслишком мало и однообразно, чтобы тащить чужой шаблон/CSS, который потом\nпришлось бы перекраивать под дизайн-систему сайта.",
+      "module_summary": "Справочные материалы — учебные ноутбуки (1_introduction/,",
+      "classes": [],
+      "functions": [
+        {
+          "name": "_sort_key",
+          "signature": "_sort_key(filename: str) -> tuple",
+          "docstring": "Порядок уроков внутри модуля: по числовому префиксу имени файла;\nбез префикса — в конец, по алфавиту.",
+          "summary": "Порядок уроков внутри модуля: по числовому префиксу имени файла;",
+          "kind": "function",
+          "decorators": [],
+          "lineno": 43,
+          "end_lineno": 47
+        },
+        {
+          "name": "_extract_title",
+          "signature": "_extract_title(module: str, slug: str, first_cell_source: str) -> str",
+          "docstring": "Заголовок урока: ручной override → первая markdown-строка первой\ncode-ячейки → человекочитанный slug (последняя надежда).",
+          "summary": "Заголовок урока: ручной override → первая markdown-строка первой",
+          "kind": "function",
+          "decorators": [],
+          "lineno": 50,
+          "end_lineno": 60
+        },
+        {
+          "name": "_load_notebook",
+          "signature": "_load_notebook(path: Path) -> list",
+          "docstring": "Возвращает список ячеек: [{\"code\": str, \"output\": str|None, \"is_error\": bool}].",
+          "summary": "Возвращает список ячеек: [{\"code\": str, \"output\": str|None, \"is_error\": bool}].",
+          "kind": "function",
+          "decorators": [],
+          "lineno": 63,
+          "end_lineno": 87
+        },
+        {
+          "name": "_build_manifest",
+          "signature": "_build_manifest()",
+          "docstring": "Один проход по notebooks/ при старте: манифест {модуль: [уроки]} для\nоглавления и содержимое всех уроков в память (ноутбуки крошечные).",
+          "summary": "Один проход по notebooks/ при старте: манифест {модуль: [уроки]} для",
+          "kind": "function",
+          "decorators": [],
+          "lineno": 90,
+          "end_lineno": 111
+        },
+        {
+          "name": "get_lesson",
+          "signature": "get_lesson(module: str, slug: str)",
+          "docstring": "Урок (module, slug) → {\"title\", \"cells\"} из памяти; None, если нет.",
+          "summary": "Урок (module, slug) → {\"title\", \"cells\"} из памяти; None, если нет.",
+          "kind": "function",
+          "decorators": [],
+          "lineno": 117,
+          "end_lineno": 119
+        }
+      ],
+      "constants": [
+        {
+          "name": "_ROOT",
+          "annotation": null,
+          "value_repr": "Path(__file__).resolve().parent / 'notebooks'",
+          "lineno": 17
+        },
+        {
+          "name": "_MODULE_TITLES",
+          "annotation": null,
+          "value_repr": "{'1_introduction': 'Введение', '2_loops_and_conditions': 'Циклы и условия', '3_functions': 'Функции', '4_dicts_and_sets': 'Словари и множества', '5_strings': 'Строки'}",
+          "lineno": 20
+        },
+        {
+          "name": "_TITLE_OVERRIDES",
+          "annotation": null,
+          "value_repr": "{('1_introduction', '0_venv_install'): 'Установка и работа с venv', ('1_introduction', '1_intro'): 'Дзен Python', ('1_introduction', '2_exercise_0'): 'Разбор первой программы', ('1_introduction', '3_first_code'): 'Первая программа', ('1_introduction', '13_lists_(extended_version)'): 'Списки (расширенная версия)', ('3_functions', '25_func_exercises'): 'Задачи на функции'}",
+          "lineno": 31
+        },
+        {
+          "name": "_NUM_PREFIX",
+          "annotation": null,
+          "value_repr": "re.compile('^(\\\\d+)_')",
+          "lineno": 40
+        }
+      ],
+      "stats": {
+        "classes": 0,
+        "dataclasses": 0,
+        "functions": 5,
+        "methods": 0,
+        "constants": 4
+      }
+    },
+    {
+      "path": "webapp/core/auth.py",
+      "module_docstring": "Простая авторизация логин/пароль + сессия по подписанной cookie.\nУченики заводятся вручную (см. create_user.py) — самостоятельной регистрации нет.",
+      "module_summary": "Простая авторизация логин/пароль + сессия по подписанной cookie.",
+      "classes": [],
+      "functions": [
+        {
+          "name": "password_policy_error",
+          "signature": "password_policy_error(password: str) -> str | None",
+          "docstring": "Текст ошибки, если пароль не проходит политику (минимальная длина),\nиначе None.",
+          "summary": "Текст ошибки, если пароль не проходит политику (минимальная длина),",
+          "kind": "function",
+          "decorators": [],
+          "lineno": 16,
+          "end_lineno": 21
+        },
+        {
+          "name": "hash_password",
+          "signature": "hash_password(password: str) -> str",
+          "docstring": "bcrypt-хэш пароля (соль генерируется и хранится внутри хэша).",
+          "summary": "bcrypt-хэш пароля (соль генерируется и хранится внутри хэша).",
+          "kind": "function",
+          "decorators": [],
+          "lineno": 24,
+          "end_lineno": 26
+        },
+        {
+          "name": "verify_password",
+          "signature": "verify_password(password: str, password_hash: str) -> bool",
+          "docstring": "Сверка пароля с хэшем.",
+          "summary": "Сверка пароля с хэшем.",
+          "kind": "function",
+          "decorators": [],
+          "lineno": 29,
+          "end_lineno": 31
+        },
+        {
+          "name": "authenticate",
+          "signature": "authenticate(db: Session, username: str, password: str) -> User | None",
+          "docstring": "User по логину+паролю или None (не различаем «нет юзера» и «не тот\nпароль», чтобы не подсказывать перебор).",
+          "summary": "User по логину+паролю или None (не различаем «нет юзера» и «не тот",
+          "kind": "function",
+          "decorators": [],
+          "lineno": 34,
+          "end_lineno": 42
+        },
+        {
+          "name": "current_user_id",
+          "signature": "current_user_id(request: Request) -> int | None",
+          "docstring": "id пользователя из сессии или None (аноним).",
+          "summary": "id пользователя из сессии или None (аноним).",
+          "kind": "function",
+          "decorators": [],
+          "lineno": 45,
+          "end_lineno": 47
+        },
+        {
+          "name": "current_user_role",
+          "signature": "current_user_role(request: Request) -> str | None",
+          "docstring": "Роль из сессии ('student'/'tutor') или None (аноним).",
+          "summary": "Роль из сессии ('student'/'tutor') или None (аноним).",
+          "kind": "function",
+          "decorators": [],
+          "lineno": 50,
+          "end_lineno": 52
+        },
+        {
+          "name": "unauthorized",
+          "signature": "unauthorized() -> JSONResponse",
+          "docstring": "Стандартный 401 для API-роутов.",
+          "summary": "Стандартный 401 для API-роутов.",
+          "kind": "function",
+          "decorators": [],
+          "lineno": 55,
+          "end_lineno": 57
+        },
+        {
+          "name": "forbidden",
+          "signature": "forbidden() -> JSONResponse",
+          "docstring": "Стандартный 403: роут только для репетитора.",
+          "summary": "Стандартный 403: роут только для репетитора.",
+          "kind": "function",
+          "decorators": [],
+          "lineno": 60,
+          "end_lineno": 62
+        }
+      ],
+      "constants": [
+        {
+          "name": "MIN_PASSWORD_LENGTH",
+          "annotation": null,
+          "value_repr": "8",
+          "lineno": 13
+        }
+      ],
+      "stats": {
+        "classes": 0,
+        "dataclasses": 0,
+        "functions": 8,
         "methods": 0,
         "constants": 1
       }
     },
     {
-      "path": "webapp/db.py",
+      "path": "webapp/core/db.py",
       "module_docstring": "Подключение к БД: движок + фабрика сессий SQLAlchemy.",
       "module_summary": "Подключение к БД: движок + фабрика сессий SQLAlchemy.",
       "classes": [],
@@ -172,12 +471,12 @@
         {
           "name": "get_db",
           "signature": "get_db()",
-          "docstring": null,
-          "summary": null,
+          "docstring": "Зависимость FastAPI: своя сессия на каждый запрос, гарантированно\nзакрывается в finally.",
+          "summary": "Зависимость FastAPI: своя сессия на каждый запрос, гарантированно",
           "kind": "function",
           "decorators": [],
           "lineno": 15,
-          "end_lineno": 20
+          "end_lineno": 22
         }
       ],
       "constants": [
@@ -197,761 +496,15 @@
       }
     },
     {
-      "path": "webapp/grading.py",
-      "module_docstring": "Grading engine: сверяет код ученика с эталонным решением на курированных\nтестовых входах. Это единственное место, где 'правильность' определяется —\nчерез исполнение, а не через доверие к модели.\n\nСам код ученика здесь НЕ выполняется — это ушло в executor/ (отдельный\nсервис на роутере, за тоннелем). Здесь только оркестрация: эталон + запрос\nк исполнителю + сравнение.",
-      "module_summary": "Grading engine: сверяет код ученика с эталонным решением на курированных",
-      "classes": [
-        {
-          "name": "ExecutorUnavailable",
-          "signature": "ExecutorUnavailable(Exception)",
-          "docstring": null,
-          "summary": null,
-          "kind": "class",
-          "bases": [
-            "Exception"
-          ],
-          "decorators": [],
-          "fields": [],
-          "methods": [],
-          "lineno": 21,
-          "end_lineno": 22
-        }
-      ],
-      "functions": [
-        {
-          "name": "_run_student_code",
-          "signature": "_run_student_code(code: str, test_input) -> dict",
-          "docstring": null,
-          "summary": null,
-          "kind": "function",
-          "decorators": [],
-          "lineno": 25,
-          "end_lineno": 35
-        },
-        {
-          "name": "_normalize",
-          "signature": "_normalize(value)",
-          "docstring": "Эталон вызывается в процессе напрямую (без сериализации), а решение\nученика приходит через JSON и тем самым теряет типы вроде tuple (JSON\nих не различает от list). Прогоняем эталон через тот же JSON-круглый\nобмен, чтобы сравнение было честным по обе стороны.",
-          "summary": "Эталон вызывается в процессе напрямую (без сериализации), а решение",
-          "kind": "function",
-          "decorators": [],
-          "lineno": 38,
-          "end_lineno": 43
-        },
-        {
-          "name": "run_free",
-          "signature": "run_free(code: str) -> dict",
-          "docstring": "Свободный запуск кода без сверки с эталоном — для подсказки, где\nтьютору нужно просто показать вывод print(), а не пройти тесты.",
-          "summary": "Свободный запуск кода без сверки с эталоном — для подсказки, где",
-          "kind": "function",
-          "decorators": [],
-          "lineno": 46,
-          "end_lineno": 54
-        },
-        {
-          "name": "grade",
-          "signature": "grade(task_id: int, code: str) -> dict",
-          "docstring": null,
-          "summary": null,
-          "kind": "function",
-          "decorators": [],
-          "lineno": 57,
-          "end_lineno": 99
-        }
-      ],
-      "constants": [
-        {
-          "name": "EXECUTOR_URL",
-          "annotation": null,
-          "value_repr": "os.environ.get('EXECUTOR_URL', 'http://127.0.0.1:8010')",
-          "lineno": 18
-        }
-      ],
-      "stats": {
-        "classes": 1,
-        "dataclasses": 0,
-        "functions": 4,
-        "methods": 0,
-        "constants": 1
-      }
-    },
-    {
-      "path": "webapp/main.py",
-      "module_docstring": "FastAPI-приложение веб-грейдера. Оболочка: отдаёт список заданий,\nлогин/сессию и принимает решение ученика. Вся логика проверки —\nв grading.py/sandbox.py, вся модель данных — в models.py.",
-      "module_summary": "FastAPI-приложение веб-грейдера. Оболочка: отдаёт список заданий,",
-      "classes": [
-        {
-          "name": "SubmissionRequest",
-          "signature": "SubmissionRequest(BaseModel)",
-          "docstring": null,
-          "summary": null,
-          "kind": "class",
-          "bases": [
-            "BaseModel"
-          ],
-          "decorators": [],
-          "fields": [
-            {
-              "name": "task_id",
-              "annotation": "int",
-              "value_repr": null,
-              "lineno": 60
-            },
-            {
-              "name": "code",
-              "annotation": "str",
-              "value_repr": null,
-              "lineno": 61
-            }
-          ],
-          "methods": [],
-          "lineno": 59,
-          "end_lineno": 61
-        },
-        {
-          "name": "HintFreeRunRequest",
-          "signature": "HintFreeRunRequest(BaseModel)",
-          "docstring": null,
-          "summary": null,
-          "kind": "class",
-          "bases": [
-            "BaseModel"
-          ],
-          "decorators": [],
-          "fields": [
-            {
-              "name": "code",
-              "annotation": "str",
-              "value_repr": null,
-              "lineno": 65
-            }
-          ],
-          "methods": [],
-          "lineno": 64,
-          "end_lineno": 65
-        },
-        {
-          "name": "TutorAskRequest",
-          "signature": "TutorAskRequest(BaseModel)",
-          "docstring": "Запрос тьютора к ИИ-помощнику. task_context/student_code опциональны —\nможно спросить и без них. question обязателен.",
-          "summary": "Запрос тьютора к ИИ-помощнику. task_context/student_code опциональны —",
-          "kind": "class",
-          "bases": [
-            "BaseModel"
-          ],
-          "decorators": [],
-          "fields": [
-            {
-              "name": "task_context",
-              "annotation": "str | None",
-              "value_repr": "None",
-              "lineno": 71
-            },
-            {
-              "name": "student_code",
-              "annotation": "str | None",
-              "value_repr": "None",
-              "lineno": 72
-            },
-            {
-              "name": "question",
-              "annotation": "str",
-              "value_repr": null,
-              "lineno": 73
-            }
-          ],
-          "methods": [],
-          "lineno": 68,
-          "end_lineno": 73
-        },
-        {
-          "name": "CreateStudentRequest",
-          "signature": "CreateStudentRequest(BaseModel)",
-          "docstring": null,
-          "summary": null,
-          "kind": "class",
-          "bases": [
-            "BaseModel"
-          ],
-          "decorators": [],
-          "fields": [
-            {
-              "name": "username",
-              "annotation": "str",
-              "value_repr": null,
-              "lineno": 316
-            },
-            {
-              "name": "password",
-              "annotation": "str",
-              "value_repr": null,
-              "lineno": 317
-            }
-          ],
-          "methods": [],
-          "lineno": 315,
-          "end_lineno": 317
-        },
-        {
-          "name": "SetPasswordRequest",
-          "signature": "SetPasswordRequest(BaseModel)",
-          "docstring": null,
-          "summary": null,
-          "kind": "class",
-          "bases": [
-            "BaseModel"
-          ],
-          "decorators": [],
-          "fields": [
-            {
-              "name": "password",
-              "annotation": "str",
-              "value_repr": null,
-              "lineno": 338
-            }
-          ],
-          "methods": [],
-          "lineno": 337,
-          "end_lineno": 338
-        }
-      ],
-      "functions": [
-        {
-          "name": "create_tables",
-          "signature": "create_tables()",
-          "docstring": null,
-          "summary": null,
-          "kind": "function",
-          "decorators": [
-            "app.on_event('startup')"
-          ],
-          "lineno": 55,
-          "end_lineno": 56
-        },
-        {
-          "name": "login_page",
-          "signature": "login_page()",
-          "docstring": null,
-          "summary": null,
-          "kind": "function",
-          "decorators": [
-            "app.get('/login')"
-          ],
-          "lineno": 77,
-          "end_lineno": 78
-        },
-        {
-          "name": "login_submit",
-          "signature": "login_submit(request: Request, username: str = Form(...), password: str = Form(...), db: Session = Depends(get_db))",
-          "docstring": null,
-          "summary": null,
-          "kind": "function",
-          "decorators": [
-            "app.post('/login')"
-          ],
-          "lineno": 82,
-          "end_lineno": 89
-        },
-        {
-          "name": "logout",
-          "signature": "logout(request: Request)",
-          "docstring": null,
-          "summary": null,
-          "kind": "function",
-          "decorators": [
-            "app.post('/logout')"
-          ],
-          "lineno": 93,
-          "end_lineno": 95
-        },
-        {
-          "name": "index",
-          "signature": "index(request: Request, db: Session = Depends(get_db))",
-          "docstring": null,
-          "summary": null,
-          "kind": "function",
-          "decorators": [
-            "app.get('/')"
-          ],
-          "lineno": 99,
-          "end_lineno": 108
-        },
-        {
-          "name": "tutor_page",
-          "signature": "tutor_page(request: Request)",
-          "docstring": null,
-          "summary": null,
-          "kind": "function",
-          "decorators": [
-            "app.get('/tutor')"
-          ],
-          "lineno": 112,
-          "end_lineno": 115
-        },
-        {
-          "name": "tutor_student_page",
-          "signature": "tutor_student_page(student_id: int, request: Request)",
-          "docstring": null,
-          "summary": null,
-          "kind": "function",
-          "decorators": [
-            "app.get('/tutor/student/{student_id}')"
-          ],
-          "lineno": 119,
-          "end_lineno": 124
-        },
-        {
-          "name": "start_impersonation",
-          "signature": "start_impersonation(student_id: int, request: Request, db: Session = Depends(get_db))",
-          "docstring": null,
-          "summary": null,
-          "kind": "function",
-          "decorators": [
-            "app.post('/tutor/student/{student_id}/impersonate')"
-          ],
-          "lineno": 128,
-          "end_lineno": 139
-        },
-        {
-          "name": "stop_impersonation",
-          "signature": "stop_impersonation(request: Request)",
-          "docstring": null,
-          "summary": null,
-          "kind": "function",
-          "decorators": [
-            "app.post('/impersonate/stop')"
-          ],
-          "lineno": 143,
-          "end_lineno": 147
-        },
-        {
-          "name": "materials_page",
-          "signature": "materials_page(module: str, lesson: str, request: Request)",
-          "docstring": null,
-          "summary": null,
-          "kind": "function",
-          "decorators": [
-            "app.get('/materials/{module}/{lesson}')"
-          ],
-          "lineno": 151,
-          "end_lineno": 156
-        },
-        {
-          "name": "effective_identity",
-          "signature": "effective_identity(request: Request, db: Session)",
-          "docstring": "Для тьютора в режиме \"посмотреть как ученик\" подменяет личность только\nдля student-facing данных (список заданий/свои попытки) — НЕ для\nавторизации, та остаётся на реальной роли из сессии.",
-          "summary": "Для тьютора в режиме \"посмотреть как ученик\" подменяет личность только",
-          "kind": "function",
-          "decorators": [],
-          "lineno": 159,
-          "end_lineno": 169
-        },
-        {
-          "name": "list_tasks",
-          "signature": "list_tasks(request: Request)",
-          "docstring": null,
-          "summary": null,
-          "kind": "function",
-          "decorators": [
-            "app.get('/api/tasks')"
-          ],
-          "lineno": 173,
-          "end_lineno": 179
-        },
-        {
-          "name": "list_materials",
-          "signature": "list_materials(request: Request)",
-          "docstring": null,
-          "summary": null,
-          "kind": "function",
-          "decorators": [
-            "app.get('/api/materials')"
-          ],
-          "lineno": 183,
-          "end_lineno": 186
-        },
-        {
-          "name": "get_material",
-          "signature": "get_material(module: str, lesson: str, request: Request)",
-          "docstring": null,
-          "summary": null,
-          "kind": "function",
-          "decorators": [
-            "app.get('/api/materials/{module}/{lesson}')"
-          ],
-          "lineno": 190,
-          "end_lineno": 196
-        },
-        {
-          "name": "get_solution",
-          "signature": "get_solution(task_id: int, request: Request)",
-          "docstring": null,
-          "summary": null,
-          "kind": "function",
-          "decorators": [
-            "app.get('/api/solution/{task_id}')"
-          ],
-          "lineno": 200,
-          "end_lineno": 208
-        },
-        {
-          "name": "turn_credentials",
-          "signature": "turn_credentials(request: Request)",
-          "docstring": null,
-          "summary": null,
-          "kind": "function",
-          "decorators": [
-            "app.get('/api/turn-credentials')"
-          ],
-          "lineno": 212,
-          "end_lineno": 229
-        },
-        {
-          "name": "me",
-          "signature": "me(request: Request, db: Session = Depends(get_db))",
-          "docstring": null,
-          "summary": null,
-          "kind": "function",
-          "decorators": [
-            "app.get('/api/me')"
-          ],
-          "lineno": 233,
-          "end_lineno": 243
-        },
-        {
-          "name": "_task_status_map",
-          "signature": "_task_status_map(db: Session, user_id: int) -> dict",
-          "docstring": "task_id -> 'pass'/'fail' по всей истории попыток пользователя — 'pass'\nесли хоть одна попытка когда-либо прошла. Общий код для своей истории\n(эффективная личность) и истории конкретного ученика (вид тьютора).",
-          "summary": "task_id -> 'pass'/'fail' по всей истории попыток пользователя — 'pass'",
-          "kind": "function",
-          "decorators": [],
-          "lineno": 246,
-          "end_lineno": 254
-        },
-        {
-          "name": "_task_attempts",
-          "signature": "_task_attempts(db: Session, user_id: int, task_id: int) -> list",
-          "docstring": null,
-          "summary": null,
-          "kind": "function",
-          "decorators": [],
-          "lineno": 257,
-          "end_lineno": 271
-        },
-        {
-          "name": "my_attempts",
-          "signature": "my_attempts(request: Request, db: Session = Depends(get_db))",
-          "docstring": null,
-          "summary": null,
-          "kind": "function",
-          "decorators": [
-            "app.get('/api/attempts/mine')"
-          ],
-          "lineno": 275,
-          "end_lineno": 279
-        },
-        {
-          "name": "my_task_attempts",
-          "signature": "my_task_attempts(task_id: int, request: Request, db: Session = Depends(get_db))",
-          "docstring": null,
-          "summary": null,
-          "kind": "function",
-          "decorators": [
-            "app.get('/api/attempts/mine/{task_id}')"
-          ],
-          "lineno": 283,
-          "end_lineno": 287
-        },
-        {
-          "name": "list_students",
-          "signature": "list_students(request: Request, db: Session = Depends(get_db))",
-          "docstring": null,
-          "summary": null,
-          "kind": "function",
-          "decorators": [
-            "app.get('/api/students')"
-          ],
-          "lineno": 291,
-          "end_lineno": 312
-        },
-        {
-          "name": "create_student",
-          "signature": "create_student(payload: CreateStudentRequest, request: Request, db: Session = Depends(get_db))",
-          "docstring": null,
-          "summary": null,
-          "kind": "function",
-          "decorators": [
-            "app.post('/api/students')"
-          ],
-          "lineno": 321,
-          "end_lineno": 334
-        },
-        {
-          "name": "set_student_password",
-          "signature": "set_student_password(student_id: int, payload: SetPasswordRequest, request: Request, db: Session = Depends(get_db))",
-          "docstring": null,
-          "summary": null,
-          "kind": "function",
-          "decorators": [
-            "app.post('/api/students/{student_id}/password')"
-          ],
-          "lineno": 342,
-          "end_lineno": 354
-        },
-        {
-          "name": "_require_student",
-          "signature": "_require_student(db: Session, student_id: int)",
-          "docstring": null,
-          "summary": null,
-          "kind": "function",
-          "decorators": [],
-          "lineno": 357,
-          "end_lineno": 358
-        },
-        {
-          "name": "student_task_status",
-          "signature": "student_task_status(student_id: int, request: Request, db: Session = Depends(get_db))",
-          "docstring": null,
-          "summary": null,
-          "kind": "function",
-          "decorators": [
-            "app.get('/api/students/{student_id}/attempts/status')"
-          ],
-          "lineno": 362,
-          "end_lineno": 369
-        },
-        {
-          "name": "student_task_attempts",
-          "signature": "student_task_attempts(student_id: int, task_id: int, request: Request, db: Session = Depends(get_db))",
-          "docstring": null,
-          "summary": null,
-          "kind": "function",
-          "decorators": [
-            "app.get('/api/students/{student_id}/attempts/{task_id}')"
-          ],
-          "lineno": 373,
-          "end_lineno": 380
-        },
-        {
-          "name": "session_ws",
-          "signature": "session_ws(websocket: WebSocket, student_id: int)",
-          "docstring": "Живая комната одного ученика: сам ученик + один или несколько тьюторов,\nкоторые сейчас смотрят его экран. Тьютор пишет — ученик видит подсказку,\nученик печатает — тьютор видит код в реальном времени.",
-          "summary": "Живая комната одного ученика: сам ученик + один или несколько тьюторов,",
-          "kind": "async_function",
-          "decorators": [
-            "app.websocket('/ws/session/{student_id}')"
-          ],
-          "lineno": 384,
-          "end_lineno": 496
-        },
-        {
-          "name": "run_solve_code_free",
-          "signature": "run_solve_code_free(payload: HintFreeRunRequest, request: Request)",
-          "docstring": "Свободный запуск кода ученика в его собственном редакторе — без сверки\nс эталоном, чтобы можно было просто написать print(...) и посмотреть вывод.",
-          "summary": "Свободный запуск кода ученика в его собственном редакторе — без сверки",
-          "kind": "function",
-          "decorators": [
-            "app.post('/api/solve/run_free')"
-          ],
-          "lineno": 500,
-          "end_lineno": 505
-        },
-        {
-          "name": "submit",
-          "signature": "submit(payload: SubmissionRequest, request: Request, db: Session = Depends(get_db))",
-          "docstring": null,
-          "summary": null,
-          "kind": "function",
-          "decorators": [
-            "app.post('/api/submit')"
-          ],
-          "lineno": 509,
-          "end_lineno": 529
-        },
-        {
-          "name": "run_hint_code",
-          "signature": "run_hint_code(payload: SubmissionRequest, request: Request)",
-          "docstring": "Тьютор проверяет код прямо в редакторе подсказки — тот же grade(),\nно без записи Attempt: это демонстрация ученику, а не его попытка.",
-          "summary": "Тьютор проверяет код прямо в редакторе подсказки — тот же grade(),",
-          "kind": "function",
-          "decorators": [
-            "app.post('/api/hint/run')"
-          ],
-          "lineno": 533,
-          "end_lineno": 540
-        },
-        {
-          "name": "run_hint_code_free",
-          "signature": "run_hint_code_free(payload: HintFreeRunRequest, request: Request)",
-          "docstring": "Свободный запуск кода в подсказке — без сверки с эталоном, просто\nисполняет код как есть (print() и любые операторы отрабатывают).",
-          "summary": "Свободный запуск кода в подсказке — без сверки с эталоном, просто",
-          "kind": "function",
-          "decorators": [
-            "app.post('/api/hint/run_free')"
-          ],
-          "lineno": 544,
-          "end_lineno": 551
-        },
-        {
-          "name": "tutor_ask",
-          "signature": "tutor_ask(payload: TutorAskRequest, request: Request)",
-          "docstring": "Тьютор спрашивает ИИ-помощника (DeepSeek через микросервис tutor-llm\nна роутере). Прокси: webapp не знает ключ DeepSeek, он только пересылает\nструктурированный запрос в tutor-llm по внутренней сети (как executor).\nТолько для роли tutor.",
-          "summary": "Тьютор спрашивает ИИ-помощника (DeepSeek через микросервис tutor-llm",
-          "kind": "function",
-          "decorators": [
-            "app.post('/api/tutor/ask')"
-          ],
-          "lineno": 555,
-          "end_lineno": 584
-        }
-      ],
-      "constants": [
-        {
-          "name": "SESSION_SECRET",
-          "annotation": null,
-          "value_repr": "os.environ.get('SESSION_SECRET')",
-          "lineno": 31
-        },
-        {
-          "name": "TURN_SECRET",
-          "annotation": null,
-          "value_repr": "os.environ.get('TURN_SECRET')",
-          "lineno": 38
-        },
-        {
-          "name": "TURN_URLS",
-          "annotation": null,
-          "value_repr": "os.environ.get('TURN_URLS')",
-          "lineno": 39
-        },
-        {
-          "name": "STUN_URLS",
-          "annotation": null,
-          "value_repr": "os.environ.get('STUN_URLS', 'stun:informatika.meteopavel.space:3478')",
-          "lineno": 40
-        },
-        {
-          "name": "TUTOR_LLM_URL",
-          "annotation": null,
-          "value_repr": "os.environ.get('TUTOR_LLM_URL', 'http://10.0.0.1:8011')",
-          "lineno": 45
-        },
-        {
-          "name": "STATIC_DIR",
-          "annotation": null,
-          "value_repr": "Path(__file__).resolve().parent / 'static'",
-          "lineno": 50
-        }
-      ],
-      "stats": {
-        "classes": 5,
-        "dataclasses": 0,
-        "functions": 33,
-        "methods": 0,
-        "constants": 6
-      }
-    },
-    {
-      "path": "webapp/materials.py",
-      "module_docstring": "Справочные материалы — те же учебные ноутбуки (1_introduction/,\n2_loops_and_conditions/ и т.д. в корне репозитория), что и раньше лежали\nтолько как Jupyter-тетрадки. Здесь не БД и не отдельный конвертированный\nформат — .ipynb читается напрямую (это просто JSON), один раз при старте\nприложения, и держится в памяти. Ноутбуки маленькие (~470KB на все 36),\nбез картинок/attachments — только code-ячейки, объяснение зашито в них\nкак строки-докстринги. Собственный парсер вместо nbconvert: контента\nслишком мало и однообразно, чтобы тащить чужой шаблон/CSS, который потом\nпришлось бы перекраивать под дизайн-систему сайта.",
-      "module_summary": "Справочные материалы — те же учебные ноутбуки (1_introduction/,",
-      "classes": [],
-      "functions": [
-        {
-          "name": "_sort_key",
-          "signature": "_sort_key(filename: str) -> tuple",
-          "docstring": null,
-          "summary": null,
-          "kind": "function",
-          "decorators": [],
-          "lineno": 41,
-          "end_lineno": 43
-        },
-        {
-          "name": "_extract_title",
-          "signature": "_extract_title(module: str, slug: str, first_cell_source: str) -> str",
-          "docstring": null,
-          "summary": null,
-          "kind": "function",
-          "decorators": [],
-          "lineno": 46,
-          "end_lineno": 54
-        },
-        {
-          "name": "_load_notebook",
-          "signature": "_load_notebook(path: Path) -> list",
-          "docstring": "Возвращает список ячеек: [{\"code\": str, \"output\": str|None, \"is_error\": bool}].",
-          "summary": "Возвращает список ячеек: [{\"code\": str, \"output\": str|None, \"is_error\": bool}].",
-          "kind": "function",
-          "decorators": [],
-          "lineno": 57,
-          "end_lineno": 81
-        },
-        {
-          "name": "_build_manifest",
-          "signature": "_build_manifest()",
-          "docstring": null,
-          "summary": null,
-          "kind": "function",
-          "decorators": [],
-          "lineno": 84,
-          "end_lineno": 103
-        },
-        {
-          "name": "get_lesson",
-          "signature": "get_lesson(module: str, slug: str)",
-          "docstring": null,
-          "summary": null,
-          "kind": "function",
-          "decorators": [],
-          "lineno": 109,
-          "end_lineno": 110
-        }
-      ],
-      "constants": [
-        {
-          "name": "_ROOT",
-          "annotation": null,
-          "value_repr": "Path(__file__).resolve().parent.parent",
-          "lineno": 15
-        },
-        {
-          "name": "_MODULE_TITLES",
-          "annotation": null,
-          "value_repr": "{'1_introduction': 'Введение', '2_loops_and_conditions': 'Циклы и условия', '3_functions': 'Функции', '4_dicts_and_sets': 'Словари и множества', '5_strings': 'Строки'}",
-          "lineno": 18
-        },
-        {
-          "name": "_TITLE_OVERRIDES",
-          "annotation": null,
-          "value_repr": "{('1_introduction', '0_venv_install'): 'Установка и работа с venv', ('1_introduction', '1_intro'): 'Дзен Python', ('1_introduction', '2_exercise_0'): 'Разбор первой программы', ('1_introduction', '3_first_code'): 'Первая программа', ('1_introduction', '13_lists_(extended_version)'): 'Списки (расширенная версия)', ('3_functions', '25_func_exercises'): 'Задачи на функции'}",
-          "lineno": 29
-        },
-        {
-          "name": "_NUM_PREFIX",
-          "annotation": null,
-          "value_repr": "re.compile('^(\\\\d+)_')",
-          "lineno": 38
-        }
-      ],
-      "stats": {
-        "classes": 0,
-        "dataclasses": 0,
-        "functions": 5,
-        "methods": 0,
-        "constants": 4
-      }
-    },
-    {
-      "path": "webapp/models.py",
+      "path": "webapp/core/models.py",
       "module_docstring": "Модели: пользователи (ученики и репетитор, заводятся вручную) и попытки решения.",
       "module_summary": "Модели: пользователи (ученики и репетитор, заводятся вручную) и попытки решения.",
       "classes": [
         {
           "name": "User",
           "signature": "User(Base)",
-          "docstring": null,
-          "summary": null,
+          "docstring": "Пользователь: ученик или тьютор (role). Заводится вручную (create_user.py\nили API тьютора) — самостоятельной регистрации нет.",
+          "summary": "Пользователь: ученик или тьютор (role). Заводится вручную (create_user.py",
           "kind": "class",
           "bases": [
             "Base"
@@ -960,13 +513,13 @@
           "fields": [],
           "methods": [],
           "lineno": 12,
-          "end_lineno": 19
+          "end_lineno": 22
         },
         {
           "name": "Attempt",
           "signature": "Attempt(Base)",
-          "docstring": null,
-          "summary": null,
+          "docstring": "Одна попытка решения: код целиком + прошёл ли все тесты. История только\nпополняется (удалить может лишь тьютор), статус задания — производное.",
+          "summary": "Одна попытка решения: код целиком + прошёл ли все тесты. История только",
           "kind": "class",
           "bases": [
             "Base"
@@ -974,8 +527,38 @@
           "decorators": [],
           "fields": [],
           "methods": [],
-          "lineno": 22,
-          "end_lineno": 30
+          "lineno": 25,
+          "end_lineno": 36
+        },
+        {
+          "name": "Hint",
+          "signature": "Hint(Base)",
+          "docstring": "Текст уровня подсказки (markdown) — курированный контент, правится\nтьютором через админку. Одна запись на (task_id, level).",
+          "summary": "Текст уровня подсказки (markdown) — курированный контент, правится",
+          "kind": "class",
+          "bases": [
+            "Base"
+          ],
+          "decorators": [],
+          "fields": [],
+          "methods": [],
+          "lineno": 49,
+          "end_lineno": 60
+        },
+        {
+          "name": "HintReveal",
+          "signature": "HintReveal(Base)",
+          "docstring": "Отметка «ученик раскрыл уровень во столько-то» — сервер считает по ним\nтайминги доступности следующих уровней (клиентским часам не верим).",
+          "summary": "Отметка «ученик раскрыл уровень во столько-то» — сервер считает по ним",
+          "kind": "class",
+          "bases": [
+            "Base"
+          ],
+          "decorators": [],
+          "fields": [],
+          "methods": [],
+          "lineno": 63,
+          "end_lineno": 74
         }
       ],
       "functions": [],
@@ -994,7 +577,7 @@
         }
       ],
       "stats": {
-        "classes": 2,
+        "classes": 4,
         "dataclasses": 0,
         "functions": 0,
         "methods": 0,
@@ -1002,15 +585,15 @@
       }
     },
     {
-      "path": "webapp/realtime.py",
+      "path": "webapp/core/realtime.py",
       "module_docstring": "In-memory realtime-комнаты для живых сессий тьютор-ученик.\n\nКомната = один ученик. Состояние живёт, пока жив процесс приложения — рестарт\nконтейнера просто обнуляет текущие live-сессии, и это ожидаемо: это сиюминутное\nсостояние (кто сейчас печатает), а не история попыток (та в БД).",
       "module_summary": "In-memory realtime-комнаты для живых сессий тьютор-ученик.",
       "classes": [
         {
           "name": "Room",
           "signature": "Room",
-          "docstring": null,
-          "summary": null,
+          "docstring": "Комната одного ученика: его WebSocket, сокеты тьюторов, последние\nкод/задание/подсказка и висящее приглашение на созвон (feat.9).",
+          "summary": "Комната одного ученика: его WebSocket, сокеты тьюторов, последние",
           "kind": "class",
           "bases": [],
           "decorators": [],
@@ -1019,28 +602,28 @@
             {
               "name": "__init__",
               "signature": "__init__(self)",
-              "docstring": null,
-              "summary": null,
+              "docstring": "Пустая комната: никого нет, кодов нет, звонка нет.",
+              "summary": "Пустая комната: никого нет, кодов нет, звонка нет.",
               "kind": "method",
               "decorators": [],
-              "lineno": 11,
-              "end_lineno": 16
+              "lineno": 14,
+              "end_lineno": 25
             }
           ],
           "lineno": 10,
-          "end_lineno": 16
+          "end_lineno": 25
         }
       ],
       "functions": [
         {
           "name": "get_room",
           "signature": "get_room(student_id: int) -> Room",
-          "docstring": null,
-          "summary": null,
+          "docstring": "Комната ученика; создаётся по первому обращению и живёт до рестарта\nпроцесса (это сиюминутное состояние, не история).",
+          "summary": "Комната ученика; создаётся по первому обращению и живёт до рестарта",
           "kind": "function",
           "decorators": [],
-          "lineno": 22,
-          "end_lineno": 25
+          "lineno": 31,
+          "end_lineno": 36
         },
         {
           "name": "safe_send",
@@ -1049,8 +632,8 @@
           "summary": "Отправка соседу по комнате не должна ронять цикл отправителя, если",
           "kind": "async_function",
           "decorators": [],
-          "lineno": 28,
-          "end_lineno": 34
+          "lineno": 39,
+          "end_lineno": 45
         }
       ],
       "constants": [],
@@ -1063,7 +646,124 @@
       }
     },
     {
-      "path": "webapp/test_cases.py",
+      "path": "webapp/grading/bot_bridge.py",
+      "module_docstring": "Мост к банку заданий и эталонных решений в bot/ — общий источник\nдля Telegram-бота и веб-грейдера, чтобы не дублировать содержимое.",
+      "module_summary": "Мост к банку заданий и эталонных решений в bot/ — общий источник",
+      "classes": [],
+      "functions": [],
+      "constants": [
+        {
+          "name": "_BOT_DIR",
+          "annotation": null,
+          "value_repr": "Path(__file__).resolve().parent.parent.parent / 'bot'",
+          "lineno": 8
+        },
+        {
+          "name": "TASKS",
+          "annotation": null,
+          "value_repr": "{int(k): v for (k, v) in _data['tasks'].items()}",
+          "lineno": 17
+        }
+      ],
+      "stats": {
+        "classes": 0,
+        "dataclasses": 0,
+        "functions": 0,
+        "methods": 0,
+        "constants": 2
+      }
+    },
+    {
+      "path": "webapp/grading/grading.py",
+      "module_docstring": "Grading engine: сверяет код ученика с эталонным решением на курированных\nтестовых входах. Это единственное место, где 'правильность' определяется —\nчерез исполнение, а не через доверие к модели.\n\nСам код ученика здесь НЕ выполняется — это ушло в executor/ (отдельный\nсервис на роутере, за тоннелем). Здесь только оркестрация: эталон + запрос\nк исполнителю + сравнение.",
+      "module_summary": "Grading engine: сверяет код ученика с эталонным решением на курированных",
+      "classes": [
+        {
+          "name": "ExecutorUnavailable",
+          "signature": "ExecutorUnavailable(Exception)",
+          "docstring": "Исполнитель (executor на роутере) не ответил — проверка невозможна.\nЭто системный сбой, а не вина ученика: попытка в этом случае не пишется.",
+          "summary": "Исполнитель (executor на роутере) не ответил — проверка невозможна.",
+          "kind": "class",
+          "bases": [
+            "Exception"
+          ],
+          "decorators": [],
+          "fields": [],
+          "methods": [],
+          "lineno": 21,
+          "end_lineno": 25
+        }
+      ],
+      "functions": [
+        {
+          "name": "_run_student_code",
+          "signature": "_run_student_code(code: str, test_input) -> dict",
+          "docstring": "Один прогон кода ученика в исполнителе на заданном входе; сетевой сбой\nна роутере/тоннеле → ExecutorUnavailable.",
+          "summary": "Один прогон кода ученика в исполнителе на заданном входе; сетевой сбой",
+          "kind": "function",
+          "decorators": [],
+          "lineno": 28,
+          "end_lineno": 40
+        },
+        {
+          "name": "_normalize",
+          "signature": "_normalize(value)",
+          "docstring": "Эталон вызывается в процессе напрямую (без сериализации), а решение\nученика приходит через JSON и тем самым теряет типы вроде tuple (JSON\nих не различает от list). Прогоняем эталон через тот же JSON-круглый\nобмен, чтобы сравнение было честным по обе стороны.",
+          "summary": "Эталон вызывается в процессе напрямую (без сериализации), а решение",
+          "kind": "function",
+          "decorators": [],
+          "lineno": 43,
+          "end_lineno": 48
+        },
+        {
+          "name": "run_free",
+          "signature": "run_free(code: str) -> dict",
+          "docstring": "Свободный запуск кода без сверки с эталоном — для подсказки, где\nтьютору нужно просто показать вывод print(), а не пройти тесты.",
+          "summary": "Свободный запуск кода без сверки с эталоном — для подсказки, где",
+          "kind": "function",
+          "decorators": [],
+          "lineno": 51,
+          "end_lineno": 59
+        },
+        {
+          "name": "run_with_sample",
+          "signature": "run_with_sample(task_id: int, code: str) -> dict",
+          "docstring": "«Запустить» у ученика: код гоняется через тот же харнесс, что и при\nпроверке, с первым курированным входом — без сверки с эталоном. Без этого\nрешение-задание (def solve(data)) молча не печатало ничего: solve() никто\nне звал (bug.4). Возвращает вход, print-вывод и результат solve().",
+          "summary": "«Запустить» у ученика: код гоняется через тот же харнесс, что и при",
+          "kind": "function",
+          "decorators": [],
+          "lineno": 62,
+          "end_lineno": 75
+        },
+        {
+          "name": "grade",
+          "signature": "grade(task_id: int, code: str) -> dict",
+          "docstring": "Проверка решения: каждый тестовый вход прогоняется и в исполнителе\n(код ученика), и в эталоне; сравнение — после JSON-нормализации типов\n(_normalize). Возвращает {'all_passed', 'total', 'passed', 'results'};\nсистемные проблемы (нет тестов/эталона, исполнитель лежит) — {'error': …}\nбез 'all_passed', по ним попытка не записывается.",
+          "summary": "Проверка решения: каждый тестовый вход прогоняется и в исполнителе",
+          "kind": "function",
+          "decorators": [],
+          "lineno": 78,
+          "end_lineno": 125
+        }
+      ],
+      "constants": [
+        {
+          "name": "EXECUTOR_URL",
+          "annotation": null,
+          "value_repr": "os.environ.get('EXECUTOR_URL', 'http://127.0.0.1:8010')",
+          "lineno": 18
+        }
+      ],
+      "stats": {
+        "classes": 1,
+        "dataclasses": 0,
+        "functions": 5,
+        "methods": 0,
+        "constants": 1
+      }
+    },
+    {
+      "path": "webapp/grading/test_cases.py",
       "module_docstring": "Курированные тестовые входы для веб-грейдера.\n\nКлюч — номер задания (совпадает с TASKS в bot/constants.py), значение —\nсписок входов, на которых код ученика сверяется с эталонным решением\n(solve_task_N из bot/solvers.py). Задание доступно в веб-грейдере тогда\nи только тогда, когда для него здесь заведены тестовые входы — это и есть\nкурируемая база, а не автогенерация вслепую.\n\nЗадание 47 (НОК) до 2026-07-21 было исключено отсюда: в bot/solvers.py у\nsolve_task_47 было перепутано сравнение (data[0] % max_delim вместо\nmax_delim % data[0]) — цикл while True никогда не завершался для двух\nразных положительных чисел, без таймаута на стороне эталона это вешало\nпроцесс приложения насмерть при первой же проверке. Исправлено, задание\nвключено обратно.",
       "module_summary": "Курированные тестовые входы для веб-грейдера.",
       "classes": [],
@@ -1072,7 +772,7 @@
         {
           "name": "TEST_CASES",
           "annotation": null,
-          "value_repr": "{1: [[3, 2, 2, 1, 5, 3], [1, 1, 1], [4, 4, 4, 2, 1, 2]], 2: [[1, 2, 3, 4, 5, 6], [1, 3, 5], [0, -2, -3]], 3: [[1, 2, 3, 4, 5], [1, 2], [1], []], 4: [[10, 3, 5, 6, 9, 8], [1], [-5, -1, -10]], 5: [[[1, 2, 3], [3, 4, 5]], [[1, 1, 2], [2, 3]], [[], [1, 2, 3]]], 6: [[1, 2, 3], [3, 2, 1], [1, 1, 2, 2], [5]], 7: [[[10, 20, 30], 2], [[1, 2, 3, 4, 5], 10], [[7], 5]], 8: [[5, 3, 2, 8, 2, 10], [1, 1, 1], [7]], 9: [[1, 2, 3, 4], [1, 2], [100, 200, 300, 400, 500]], 10: [[0, 1, 0, 3, 12], [0, 0, 0], [1, 2, 3], []], 11: [[['Alice', 'Bob'], [25, 30]], [['X'], [1]], [['a', 'b', 'c'], [1, 2, 3]]], 12: [['apple', 'banana', 'apple', 'orange', 'banana', 'apple'], ['x'], ['a', 'a', 'b']], 13: [[[1, 2, 3, 4, 5, 6, 7], 3], [[1, 2, 3], 1], [[1, 2, 3, 4], 2]], 14: [[1, 2, 3, 2], [1, 2, 3], [], [5, 5, 5]], 15: [[1, 2, 3, 4, 5], [10], [2, 2, 2, 2]], 16: [[5, 2, 8, 2, 1], [3], [10, 10, 10]], 17: [[[1, 2, 3, 4, 5], 6], [[1, 2, 3], 1], [[5, 10], 7]], 18: [[1, 2, 2, 3, 4, 4, 4, 5], [], [7, 7, 7]], 19: [['radar'], ['hello'], ['level']], 20: [[[1, 2, 3, 4, 5], 5], [[1, 1, 1], 2], [[10, 20, 30], 50]], 21: [['apple', 'bat', 'car', 'ant', 'orange'], ['a', 'bb', 'cc'], ['x']], 22: [[[3, 2, 1], [2, 4, 5], [5, 6, 3]], [[1, 2], [2, 3]], [[5], [5], [5]]], 23: [[1, 1, 2, 2, 2, 3, 3, 1, 1, 1, 1], [5, 5, 5], [1, 2, 3]], 24: [[4, 3, 2, 4, 1, 3, 2], [1, 1, 2, 2, 3], [5]], 25: [['a', 'b', 'c', 'a', 'b', 'a'], ['x', 'x', 'y'], ['z']], 26: [[1, 3, 2, 4, 1], [1, 2], [5], [1, 1, 1]], 27: [[1, 2, 3, 4, 5, 6], [], [2, 4, 6]], 28: [[[10, 3, 8, 15], 7], [[1], 5], [[100, 200], 150]], 29: [[[1, 3, 5, 7], 2], [[10, 20, 30], 10], [[1, 2, 3], 5]], 30: [['apple', 'ant', 'banana', 'bee', 'cat'], ['x'], ['aa', 'ab', 'ba']], 31: [[1, 2, 3, 4, 5, 6], [], [1, 3, 5]], 32: [[1, 2, 3], [-1, 2, 3], [5, -2]], 33: [['cat', 'elephant', 'dog'], ['a'], ['xx', 'yy', 'zzzz']], 34: [[1, 2, 3, 4], [], [-2, 3, -4]], 35: [[[1, 2, 3], [10, 20]], [[1], [2, 3, 4]], [[], [1, 2]]], 36: ['hello', 'sky', 'aeiou'], 37: [7, 8, 13, 15], 38: [['banana', 'apple', 'cherry'], ['z', 'a', 'm'], ['single']], 39: [[1, [2, 3], [4, [5]]], [[1, 2], [3, [4, 5]]], [1, 2, 3]], 40: [[-1, 2, -3, 4, 0], [-5, -6], [1, 2, 3]], 41: [['hello'], ['sky'], ['aeiou']], 42: [['listen', 'silent'], ['hello', 'world'], ['abc', 'cab']], 43: [[5], [0], [7]], 44: [['programming'], ['aeiou'], ['xyz']], 45: [[48, 18], [17, 5], [100, 25]], 46: [['12345'], ['abc123'], ['007']], 47: [[12, 18], [4, 6], [7, 5]], 48: ['Hello world from Python', 'one', 'a b c d e'], 49: [[1, [2, 2], [3, [1, 1]]], [[1, 1], [2, 2]], [1, 2, 3]], 50: [[1, 2, 3, 2, 1], [1, 2, 3, 4], [5]], 51: [['Apple', 'Banana', 'Cherry'], ['apple', 'Banana'], ['X']], 52: [[2, -3, 4, 0, 5], [1, 2, 3], [-1, -2]], 53: [[[1, 2], [10, 20, 30, 40]], [[1, 2, 3], [9]], [[], [1, 2]]], 54: [[-1, 2, -3, 4], [0, 0], [-5]], 55: [[1, 2, 3, 4, 6], [1, 2, 2, 3], [5]], 56: [[10, 5, 8, 12, 3], [1, 2], [7, 7, 9]], 57: [[1, 2, 2, 3, 1, 1], [5], []], 58: [[4, 1, 7, 3], [5], [2, 2, 2]], 59: [[1, 2, 2, 3, 4, 4, 5], [1, 1, 1], [7]], 60: [[[1, 2, 3, 4], [3, 4, 4, 5, 6]], [[1, 2], [3, 4]], [[1, 1, 2], [1, 2, 2]]], 61: [[10, 20, 30, 40, 50], [1, 2], [5]], 62: [[3, 1, 4, 2, 1, 5, 3], [1, 2, 3], [5, 5]], 63: [[10, 13, 15, 20], [5], []], 64: [['listen', 'silent'], ['cat', 'cast'], ['abc', 'ab']], 65: [['apple', 'sky', 'orange'], ['xyz'], ['aeiou']], 66: [['Hello, world!'], ['abc-123!'], ['NoPunctHere']], 67: [[[3, 5, 10, 12, 15], 5], [[1, 2, 3, 4], 2], [[7, 11, 13], 1]], 68: [[1, 2, 3, 4], [5], [1, 2, 3, 4, 5, 6]], 69: [['python'], ['ab'], ['abcde']], 70: [[12, 305, 47], [9], [100, 200]], 71: [[2, 3, 4, 5, 6], [2, 4, 5, 7], [1]], 72: [[[1, 2, 3, 2, 4], 2], [[5, 5, 5], 5], [[1, 2, 3], 3]], 73: [[1, 2, 3, 4], [5], [1, 2]], 74: [[[1, 5, 2, 8, 3], 4], [[10, 20], 15], [[1, 1, 1], 5]], 75: [['elephant', 'cat', 'dog', 'a'], ['same', 'size'], ['single']], 76: [['letter'], ['dog'], ['aabbcc']], 77: [[1, 2, 1, 3, 2, 2], [1, 1, 1], [5, 6, 7]], 78: [['hi', 'python', 'cat', 'elephant'], ['a', 'bb', 'ccc', 'dddd'], ['x', 'y']], 79: [[1, 1, 1, 2, 2, 3], [1, 1, 2, 2, 1, 1, 3], [4, 4, 4, 4], [1, 2, 3]], 80: [[(1, 3), (2, 2), (3, 1)], [(5, 1)], [(2, 4), (7, 2), (1, 1)]], 81: [[1, 2, 3, 4], [7, 7, 7, 7], [-3, -1, 2, 5, 5]], 82: [[2, 4, 6, 8], [1, 2, 4, 8], [10, 7, 4, 1]], 83: [['sky', 'banana', 'apple'], ['xyz', 'aeiou'], ['a']], 84: [[10, 20, 30, 40, 50, 60], [1, 2, 3], []], 85: [['cat', 'python'], ['a'], ['ab', 'cd', 'ef']], 86: [[12, 99, 123, 40], [5], [19, 91]], 87: [[1, 2, 3, 4], [1, 2, 4, 6], []], 88: [[1, 2, 3, 4, 5, 6, 7], [3, 6, 9], [1]], 89: [['code'], ['a'], ['ab']], 90: [['code'], ['a'], ['ab']], 91: [[1, 2, 3, 4], [1, 2, 3, 5], [2, 2]], 92: [[1, 2, 3, 2, 1], [1, 2, 2, 1], [5]], 93: [['cat', 'elephant', 'dog'], ['a'], ['x', 'xx']], 94: [[1, 5, 2, 7, 3, 6, 1], [1, 2, 3], [5, 1, 5]], 95: [['apple', 'banana', 'cat'], ['a'], ['ab']], 96: [[1, 1, 2, 2, 2, 3, 1, 1], [1, 1, 1], []], 97: [[1, 1, 2, 2, 2, 3, 3], [1], []], 98: [[1, 2, 5, 3, 4], [5, 1, 2, 0], [1, 2, 3]], 99: [[1, 2, 3, 4, 5, 6], [1], [1, 2, 3, 4, 5]], 100: [[1, 2, 3, 2, 4, 1, 1], [1, 2, 3], []]}",
+          "value_repr": "{1: [[3, 2, 2, 1, 5, 3], [1, 1, 1], [4, 4, 4, 2, 1, 2]], 2: [[1, 2, 3, 4, 5, 6], [1, 3, 5], [0, -2, -3]], 3: [[1, 2, 3, 4, 5], [1, 2], [1], []], 4: [[10, 3, 5, 6, 9, 8], [1], [-5, -1, -10]], 5: [[[1, 2, 3], [3, 4, 5]], [[1, 1, 2], [2, 3]], [[], [1, 2, 3]]], 6: [[1, 2, 3], [3, 2, 1], [1, 1, 2, 2], [5]], 7: [[[10, 20, 30], 2], [[1, 2, 3, 4, 5], 10], [[7], 5]], 8: [[5, 3, 2, 8, 2, 10], [1, 1, 1], [7]], 9: [[1, 2, 3, 4], [1, 2], [100, 200, 300, 400, 500]], 10: [[0, 1, 0, 3, 12], [0, 0, 0], [1, 2, 3], []], 11: [[['Alice', 'Bob'], [25, 30]], [['X'], [1]], [['a', 'b', 'c'], [1, 2, 3]]], 12: [['apple', 'banana', 'apple', 'orange', 'banana', 'apple'], ['x'], ['a', 'a', 'b']], 13: [[[1, 2, 3, 4, 5, 6, 7], 3], [[1, 2, 3], 1], [[1, 2, 3, 4], 2]], 14: [[1, 2, 3, 2], [1, 2, 3], [], [5, 5, 5]], 15: [[1, 2, 3, 4, 5], [10], [2, 2, 2, 2]], 16: [[5, 2, 8, 2, 1], [3], [10, 10, 10]], 17: [[[1, 2, 3, 4, 5], 6], [[1, 2, 3], 1], [[5, 10], 7]], 18: [[1, 2, 2, 3, 4, 4, 4, 5], [], [7, 7, 7]], 19: [['radar'], ['hello'], ['level']], 20: [[[1, 2, 3, 4, 5], 5], [[1, 1, 1], 2], [[10, 20, 30], 50]], 21: [['apple', 'bat', 'car', 'ant', 'orange'], ['a', 'bb', 'cc'], ['x']], 22: [[[3, 2, 1], [2, 4, 5], [5, 6, 3]], [[1, 2], [2, 3]], [[5], [5], [5]]], 23: [[1, 1, 2, 2, 2, 3, 3, 1, 1, 1, 1], [5, 5, 5], [1, 2, 3]], 24: [[4, 3, 2, 4, 1, 3, 2], [1, 1, 2, 2, 3], [5]], 25: [['a', 'b', 'c', 'a', 'b', 'a'], ['x', 'x', 'y'], ['z']], 26: [[1, 3, 2, 4, 1], [1, 2], [5], [1, 1, 1]], 27: [[1, 2, 3, 4, 5, 6], [], [2, 4, 6]], 28: [[[10, 3, 8, 15], 7], [[1], 5], [[100, 200], 150]], 29: [[[1, 3, 5, 7], 2], [[10, 20, 30], 10], [[1, 2, 3], 5]], 30: [['apple', 'ant', 'banana', 'bee', 'cat'], ['x'], ['aa', 'ab', 'ba']], 31: [[1, 2, 3, 4, 5, 6], [], [1, 3, 5]], 32: [[1, 2, 3], [-1, 2, 3], [5, -2]], 33: [['cat', 'elephant', 'dog'], ['a'], ['xx', 'yy', 'zzzz']], 34: [[1, 2, 3, 4], [], [-2, 3, -4]], 35: [[[1, 2, 3], [10, 20]], [[1], [2, 3, 4]], [[], [1, 2]]], 36: ['hello', 'sky', 'aeiou'], 37: [7, 8, 13, 15], 38: [['banana', 'apple', 'cherry'], ['z', 'a', 'm'], ['single']], 39: [[1, [2, 3], [4, [5]]], [[1, 2], [3, [4, 5]]], [1, 2, 3]], 40: [[-1, 2, -3, 4, 0], [-5, -6], [1, 2, 3]], 41: [['hello'], ['sky'], ['aeiou']], 42: [['listen', 'silent'], ['hello', 'world'], ['abc', 'cab']], 43: [[5], [0], [7]], 44: [['programming'], ['aeiou'], ['xyz']], 45: [[48, 18], [17, 5], [100, 25]], 46: [['12345'], ['abc123'], ['007']], 47: [[12, 18], [4, 6], [7, 5]], 48: ['Hello world from Python', 'one', 'a b c d e'], 49: [[1, [2, 2], [3, [1, 1]]], [[1, 1], [2, 2]], [1, 2, 3]], 50: [[1, 2, 3, 2, 1], [1, 2, 3, 4], [5]], 51: [['Apple', 'Banana', 'Cherry'], ['apple', 'Banana'], ['X']], 52: [[2, -3, 4, 0, 5], [1, 2, 3], [-1, -2]], 53: [[[1, 2], [10, 20, 30, 40]], [[1, 2, 3], [9]], [[], [1, 2]]], 54: [[-1, 2, -3, 4], [0, 0], [-5]], 55: [[1, 2, 3, 4, 6], [1, 2, 2, 3], [5]], 56: [[10, 5, 8, 12, 3], [1, 2], [7, 7, 9]], 57: [[1, 2, 2, 3, 1, 1], [5], []], 58: [[4, 1, 7, 3], [5], [2, 2, 2]], 59: [[1, 2, 2, 3, 4, 4, 5], [1, 1, 1], [7]], 60: [[[1, 2, 3, 4], [3, 4, 4, 5, 6]], [[1, 2], [3, 4]], [[1, 1, 2], [1, 2, 2]]], 61: [[10, 20, 30, 40, 50], [1, 2], [5]], 62: [[3, 1, 4, 2, 1, 5, 3], [1, 2, 3], [5, 5]], 63: [[10, 13, 15, 20], [5], []], 64: [['listen', 'silent'], ['cat', 'cast'], ['abc', 'ab']], 65: [['apple', 'sky', 'orange'], ['xyz'], ['aeiou']], 66: [['Hello, world!'], ['abc-123!'], ['NoPunctHere']], 67: [[[3, 5, 10, 12, 15], 5], [[1, 2, 3, 4], 2], [[7, 11, 13], 1]], 68: [[1, 2, 3, 4], [5], [1, 2, 3, 4, 5, 6]], 69: [['python'], ['ab'], ['abcde']], 70: [[12, 305, 47], [9], [100, 200]], 71: [[2, 3, 4, 5, 6], [2, 4, 5, 7], [1]], 72: [[[1, 2, 3, 2, 4], 2], [[5, 5, 5], 5], [[1, 2, 3], 3]], 73: [[1, 2, 3, 4], [5], [1, 2]], 74: [[[1, 5, 2, 8, 3], 4], [[10, 20], 15], [[1, 1, 1], 5]], 75: [['elephant', 'cat', 'dog', 'a'], ['same', 'size'], ['single']], 76: [['letter'], ['dog'], ['aabbcc']], 77: [[1, 2, 1, 3, 2, 2], [1, 1, 1], [5, 6, 7]], 78: [['hi', 'python', 'cat', 'elephant'], ['a', 'bb', 'ccc', 'dddd'], ['x', 'y']], 79: [[1, 1, 1, 2, 2, 3], [1, 1, 2, 2, 1, 1, 3], [4, 4, 4, 4], [1, 2, 3]], 80: [[(1, 3), (2, 2), (3, 1)], [(5, 1)], [(2, 4), (7, 2), (1, 1)]], 81: [[1, 2, 3, 4], [7, 7, 7, 7], [-3, -1, 2, 5, 5]], 82: [[2, 4, 6, 8], [1, 2, 4, 8], [10, 7, 4, 1]], 83: [['sky', 'banana', 'apple'], ['xyz', 'aeiou'], ['a']], 84: [[10, 20, 30, 40, 50, 60], [1, 2, 3], []], 85: [['cat', 'python'], ['a'], ['ab', 'cd', 'ef']], 86: [[12, 99, 123, 40], [5], [19, 91]], 87: [[1, 2, 3, 4], [1, 2, 4, 6], []], 88: [[1, 2, 3, 4, 5, 6, 7], [3, 6, 9], [1]], 89: [['code'], ['a'], ['ab']], 90: [['code'], ['a'], ['ab']], 91: [[1, 2, 3, 4], [1, 2, 3, 5], [2, 2]], 92: [[1, 2, 3, 2, 1], [1, 2, 2, 1], [5]], 93: [['cat', 'elephant', 'dog'], ['a'], ['x', 'xx']], 94: [[1, 5, 2, 7, 3, 6, 1], [1, 2, 3], [5, 1, 5]], 95: [['apple', 'banana', 'cat'], ['a'], ['ab']], 96: [[1, 1, 2, 2, 2, 3, 1, 1], [1, 1, 1], []], 97: [[1, 1, 2, 2, 2, 3, 3], [1], []], 98: [[1, 2, 5, 3, 4], [5, 1, 2, 0], [1, 2, 3]], 99: [[1, 2, 3, 4, 5, 6], [1], [1, 2, 3, 4, 5]], 100: [[1, 2, 3, 2, 4, 1, 1], [1, 2, 3], []], 101: [[3, 7, 1, 9, 4], [5], [-10, 4, 0]], 102: [[-2, 5, 0, 3, -1, 7], [0, 0, 0], []], 103: [[-1, 2, -3, 0, 5], [7, 8], []], 104: [[4, 9, 2, 9, 7], [5], [-3, -1, -7]], 105: [[2, 4, 6], [2, 3, 8], []], 106: [[[1, 2, 2, 3, 2], 2], [[5], 1], [[7, 7, 7], 7]], 107: [[[1, 2, 3], 10], [[5], 0], [[-4, -6], 5]], 108: [[5, 1, 7, 2, 9], [4], []], 109: [[5, 23, 100, 47, 8], [10, 99], []], 110: [[0, 3, 2, 7, 4], [5, 1, 2], []], 111: [['cat', 'dog', 'bird'], ['a'], []], 112: [['Hello', 'world'], ['one'], []], 113: [['cat', 'dog', 'bird'], ['a'], []], 114: [['apple'], ['dog'], ['Orange']], 115: [['cat'], ['ab'], ['x']], 116: [['banana'], ['a'], ['ab']], 117: [['radar', 'cat', 'level', 'dog'], ['abc'], []], 118: [[-5, 3, 0, 7, -2], [0, 0, 0], []], 119: [[[1, 2, 3], [10, 20, 30]], [[5], [7]], [[1, 2], [0, 0]]], 120: [[1, 3, 2, 5, 4], [5, 4, 3], [1, 2, 3]], 0: [[1, 2, 3], [10, -5, 5], [42]]}",
           "lineno": 17
         }
       ],
@@ -1080,6 +780,1062 @@
         "classes": 0,
         "dataclasses": 0,
         "functions": 0,
+        "methods": 0,
+        "constants": 1
+      }
+    },
+    {
+      "path": "webapp/main.py",
+      "module_docstring": "FastAPI-приложение веб-грейдера. Создаёт app, монтирует статику, сессию и\nроутеры. Вся логика проверки — в grading/, модель данных — в core/models.py,\nроуты — в routes/.",
+      "module_summary": "FastAPI-приложение веб-грейдера. Создаёт app, монтирует статику, сессию и",
+      "classes": [],
+      "functions": [
+        {
+          "name": "cache_policy",
+          "signature": "cache_policy(request: Request, call_next)",
+          "docstring": "Cache-Control: no-cache для /static/ и HTML — браузер ревалидирует\n(дешёвый 304 по ETag), а не держит старые JS/CSS после деплоя (bug.15).",
+          "summary": "Cache-Control: no-cache для /static/ и HTML — браузер ревалидирует",
+          "kind": "async_function",
+          "decorators": [
+            "app.middleware('http')"
+          ],
+          "lineno": 26,
+          "end_lineno": 34
+        },
+        {
+          "name": "create_tables",
+          "signature": "create_tables()",
+          "docstring": "Создать отсутствующие таблицы на старте (create_all идемпотентен;\nсистемы миграций в проекте нет).",
+          "summary": "Создать отсутствующие таблицы на старте (create_all идемпотентен;",
+          "kind": "function",
+          "decorators": [
+            "app.on_event('startup')"
+          ],
+          "lineno": 38,
+          "end_lineno": 41
+        }
+      ],
+      "constants": [],
+      "stats": {
+        "classes": 0,
+        "dataclasses": 0,
+        "functions": 2,
+        "methods": 0,
+        "constants": 0
+      }
+    },
+    {
+      "path": "webapp/routes/_common.py",
+      "module_docstring": "Общее для нескольких модулей роутов: эффективная личность (имперсонация),\nагрегаты попыток, ответ подсказок и Pydantic-модели запросов, которые\nпереиспользуются между доменами (submit/run_free — у ученика и у тьютора).",
+      "module_summary": "Общее для нескольких модулей роутов: эффективная личность (имперсонация),",
+      "classes": [
+        {
+          "name": "SubmissionRequest",
+          "signature": "SubmissionRequest(BaseModel)",
+          "docstring": "Отправка решения: задание + код ученика целиком.",
+          "summary": "Отправка решения: задание + код ученика целиком.",
+          "kind": "class",
+          "bases": [
+            "BaseModel"
+          ],
+          "decorators": [],
+          "fields": [
+            {
+              "name": "task_id",
+              "annotation": "int",
+              "value_repr": null,
+              "lineno": 81
+            },
+            {
+              "name": "code",
+              "annotation": "str",
+              "value_repr": null,
+              "lineno": 82
+            }
+          ],
+          "methods": [],
+          "lineno": 78,
+          "end_lineno": 82
+        },
+        {
+          "name": "HintFreeRunRequest",
+          "signature": "HintFreeRunRequest(BaseModel)",
+          "docstring": "Свободный запуск кода без привязки к заданию (print и любые операторы).",
+          "summary": "Свободный запуск кода без привязки к заданию (print и любые операторы).",
+          "kind": "class",
+          "bases": [
+            "BaseModel"
+          ],
+          "decorators": [],
+          "fields": [
+            {
+              "name": "code",
+              "annotation": "str",
+              "value_repr": null,
+              "lineno": 88
+            }
+          ],
+          "methods": [],
+          "lineno": 85,
+          "end_lineno": 88
+        }
+      ],
+      "functions": [
+        {
+          "name": "effective_identity",
+          "signature": "effective_identity(request: Request, db: Session)",
+          "docstring": "Для тьютора в режиме \"посмотреть как ученик\" подменяет личность только\nдля student-facing данных (список заданий/свои попытки) — НЕ для\nавторизации, та остаётся на реальной роли из сессии.",
+          "summary": "Для тьютора в режиме \"посмотреть как ученик\" подменяет личность только",
+          "kind": "function",
+          "decorators": [],
+          "lineno": 14,
+          "end_lineno": 24
+        },
+        {
+          "name": "task_status_map",
+          "signature": "task_status_map(db: Session, user_id: int) -> dict",
+          "docstring": "task_id -> 'pass'/'fail' по всей истории попыток пользователя — 'pass'\nесли хоть одна попытка когда-либо прошла. Общий код для своей истории\n(эффективная личность) и истории конкретного ученика (вид тьютора).",
+          "summary": "task_id -> 'pass'/'fail' по всей истории попыток пользователя — 'pass'",
+          "kind": "function",
+          "decorators": [],
+          "lineno": 27,
+          "end_lineno": 35
+        },
+        {
+          "name": "task_attempts",
+          "signature": "task_attempts(db: Session, user_id: int, task_id: int) -> list",
+          "docstring": "Все попытки пользователя по одному заданию в хронологии — общий вид\nдля своей истории (ученик) и истории конкретного ученика (тьютор).",
+          "summary": "Все попытки пользователя по одному заданию в хронологии — общий вид",
+          "kind": "function",
+          "decorators": [],
+          "lineno": 38,
+          "end_lineno": 55
+        },
+        {
+          "name": "hints_response",
+          "signature": "hints_response(db: Session, user_id: int, task_id: int) -> dict",
+          "docstring": "Общий вид ответа с состоянием подсказок для ученика — используется и в\nGET, и в POST /reveal, чтобы контракт был единый. Контент рендерим в HTML\nтолько для revealed (ученик видит готовый текст, не сырой markdown).",
+          "summary": "Общий вид ответа с состоянием подсказок для ученика — используется и в",
+          "kind": "function",
+          "decorators": [],
+          "lineno": 58,
+          "end_lineno": 67
+        },
+        {
+          "name": "require_student",
+          "signature": "require_student(db: Session, student_id: int)",
+          "docstring": "User по id, если это ученик, иначе None (вызывающий отдаёт 404).",
+          "summary": "User по id, если это ученик, иначе None (вызывающий отдаёт 404).",
+          "kind": "function",
+          "decorators": [],
+          "lineno": 70,
+          "end_lineno": 72
+        }
+      ],
+      "constants": [],
+      "stats": {
+        "classes": 2,
+        "dataclasses": 0,
+        "functions": 5,
+        "methods": 0,
+        "constants": 0
+      }
+    },
+    {
+      "path": "webapp/routes/auth.py",
+      "module_docstring": "Роуты авторизации: вход/выход, текущий пользователь, режим «посмотреть как\nученик» (имперсонация).",
+      "module_summary": "Роуты авторизации: вход/выход, текущий пользователь, режим «посмотреть как",
+      "classes": [
+        {
+          "name": "ChangePasswordRequest",
+          "signature": "ChangePasswordRequest(BaseModel)",
+          "docstring": "Смена собственного пароля: подтверждение текущим + новый.",
+          "summary": "Смена собственного пароля: подтверждение текущим + новый.",
+          "kind": "class",
+          "bases": [
+            "BaseModel"
+          ],
+          "decorators": [],
+          "fields": [
+            {
+              "name": "current_password",
+              "annotation": "str",
+              "value_repr": null,
+              "lineno": 29
+            },
+            {
+              "name": "new_password",
+              "annotation": "str",
+              "value_repr": null,
+              "lineno": 30
+            }
+          ],
+          "methods": [],
+          "lineno": 26,
+          "end_lineno": 30
+        }
+      ],
+      "functions": [
+        {
+          "name": "login_page",
+          "signature": "login_page(request: Request)",
+          "docstring": "Страница входа (форма логин/пароль).",
+          "summary": "Страница входа (форма логин/пароль).",
+          "kind": "function",
+          "decorators": [
+            "router.get('/login')"
+          ],
+          "lineno": 34,
+          "end_lineno": 36
+        },
+        {
+          "name": "login_submit",
+          "signature": "login_submit(request: Request, username: str = Form(...), password: str = Form(...), db: Session = Depends(get_db))",
+          "docstring": "Вход по логину/паролю: при успехе user_id/username/role пишутся в\nподписанную сессионную cookie; при неудаче — назад на /login?error=1.",
+          "summary": "Вход по логину/паролю: при успехе user_id/username/role пишутся в",
+          "kind": "function",
+          "decorators": [
+            "router.post('/login')"
+          ],
+          "lineno": 40,
+          "end_lineno": 49
+        },
+        {
+          "name": "logout",
+          "signature": "logout(request: Request)",
+          "docstring": "Выход: сессия очищается целиком (включая флаг имперсонации).",
+          "summary": "Выход: сессия очищается целиком (включая флаг имперсонации).",
+          "kind": "function",
+          "decorators": [
+            "router.post('/logout')"
+          ],
+          "lineno": 53,
+          "end_lineno": 56
+        },
+        {
+          "name": "me",
+          "signature": "me(request: Request, db: Session = Depends(get_db))",
+          "docstring": "Текущий пользователь для фронта: эффективные имя/роль (при\nимперсонации — ученик), факт подмены и реальное имя тьютора.",
+          "summary": "Текущий пользователь для фронта: эффективные имя/роль (при",
+          "kind": "function",
+          "decorators": [
+            "router.get('/api/me')"
+          ],
+          "lineno": 60,
+          "end_lineno": 72
+        },
+        {
+          "name": "change_own_password",
+          "signature": "change_own_password(payload: ChangePasswordRequest, request: Request, db: Session = Depends(get_db))",
+          "docstring": "Смена собственного пароля — доступна любой роли (и тьютору, и ученику).\nТребует текущий пароль, новый проходит политику минимальной длины\n(password_policy_error). Другие активные сессии пользователя при этом не\nинвалидируются: сессия — stateless подписанная cookie, от пароля не\nзависит (см. docs/decisions.md, bug.9).",
+          "summary": "Смена собственного пароля — доступна любой роли (и тьютору, и ученику).",
+          "kind": "function",
+          "decorators": [
+            "router.post('/api/me/password')"
+          ],
+          "lineno": 76,
+          "end_lineno": 94
+        },
+        {
+          "name": "start_impersonation",
+          "signature": "start_impersonation(student_id: int, request: Request, db: Session = Depends(get_db))",
+          "docstring": "Войти в режим «посмотреть как ученик»: в сессию пишется\nimpersonate_student_id, student-facing данные показываются от лица\nученика; авторизация тьюторских роутов остаётся на реальной роли.",
+          "summary": "Войти в режим «посмотреть как ученик»: в сессию пишется",
+          "kind": "function",
+          "decorators": [
+            "router.post('/tutor/student/{student_id}/impersonate')"
+          ],
+          "lineno": 98,
+          "end_lineno": 112
+        },
+        {
+          "name": "stop_impersonation",
+          "signature": "stop_impersonation(request: Request)",
+          "docstring": "Выйти из режима имперсонации — возврат на страницу этого ученика.",
+          "summary": "Выйти из режима имперсонации — возврат на страницу этого ученика.",
+          "kind": "function",
+          "decorators": [
+            "router.post('/impersonate/stop')"
+          ],
+          "lineno": 116,
+          "end_lineno": 121
+        }
+      ],
+      "constants": [],
+      "stats": {
+        "classes": 1,
+        "dataclasses": 0,
+        "functions": 7,
+        "methods": 0,
+        "constants": 0
+      }
+    },
+    {
+      "path": "webapp/routes/hints_api.py",
+      "module_docstring": "Роуты многоступенчатых подсказок: ученические (GET/reveal) и админка\nтьютора (редактирование текстов уровней). Логика тайминга и доступа — в\ncontent/hints.py, здесь только авторизация и валидация task_id/level.",
+      "module_summary": "Роуты многоступенчатых подсказок: ученические (GET/reveal) и админка",
+      "classes": [
+        {
+          "name": "HintRevealRequest",
+          "signature": "HintRevealRequest(BaseModel)",
+          "docstring": "Ученик запрашивает раскрытие уровня подсказки. level — 1|2|3.",
+          "summary": "Ученик запрашивает раскрытие уровня подсказки. level — 1|2|3.",
+          "kind": "class",
+          "bases": [
+            "BaseModel"
+          ],
+          "decorators": [],
+          "fields": [
+            {
+              "name": "level",
+              "annotation": "int",
+              "value_repr": null,
+              "lineno": 22
+            }
+          ],
+          "methods": [],
+          "lineno": 20,
+          "end_lineno": 22
+        },
+        {
+          "name": "HintContentRequest",
+          "signature": "HintContentRequest(BaseModel)",
+          "docstring": "Тьютор сохраняет текст уровня (markdown).",
+          "summary": "Тьютор сохраняет текст уровня (markdown).",
+          "kind": "class",
+          "bases": [
+            "BaseModel"
+          ],
+          "decorators": [],
+          "fields": [
+            {
+              "name": "content",
+              "annotation": "str",
+              "value_repr": "''",
+              "lineno": 27
+            }
+          ],
+          "methods": [],
+          "lineno": 25,
+          "end_lineno": 27
+        }
+      ],
+      "functions": [
+        {
+          "name": "get_hints",
+          "signature": "get_hints(task_id: int, request: Request, db: Session = Depends(get_db))",
+          "docstring": "Состояние подсказок задания для ученика: по уровню — статус (locked /\nwaiting / ready / revealed), для revealed — отрендеренный HTML контента,\nдля waiting — available_at (когда станет ready, сервер считает тайминг).\n\nКонтент отдаётся только для уже раскрытых уровней; для waiting сервер\nостаётся источником правды о готовности — фронт по обнулении таймера\nперезапрашивает это состояние.",
+          "summary": "Состояние подсказок задания для ученика: по уровню — статус (locked /",
+          "kind": "function",
+          "decorators": [
+            "router.get('/api/hints/{task_id}')"
+          ],
+          "lineno": 31,
+          "end_lineno": 44
+        },
+        {
+          "name": "reveal_hint",
+          "signature": "reveal_hint(task_id: int, payload: HintRevealRequest, request: Request, db: Session = Depends(get_db))",
+          "docstring": "Ученик раскрывает уровень подсказки. Сервер решает, можно ли сейчас\nраскрыть (предыдущий уровень раскрыт И его задержка прошла), иначе 409.\nПовторный запрос на уже раскрытый уровень — идемпотентен (не создаёт\nдубль и не сдвигает revealed_at).",
+          "summary": "Ученик раскрывает уровень подсказки. Сервер решает, можно ли сейчас",
+          "kind": "function",
+          "decorators": [
+            "router.post('/api/hints/{task_id}/reveal')"
+          ],
+          "lineno": 48,
+          "end_lineno": 66
+        },
+        {
+          "name": "_require_tutor",
+          "signature": "_require_tutor(request: Request)",
+          "docstring": "JSONResponse-ошибка (401/403), если запрос не от тьютора, иначе None\n(тот же контракт, что у students._require_tutor).",
+          "summary": "JSONResponse-ошибка (401/403), если запрос не от тьютора, иначе None",
+          "kind": "function",
+          "decorators": [],
+          "lineno": 72,
+          "end_lineno": 79
+        },
+        {
+          "name": "admin_list_hints",
+          "signature": "admin_list_hints(request: Request, task_id: int, db: Session = Depends(get_db))",
+          "docstring": "Текст всех трёх уровней задания (включая пустые) — для редактора\nтьютора. Отдаём сырой markdown, не HTML: в форме его правят как текст.",
+          "summary": "Текст всех трёх уровней задания (включая пустые) — для редактора",
+          "kind": "function",
+          "decorators": [
+            "router.get('/api/admin/hints')"
+          ],
+          "lineno": 83,
+          "end_lineno": 92
+        },
+        {
+          "name": "admin_save_hint",
+          "signature": "admin_save_hint(task_id: int, level: int, payload: HintContentRequest, request: Request, db: Session = Depends(get_db))",
+          "docstring": "Сохранить (upsert) текст уровня подсказки. Контент — markdown,\nправит тьютор. Создание/обновление одной записью на (task_id, level).",
+          "summary": "Сохранить (upsert) текст уровня подсказки. Контент — markdown,",
+          "kind": "function",
+          "decorators": [
+            "router.put('/api/admin/hints/{task_id}/{level}')"
+          ],
+          "lineno": 96,
+          "end_lineno": 111
+        },
+        {
+          "name": "admin_hinted_tasks",
+          "signature": "admin_hinted_tasks(request: Request)",
+          "docstring": "Задания, к которым привязаны подсказки (id + условие) — для селектора\nв админке, чтобы тьютор понимал, какое задание правит.",
+          "summary": "Задания, к которым привязаны подсказки (id + условие) — для селектора",
+          "kind": "function",
+          "decorators": [
+            "router.get('/api/admin/hints/tasks')"
+          ],
+          "lineno": 117,
+          "end_lineno": 125
+        }
+      ],
+      "constants": [],
+      "stats": {
+        "classes": 2,
+        "dataclasses": 0,
+        "functions": 6,
+        "methods": 0,
+        "constants": 0
+      }
+    },
+    {
+      "path": "webapp/routes/pages.py",
+      "module_docstring": "Страничные роуты: отдача Jinja2-шаблонов (практика, тьютор, материалы).",
+      "module_summary": "Страничные роуты: отдача Jinja2-шаблонов (практика, тьютор, материалы).",
+      "classes": [],
+      "functions": [
+        {
+          "name": "index",
+          "signature": "index(request: Request, db: Session = Depends(get_db))",
+          "docstring": "Главная: тьютору — список учеников (tutor.html, его основная страница),\nученику — практика (index.html).",
+          "summary": "Главная: тьютору — список учеников (tutor.html, его основная страница),",
+          "kind": "function",
+          "decorators": [
+            "router.get('/')"
+          ],
+          "lineno": 18,
+          "end_lineno": 29
+        },
+        {
+          "name": "tutor_page",
+          "signature": "tutor_page(request: Request)",
+          "docstring": "Легаси /tutor — постоянный редирект на главную (отдельной тьюторской\nстраницы больше нет, список учеников теперь и есть главная тьютора).",
+          "summary": "Легаси /tutor — постоянный редирект на главную (отдельной тьюторской",
+          "kind": "function",
+          "decorators": [
+            "router.get('/tutor')"
+          ],
+          "lineno": 33,
+          "end_lineno": 38
+        },
+        {
+          "name": "tutor_student_page",
+          "signature": "tutor_student_page(student_id: int, request: Request)",
+          "docstring": "Страница тьютора по конкретному ученику: живой мониторинг, попытки,\nподсказки (данные грузятся отдельными API).",
+          "summary": "Страница тьютора по конкретному ученику: живой мониторинг, попытки,",
+          "kind": "function",
+          "decorators": [
+            "router.get('/tutor/student/{student_id}')"
+          ],
+          "lineno": 42,
+          "end_lineno": 49
+        },
+        {
+          "name": "tutor_hints_page",
+          "signature": "tutor_hints_page(request: Request)",
+          "docstring": "Админка подсказок для заданий 81..100 — тьютор правит тексты уровней.",
+          "summary": "Админка подсказок для заданий 81..100 — тьютор правит тексты уровней.",
+          "kind": "function",
+          "decorators": [
+            "router.get('/tutor/hints')"
+          ],
+          "lineno": 53,
+          "end_lineno": 59
+        },
+        {
+          "name": "materials_page",
+          "signature": "materials_page(module: str, lesson: str, request: Request)",
+          "docstring": "Страница урока материалов (существование проверяем по манифесту,\nсодержимое фронт грузит отдельным API).",
+          "summary": "Страница урока материалов (существование проверяем по манифесту,",
+          "kind": "function",
+          "decorators": [
+            "router.get('/materials/{module}/{lesson}')"
+          ],
+          "lineno": 63,
+          "end_lineno": 70
+        }
+      ],
+      "constants": [],
+      "stats": {
+        "classes": 0,
+        "dataclasses": 0,
+        "functions": 5,
+        "methods": 0,
+        "constants": 0
+      }
+    },
+    {
+      "path": "webapp/routes/students.py",
+      "module_docstring": "Роуты тьютора по ученикам: список, создание, смена пароля, попытки и\nсостояние подсказок конкретного ученика (мониторинг + сброс).",
+      "module_summary": "Роуты тьютора по ученикам: список, создание, смена пароля, попытки и",
+      "classes": [
+        {
+          "name": "CreateStudentRequest",
+          "signature": "CreateStudentRequest(BaseModel)",
+          "docstring": "Завести ученика: логин + стартовый пароль.",
+          "summary": "Завести ученика: логин + стартовый пароль.",
+          "kind": "class",
+          "bases": [
+            "BaseModel"
+          ],
+          "decorators": [],
+          "fields": [
+            {
+              "name": "username",
+              "annotation": "str",
+              "value_repr": null,
+              "lineno": 29
+            },
+            {
+              "name": "password",
+              "annotation": "str",
+              "value_repr": null,
+              "lineno": 30
+            }
+          ],
+          "methods": [],
+          "lineno": 26,
+          "end_lineno": 30
+        },
+        {
+          "name": "SetPasswordRequest",
+          "signature": "SetPasswordRequest(BaseModel)",
+          "docstring": "Тьютор задаёт ученику новый пароль (старый не нужен — это тьютор).",
+          "summary": "Тьютор задаёт ученику новый пароль (старый не нужен — это тьютор).",
+          "kind": "class",
+          "bases": [
+            "BaseModel"
+          ],
+          "decorators": [],
+          "fields": [
+            {
+              "name": "password",
+              "annotation": "str",
+              "value_repr": null,
+              "lineno": 36
+            }
+          ],
+          "methods": [],
+          "lineno": 33,
+          "end_lineno": 36
+        },
+        {
+          "name": "HintResetRequest",
+          "signature": "HintResetRequest(BaseModel)",
+          "docstring": "Тьютор сбрасывает раскрытый уровень подсказки ученика (level — 1|2|3).\nСбрасывается сам уровень и все раскрытые уровни выше него по цепочке.",
+          "summary": "Тьютор сбрасывает раскрытый уровень подсказки ученика (level — 1|2|3).",
+          "kind": "class",
+          "bases": [
+            "BaseModel"
+          ],
+          "decorators": [],
+          "fields": [
+            {
+              "name": "level",
+              "annotation": "int",
+              "value_repr": null,
+              "lineno": 42
+            }
+          ],
+          "methods": [],
+          "lineno": 39,
+          "end_lineno": 42
+        }
+      ],
+      "functions": [
+        {
+          "name": "_require_tutor",
+          "signature": "_require_tutor(request: Request)",
+          "docstring": "Возвращает JSONResponse-ошибку (401/403), если запрос не от тьютора,\nиначе None. Каждый роут ниже начинает с `if (err := _require_tutor(...)): return err`.",
+          "summary": "Возвращает JSONResponse-ошибку (401/403), если запрос не от тьютора,",
+          "kind": "function",
+          "decorators": [],
+          "lineno": 45,
+          "end_lineno": 52
+        },
+        {
+          "name": "list_students",
+          "signature": "list_students(request: Request, db: Session = Depends(get_db))",
+          "docstring": "Все ученики тьютора + агрегаты по попыткам (сколько всего, когда\nпоследняя) — одним запросом, без N+1.",
+          "summary": "Все ученики тьютора + агрегаты по попыткам (сколько всего, когда",
+          "kind": "function",
+          "decorators": [
+            "router.get('/api/students')"
+          ],
+          "lineno": 56,
+          "end_lineno": 81
+        },
+        {
+          "name": "create_student",
+          "signature": "create_student(payload: CreateStudentRequest, request: Request, db: Session = Depends(get_db))",
+          "docstring": "Создать ученика: логин уникален, пароль проходит политику, в БД —\nbcrypt-хэш.",
+          "summary": "Создать ученика: логин уникален, пароль проходит политику, в БД —",
+          "kind": "function",
+          "decorators": [
+            "router.post('/api/students')"
+          ],
+          "lineno": 85,
+          "end_lineno": 100
+        },
+        {
+          "name": "set_student_password",
+          "signature": "set_student_password(student_id: int, payload: SetPasswordRequest, request: Request, db: Session = Depends(get_db))",
+          "docstring": "Сменить пароль ученика (роль всегда student; политика проверяется).",
+          "summary": "Сменить пароль ученика (роль всегда student; политика проверяется).",
+          "kind": "function",
+          "decorators": [
+            "router.post('/api/students/{student_id}/password')"
+          ],
+          "lineno": 104,
+          "end_lineno": 115
+        },
+        {
+          "name": "student_task_status",
+          "signature": "student_task_status(student_id: int, request: Request, db: Session = Depends(get_db))",
+          "docstring": "Статус всех заданий ученика ('pass'/'fail') — для монитора тьютора.",
+          "summary": "Статус всех заданий ученика ('pass'/'fail') — для монитора тьютора.",
+          "kind": "function",
+          "decorators": [
+            "router.get('/api/students/{student_id}/attempts/status')"
+          ],
+          "lineno": 119,
+          "end_lineno": 125
+        },
+        {
+          "name": "student_task_attempts",
+          "signature": "student_task_attempts(student_id: int, task_id: int, request: Request, db: Session = Depends(get_db))",
+          "docstring": "Все попытки ученика по одному заданию: код, passed, время.",
+          "summary": "Все попытки ученика по одному заданию: код, passed, время.",
+          "kind": "function",
+          "decorators": [
+            "router.get('/api/students/{student_id}/attempts/{task_id}')"
+          ],
+          "lineno": 129,
+          "end_lineno": 135
+        },
+        {
+          "name": "student_hints",
+          "signature": "student_hints(student_id: int, task_id: int, request: Request, db: Session = Depends(get_db))",
+          "docstring": "Состояние подсказок задания для конкретного ученика — глазами тьютора\n(мониторинг прогресса раскрытия, без reveal-кнопок). Та же логика, что у\nученического GET /api/hints, но user_id берётся явно из student_id, а не\nиз effective_identity. Контент отдаётся для revealed (тьютор видит, что\nименно ученик уже прочитал).",
+          "summary": "Состояние подсказок задания для конкретного ученика — глазами тьютора",
+          "kind": "function",
+          "decorators": [
+            "router.get('/api/students/{student_id}/hints/{task_id}')"
+          ],
+          "lineno": 139,
+          "end_lineno": 151
+        },
+        {
+          "name": "reset_student_hint",
+          "signature": "reset_student_hint(student_id: int, task_id: int, payload: HintResetRequest, request: Request, db: Session = Depends(get_db))",
+          "docstring": "Тьютор сбрасывает раскрытый уровень подсказки ученика — ученик снова\nувидит его закрытым (как будто не открывал). Сбрасывается сам уровень и\nкаскадно все раскрытые уровни выше, чтобы не получить невозможное\nсостояние «старший открыт, а его якорь закрыт». Действие необратимо:\nистории раскрытия в БД нет. Возвращает свежее состояние подсказок.",
+          "summary": "Тьютор сбрасывает раскрытый уровень подсказки ученика — ученик снова",
+          "kind": "function",
+          "decorators": [
+            "router.post('/api/students/{student_id}/hints/{task_id}/reset')"
+          ],
+          "lineno": 155,
+          "end_lineno": 170
+        },
+        {
+          "name": "delete_student_attempt",
+          "signature": "delete_student_attempt(student_id: int, attempt_id: int, request: Request, db: Session = Depends(get_db))",
+          "docstring": "Тьютор удаляет одну попытку ученика — удачную или нет, в любом порядке.\nСтатус решённости — производное от Attempt.passed (task_status_map в\n_common.py: 'pass' если хоть одна попытка прошла), поэтому удаление\nпоследней удачной попытки делает задание снова нерешённым ('fail', если\nостались неудачные), а удаление всех — возвращает в начальное состояние\n(статус пропадает, индикатор исчезает). Возвращает свежий статус задачи,\nчтобы фронт сразу перекрасил точку и перезагрузил список попыток.",
+          "summary": "Тьютор удаляет одну попытку ученика — удачную или нет, в любом порядке.",
+          "kind": "function",
+          "decorators": [
+            "router.delete('/api/students/{student_id}/attempts/{attempt_id}')"
+          ],
+          "lineno": 174,
+          "end_lineno": 193
+        }
+      ],
+      "constants": [],
+      "stats": {
+        "classes": 3,
+        "dataclasses": 0,
+        "functions": 9,
+        "methods": 0,
+        "constants": 0
+      }
+    },
+    {
+      "path": "webapp/routes/tasks_api.py",
+      "module_docstring": "API заданий и student-facing данных: список заданий, материалы, попытки\nученика, TURN-креды, отправка и свободный запуск кода.",
+      "module_summary": "API заданий и student-facing данных: список заданий, материалы, попытки",
+      "classes": [
+        {
+          "name": "SolveRunFreeRequest",
+          "signature": "SolveRunFreeRequest(BaseModel)",
+          "docstring": "Код + опциональный task_id: с задачей «Запустить» гоняет код через\nхарнесс с первым входом (run_with_sample), без задачи — как plain-скрипт\n(run_free, прежнее поведение).",
+          "summary": "Код + опциональный task_id: с задачей «Запустить» гоняет код через",
+          "kind": "class",
+          "bases": [
+            "BaseModel"
+          ],
+          "decorators": [],
+          "fields": [
+            {
+              "name": "code",
+              "annotation": "str",
+              "value_repr": null,
+              "lineno": 104
+            },
+            {
+              "name": "task_id",
+              "annotation": "int | None",
+              "value_repr": "None",
+              "lineno": 105
+            }
+          ],
+          "methods": [],
+          "lineno": 100,
+          "end_lineno": 105
+        }
+      ],
+      "functions": [
+        {
+          "name": "list_tasks",
+          "signature": "list_tasks(request: Request)",
+          "docstring": "Каталог заданий: id, условие, пример (только задания с тест-кейсами).",
+          "summary": "Каталог заданий: id, условие, пример (только задания с тест-кейсами).",
+          "kind": "function",
+          "decorators": [
+            "router.get('/api/tasks')"
+          ],
+          "lineno": 28,
+          "end_lineno": 35
+        },
+        {
+          "name": "list_materials",
+          "signature": "list_materials(request: Request)",
+          "docstring": "Манифест материалов: модули → уроки (без содержимого уроков).",
+          "summary": "Манифест материалов: модули → уроки (без содержимого уроков).",
+          "kind": "function",
+          "decorators": [
+            "router.get('/api/materials')"
+          ],
+          "lineno": 39,
+          "end_lineno": 43
+        },
+        {
+          "name": "get_material",
+          "signature": "get_material(module: str, lesson: str, request: Request)",
+          "docstring": "Один урок материалов: code-ячейки ноутбука с выводами (из памяти,\nсм. content/materials.py).",
+          "summary": "Один урок материалов: code-ячейки ноутбука с выводами (из памяти,",
+          "kind": "function",
+          "decorators": [
+            "router.get('/api/materials/{module}/{lesson}')"
+          ],
+          "lineno": 47,
+          "end_lineno": 55
+        },
+        {
+          "name": "turn_credentials",
+          "signature": "turn_credentials(request: Request)",
+          "docstring": "ICE-серверы для WebRTC-звонка: STUN всегда; TURN — временная учётка\n(см. схему в коде ниже), статического пароля во фронте нет.",
+          "summary": "ICE-серверы для WebRTC-звонка: STUN всегда; TURN — временная учётка",
+          "kind": "function",
+          "decorators": [
+            "router.get('/api/turn-credentials')"
+          ],
+          "lineno": 59,
+          "end_lineno": 78
+        },
+        {
+          "name": "my_attempts",
+          "signature": "my_attempts(request: Request, db: Session = Depends(get_db))",
+          "docstring": "Статус своих заданий ('pass'/'fail'); при имперсонации — задания\nученика (effective_identity).",
+          "summary": "Статус своих заданий ('pass'/'fail'); при имперсонации — задания",
+          "kind": "function",
+          "decorators": [
+            "router.get('/api/attempts/mine')"
+          ],
+          "lineno": 82,
+          "end_lineno": 88
+        },
+        {
+          "name": "my_task_attempts",
+          "signature": "my_task_attempts(task_id: int, request: Request, db: Session = Depends(get_db))",
+          "docstring": "Свои попытки по одному заданию; при имперсонации — ученика.",
+          "summary": "Свои попытки по одному заданию; при имперсонации — ученика.",
+          "kind": "function",
+          "decorators": [
+            "router.get('/api/attempts/mine/{task_id}')"
+          ],
+          "lineno": 92,
+          "end_lineno": 97
+        },
+        {
+          "name": "run_solve_code_free",
+          "signature": "run_solve_code_free(payload: SolveRunFreeRequest, request: Request)",
+          "docstring": "Свободный запуск кода ученика в его собственном редакторе. Для кода\nконкретного задания — с данными на входе (solve() вызывается харнессом),\nдля свободного print-кода — без входа, как раньше.",
+          "summary": "Свободный запуск кода ученика в его собственном редакторе. Для кода",
+          "kind": "function",
+          "decorators": [
+            "router.post('/api/solve/run_free')"
+          ],
+          "lineno": 109,
+          "end_lineno": 117
+        },
+        {
+          "name": "submit",
+          "signature": "submit(payload: SubmissionRequest, request: Request, db: Session = Depends(get_db))",
+          "docstring": "Отправка решения на проверку (центральный эндпоинт грейдера): grade()\nпрогоняет код на всех тестах; Attempt записывается только при реальном\nвердикте (не системной ошибке). В режиме имперсонации запрещено — тьютор\nне должен решать за ученика.",
+          "summary": "Отправка решения на проверку (центральный эндпоинт грейдера): grade()",
+          "kind": "function",
+          "decorators": [
+            "router.post('/api/submit')"
+          ],
+          "lineno": 121,
+          "end_lineno": 145
+        }
+      ],
+      "constants": [],
+      "stats": {
+        "classes": 1,
+        "dataclasses": 0,
+        "functions": 8,
+        "methods": 0,
+        "constants": 0
+      }
+    },
+    {
+      "path": "webapp/routes/tutor_api.py",
+      "module_docstring": "Тьюторские API: проверка/запуск кода из редактора подсказки и прокси к\nИИ-ассистенту (DeepSeek через tutor-llm).",
+      "module_summary": "Тьюторские API: проверка/запуск кода из редактора подсказки и прокси к",
+      "classes": [
+        {
+          "name": "TutorAskRequest",
+          "signature": "TutorAskRequest(BaseModel)",
+          "docstring": "Запрос тьютора к ИИ-помощнику. task_context/student_code опциональны —\nможно спросить и без них. question обязателен.",
+          "summary": "Запрос тьютора к ИИ-помощнику. task_context/student_code опциональны —",
+          "kind": "class",
+          "bases": [
+            "BaseModel"
+          ],
+          "decorators": [],
+          "fields": [
+            {
+              "name": "task_context",
+              "annotation": "str | None",
+              "value_repr": "None",
+              "lineno": 30
+            },
+            {
+              "name": "student_code",
+              "annotation": "str | None",
+              "value_repr": "None",
+              "lineno": 31
+            },
+            {
+              "name": "question",
+              "annotation": "str",
+              "value_repr": null,
+              "lineno": 32
+            }
+          ],
+          "methods": [],
+          "lineno": 27,
+          "end_lineno": 32
+        }
+      ],
+      "functions": [
+        {
+          "name": "_require_tutor",
+          "signature": "_require_tutor(request: Request)",
+          "docstring": "JSONResponse-ошибка (401/403), если запрос не от тьютора, иначе None\n(тот же контракт, что у students._require_tutor).",
+          "summary": "JSONResponse-ошибка (401/403), если запрос не от тьютора, иначе None",
+          "kind": "function",
+          "decorators": [],
+          "lineno": 17,
+          "end_lineno": 24
+        },
+        {
+          "name": "run_hint_code",
+          "signature": "run_hint_code(payload: SubmissionRequest, request: Request)",
+          "docstring": "Тьютор проверяет код прямо в редакторе подсказки — тот же grade(),\nно без записи Attempt: это демонстрация ученику, а не его попытка.",
+          "summary": "Тьютор проверяет код прямо в редакторе подсказки — тот же grade(),",
+          "kind": "function",
+          "decorators": [
+            "router.post('/api/hint/run')"
+          ],
+          "lineno": 36,
+          "end_lineno": 41
+        },
+        {
+          "name": "run_hint_code_free",
+          "signature": "run_hint_code_free(payload: HintFreeRunRequest, request: Request)",
+          "docstring": "Свободный запуск кода в подсказке — без сверки с эталоном, просто\nисполняет код как есть (print() и любые операторы отрабатывают).",
+          "summary": "Свободный запуск кода в подсказке — без сверки с эталоном, просто",
+          "kind": "function",
+          "decorators": [
+            "router.post('/api/hint/run_free')"
+          ],
+          "lineno": 45,
+          "end_lineno": 50
+        },
+        {
+          "name": "tutor_ask",
+          "signature": "tutor_ask(payload: TutorAskRequest, request: Request)",
+          "docstring": "Тьютор спрашивает ИИ-помощника (DeepSeek через микросервис tutor-llm\nна роутере). Прокси: webapp не знает ключ DeepSeek, он только пересылает\nструктурированный запрос в tutor-llm по внутренней сети (как executor).\nТолько для роли tutor.",
+          "summary": "Тьютор спрашивает ИИ-помощника (DeepSeek через микросервис tutor-llm",
+          "kind": "function",
+          "decorators": [
+            "router.post('/api/tutor/ask')"
+          ],
+          "lineno": 54,
+          "end_lineno": 81
+        }
+      ],
+      "constants": [],
+      "stats": {
+        "classes": 1,
+        "dataclasses": 0,
+        "functions": 4,
+        "methods": 0,
+        "constants": 0
+      }
+    },
+    {
+      "path": "webapp/routes/ws.py",
+      "module_docstring": "WebSocket живой сессии тьютор↔ученик: мультиплексирует live-код, подсказки,\nрезультаты проверок и сигналинг звонка/ссылки на созвон.",
+      "module_summary": "WebSocket живой сессии тьютор↔ученик: мультиплексирует live-код, подсказки,",
+      "classes": [],
+      "functions": [
+        {
+          "name": "session_ws",
+          "signature": "session_ws(websocket: WebSocket, student_id: int)",
+          "docstring": "Живая комната одного ученика: сам ученик + один или несколько тьюторов,\nкоторые сейчас смотрят его экран. Тьютор пишет — ученик видит подсказку,\nученик печатает — тьютор видит код в реальном времени.",
+          "summary": "Живая комната одного ученика: сам ученик + один или несколько тьюторов,",
+          "kind": "async_function",
+          "decorators": [
+            "router.websocket('/ws/session/{student_id}')"
+          ],
+          "lineno": 13,
+          "end_lineno": 165
+        }
+      ],
+      "constants": [],
+      "stats": {
+        "classes": 0,
+        "dataclasses": 0,
+        "functions": 1,
+        "methods": 0,
+        "constants": 0
+      }
+    },
+    {
+      "path": "webapp/scripts/create_user.py",
+      "module_docstring": "Завести пользователя вручную (самостоятельной регистрации нет).\n\nИспользование (внутри контейнера app, WORKDIR=/app):\n    docker exec -it python_practice_hub-app-1 python -m webapp.scripts.create_user <username> [role]\n\nrole: student (по умолчанию) | tutor\n\nСпросит пароль интерактивно (не через argv — не светится в истории/логах/ps).",
+      "module_summary": "Завести пользователя вручную (самостоятельной регистрации нет).",
+      "classes": [],
+      "functions": [
+        {
+          "name": "main",
+          "signature": "main() -> None",
+          "docstring": "Разбор аргументов, интерактивный ввод пароля и создание пользователя.",
+          "summary": "Разбор аргументов, интерактивный ввод пароля и создание пользователя.",
+          "kind": "function",
+          "decorators": [],
+          "lineno": 21,
+          "end_lineno": 52
+        }
+      ],
+      "constants": [
+        {
+          "name": "VALID_ROLES",
+          "annotation": null,
+          "value_repr": "(ROLE_STUDENT, ROLE_TUTOR)",
+          "lineno": 18
+        }
+      ],
+      "stats": {
+        "classes": 0,
+        "dataclasses": 0,
+        "functions": 1,
+        "methods": 0,
+        "constants": 1
+      }
+    },
+    {
+      "path": "webapp/scripts/dump_db.py",
+      "module_docstring": "Дамп всех таблиц БД в виде SQL INSERT-ов (в stdout).\n\nСхему не дампим: она живёт в webapp/core/models.py и пересоздаётся\nBase.metadata.create_all при старте приложения. Восстановление — поднять\nчистую БД, запустить приложение (создаст таблицы), затем залить дамп:\n    mysql -u <логин> -p <база> < dobrokod-db.sql\n\nИспользование (на проде — из контейнера app на Frankfurt, БД доступна\nтолько оттуда):\n    docker compose exec -T app python -m webapp.scripts.dump_db > dobrokod-db.sql\n\nSQL пишется в stdout, сводка «таблица → строк» — в stderr, чтобы вывод\nможно было перенаправлять в файл не фильтруя. Таблицы идут в порядке\nFK-зависимостей (users раньше attempts/hint_reveals) — дамп заливается\nкак есть, без выключения проверок внешних ключей.",
+      "module_summary": "Дамп всех таблиц БД в виде SQL INSERT-ов (в stdout).",
+      "classes": [],
+      "functions": [
+        {
+          "name": "render_insert",
+          "signature": "render_insert(table, row: dict) -> str",
+          "docstring": "Скомпилировать INSERT для одной строки с литеральными значениями.\n\nliteral_binds против диалекта движка даёт корректное экранирование\nстрок/дат/NULL без ручной возни с кавычками.",
+          "summary": "Скомпилировать INSERT для одной строки с литеральными значениями.",
+          "kind": "function",
+          "decorators": [],
+          "lineno": 27,
+          "end_lineno": 36
+        },
+        {
+          "name": "main",
+          "signature": "main() -> None",
+          "docstring": "Обойти таблицы в FK-порядке и напечатать INSERT-ы (см. модуль).",
+          "summary": "Обойти таблицы в FK-порядке и напечатать INSERT-ы (см. модуль).",
+          "kind": "function",
+          "decorators": [],
+          "lineno": 39,
+          "end_lineno": 52
+        }
+      ],
+      "constants": [],
+      "stats": {
+        "classes": 0,
+        "dataclasses": 0,
+        "functions": 2,
+        "methods": 0,
+        "constants": 0
+      }
+    },
+    {
+      "path": "webapp/scripts/seed_hints.py",
+      "module_docstring": "Одноразовая загрузка курированных подсказок для заданий 0, 81..100 и 101..120.\n\nЗапуск (внутри контейнера app на Frankfurt, WORKDIR=/app):\n    docker compose exec app python -m webapp.scripts.seed_hints\n\nИдемпотентно: для каждой пары (task_id, level) делает upsert — повторный\nзапуск обновит тексты, не создавая дублей (UNIQUE(task_id, level) в модели\nHint). Если тьютор уже отредактировал подсказку через админку, этот скрипт\nПЕРЕЗАПИШЕТ её — поэтому запускать стоит только для начального наполнения\nили осознанного сброса к эталонному тексту.\n\nТри уровня на задание:\n  1 — абстракция: куда двигаться, на что обратить внимание.\n  2 — конкретика со ссылками на документацию Python.\n  3 — почти готовое решение с пометками TODO что доделать.\n\nФормат контента — markdown (см. content/hints.py render_markdown).",
+      "module_summary": "Одноразовая загрузка курированных подсказок для заданий 0, 81..100 и 101..120.",
+      "classes": [],
+      "functions": [
+        {
+          "name": "main",
+          "signature": "main() -> None",
+          "docstring": "Залить курированные тексты подсказок в БД (upsert по task_id+level).",
+          "summary": "Залить курированные тексты подсказок в БД (upsert по task_id+level).",
+          "kind": "function",
+          "decorators": [],
+          "lineno": 238,
+          "end_lineno": 257
+        }
+      ],
+      "constants": [
+        {
+          "name": "HINTS_DATA",
+          "annotation": "dict[int, dict[int, str]]",
+          "value_repr": "{0: {1: 'Нужно сложить все элементы списка. Заведи переменную-аккумулятор (начни с 0) и проходи по списку циклом, добавляя каждый элемент.', 2: 'Заведи `result = 0`, в цикле `for x in data:` делай `result += x`.\\n\\n- [Цикл for](https://docs.python.org/3/tutorial/controlflow.html#for-statements)', 3: '```python\\nresult = 0\\nfor x in data:\\n    result += ...  # TODO: что добавить?\\nreturn result\\n```'}, 81: {1: 'Подумай, как пройти по списку и для каждой позиции взять **текущий и следующий** элемент. Сколько всего пар получится для списка длины n? Кортеж (пара) записывается круглыми скобками: `(a, b)`.', 2: 'Перебирай индексы `i` от 0 до `len(data) - 1`, бери `data[i]` и `data[i + 1]`. Это удобно собрать через генератор списка.\\n\\n- [range](https://docs.python.org/3/library/stdtypes.html#ranges) — диапазон индексов\\n- [Кортежи](https://docs.python.org/3/tutorial/datastructures.html#tuples-and-sequences)', 3: '```python\\nresult = []\\nfor i in range(len(data) - 1):\\n    result.append(...)  # TODO: кортеж из data[i] и data[i + 1]\\nreturn result\\n```'}, 82: {1: 'В арифметической прогрессии **разность между соседними элементами постоянна**. Найди эту разность по первым двум элементам и проверь, что она одинакова для всех пар. Не забудь списки длины 0 и 1 — они прогрессия по определению.', 2: 'Разность `d = data[1] - data[0]`. В цикле проверь все пары `data[i] - data[i-1]`. Верни строку с эмодзи точно как в примере (`✅ Да` / `❌ Нет`).\\n\\n- [range](https://docs.python.org/3/library/stdtypes.html#ranges)', 3: \"```python\\nif len(data) < 2:\\n    return '✅ Да'\\nd = data[1] - data[0]\\nfor i in range(1, len(data)):\\n    if data[i] - data[i - 1] != ...:  # TODO: с чем сравнить разность?\\n        return '❌ Нет'\\nreturn ...  # TODO: что вернуть, если все разности равны d?\\n```\"}, 83: {1: 'Для каждого слова посчитай количество гласных букв и запоминай лучшее. Гласные — это `a, e, i, o, u` (и заглавные). Подумай, как одной строкой посчитать гласные в слове.', 2: \"`sum(1 for ch in word if ch in 'aeiouAEIOU')` считает гласные. Храни `best_word` и `best_count`, обновляй когда нашёл больше.\\n\\n- [Генераторные выражения](https://docs.python.org/3/tutorial/classes.html#generator-expressions)\", 3: \"```python\\nvowels = 'aeiouAEIOU'\\nbest_word = data[0]\\nbest_count = sum(1 for ch in data[0] if ch in vowels)\\nfor word in data[1:]:\\n    count = ...  # TODO: посчитать гласные в word\\n    if count > ...:  # TODO: условие обновления лучшего\\n        best_count = count\\n        best_word = word\\nreturn best_word\\n```\"}, 84: {1: 'Внимательно с нумерацией: «нечётные позиции» в условии (1, 3, 5... при счёте с единицы) соответствуют **чётным индексам** 0, 2, 4... в Python (индексация с нуля). Значит оставить надо элементы с чётными индексами.', 2: '`enumerate(data)` даёт пары `(индекс, значение)`. Бери те, где индекс чётный (`i % 2 == 0`).\\n\\n- [enumerate](https://docs.python.org/3/library/functions.html#enumerate)', 3: '```python\\nreturn [item for i, item in enumerate(data) if ...]  # TODO: условие на i (чётный индекс)\\n```'}, 85: {1: 'Для каждого слова в списке нужна его **перевёрнутая версия**. Какой способ перевернуть строку в Python самый короткий? Подсказка: это связано со срезами.', 2: 'Срез `word[::-1]` переворачивает строку (отрицательный шаг). Примени его к каждому элементу списка через генератор списка.\\n\\n- [Срезы строк](https://docs.python.org/3/tutorial/introduction.html#strings)', 3: '```python\\nreturn [word[...] for word in data]  # TODO: какой срез переворачивает строку?\\n```'}, 86: {1: \"Что такое «сумма цифр»? Для числа 123 это 1+2+3 = 6. Для 99 это 9+9 = 18.\\nНужно для каждого числа в списке посчитать такую сумму и выбрать то число,\\nу которого она самая большая.\\n\\nЧтобы достать цифры из числа — преврати его в строку через `str()`:\\n`str(123)` даёт `'123'`. По этой строке можно пройти циклом `for`, и каждую\\nцифру превратить обратно в число через `int()`. Если число отрицательное —\\nсначала возьми модуль `abs()`, чтобы минус не мешал.\", 2: \"Вот как посчитать сумму цифр числа n (например, 123):\\n\\n```\\ns = 0\\nfor d in str(abs(n)):   # идём по '1','2','3'; abs — чтобы минус не мешал\\n    s = s + int(d)       # 0+1=1, потом 1+2=3, потом 3+3=6\\n```\\n\\nПройдись так по каждому числу из `data`, запоминай лучшее число и его сумму,\\nобновляй когда нашёл больше.\\n\\n- [str и int](https://docs.python.org/3/library/functions.html#func-str)\\n- [abs](https://docs.python.org/3/library/functions.html#abs)\", 3: '```python\\nbest = data[0]\\nbest_sum = 0\\nfor d in str(abs(best)):\\n    best_sum = best_sum + int(d)\\nfor num in data[1:]:\\n    s = 0\\n    for d in str(abs(num)):\\n        s = s + int(d)\\n    if s > ...:   # TODO: с чем сравнить сумму этого числа?\\n        best_sum = s\\n        best = num\\nreturn best\\n```'}, 87: {1: 'Чётное число делится на 2 без остатка: 2, 4, 6, 8, 10... Нечётное — нет:\\n1, 3, 5, 7, 9...\\n\\nНужно посчитать отдельно, сколько в списке чётных и сколько нечётных, и\\nпроверить, равны ли эти количества. В примере `[1, 2, 3, 4]` чётных два (2,\\n4) и нечётных два (1, 3) — поровну, ответ `✅ Одинаково`.\\n\\nЧётность проверяют через остаток от деления на 2: если остаток 0 — число\\nчётное.', 2: 'Остаток от деления в Python — это `%`. Чётность числа x проверяют так:\\n`x % 2 == 0` (для чётных это верно).\\n\\nПосчитай чётные обычным циклом:\\n\\n```\\neven = 0\\nfor x in data:\\n    if x % 2 == 0:   # условие чётности\\n        even = even + 1\\n```\\n\\nНечётных будет `len(data) - even` (всего минус чётные). Сравни `even` и\\n`odd` и верни строку точно как в примере: `✅ Одинаково` или\\n`❌ Не одинаково`.\\n\\n- [Арифметика и %](https://docs.python.org/3/tutorial/introduction.html#numbers)', 3: \"```python\\neven = 0\\nfor x in data:\\n    if x % 2 == 0:\\n        even = even + 1\\nodd = len(data) - even\\nif even == odd:\\n    return '✅ Одинаково'\\nelse:\\n    return ...   # TODO: какую строку вернуть, если поровну НЕ получается?\\n```\"}, 88: {1: 'Остаток от деления на 3 бывает только трёх видов: 0, 1 или 2.\\nНапример: 3 → 0, 4 → 1, 5 → 2, 6 → 0, 7 → 1.\\n\\nНужно каждое число из списка положить в одну из трёх групп по этому остатку.\\nОтвет — это словарь (dict), где ключ — остаток (0, 1 или 2), а значение —\\nсписок чисел с этим остатком. Для `[1, 2, 3, 4, 5, 6, 7]` ответ:\\n`{0: [3, 6], 1: [1, 4, 7], 2: [2, 5]}`.\\n\\nСловарь — это коробка, в которой по ключу лежит значение. У нас значением\\nбудет список, в который мы добавляем числа.', 2: 'Остаток от деления — это `%`: `num % 3` даёт 0, 1 или 2.\\n\\nЧтобы положить число в нужную группу, сначала проверь, есть ли уже такой\\nключ в словаре. Если нет — создай пустой список. Потом добавь число:\\n\\n```\\nresult = {}\\nfor num in data:\\n    key = num % 3\\n    if key not in result:        # такого ключа ещё не было\\n        result[key] = []         # создаём пустой список для этой группы\\n    result[key].append(num)      # добавляем число в его группу\\n```\\n\\nТак вместо `result.setdefault(key, [])` используется обычная проверка `if\\nkey not in result`.\\n\\n- [Словари](https://docs.python.org/3/tutorial/datastructures.html#dictionaries)', 3: '```python\\nresult = {}\\nfor num in data:\\n    key = num % 3\\n    if key not in result:\\n        result[key] = []\\n    result[key].append(...)   # TODO: какое число добавляем в группу?\\nreturn result\\n```'}, 89: {1: \"Префикс — это начало слова. Для `'code'` префиксы такие:\\n\\n- длины 1 → `'c'`\\n- длины 2 → `'co'`\\n- длины 3 → `'cod'`\\n- длины 4 → `'code'` (всё слово)\\n\\nНужно собрать все префиксы слова из `data[0]` в один список. Перебери\\nдлины от 1 до длины слова включительно.\", 2: \"Срез `word[:k]` даёт первые k букв слова:\\n\\n```\\nword = 'code'\\nword[:1]   # 'c'\\nword[:2]   # 'co'\\nword[:3]   # 'cod'\\nword[:4]   # 'code'\\n```\\n\\nСобери все префиксы в список обычным циклом:\\n\\n```\\nresult = []\\nfor k in range(1, len(word) + 1):   # k = 1, 2, 3, 4 для 'code'\\n    result.append(word[:k])\\n```\\n\\n`range(1, len(word) + 1)` даёт числа от 1 до длины слова включительно\\n(правый конец у `range` не включается, поэтому `+ 1`).\\n\\n- [Срезы строк](https://docs.python.org/3/tutorial/introduction.html#strings)\", 3: '```python\\nword = data[0]\\nresult = []\\nfor k in range(1, len(word) + 1):\\n    result.append(word[...])   # TODO: какой срез даёт первые k букв?\\nreturn result\\n```'}, 90: {1: \"Суффикс — это конец слова. Для `'code'` суффиксы такие:\\n\\n- с позиции 0 → `'code'` (всё слово)\\n- с позиции 1 → `'ode'`\\n- с позиции 2 → `'de'`\\n- с позиции 3 → `'e'`\\n\\nНужно собрать все суффиксы слова из `data[0]` в один список. Перебери\\nпозиции от 0 до длины слова минус 1.\", 2: \"Срез `word[i:]` даёт часть слова, начиная с позиции i и до конца:\\n\\n```\\nword = 'code'\\nword[0:]   # 'code'\\nword[1:]   # 'ode'\\nword[2:]   # 'de'\\nword[3:]   # 'e'\\n```\\n\\nСобери все суффиксы в список обычным циклом:\\n\\n```\\nresult = []\\nfor i in range(len(word)):   # i = 0, 1, 2, 3 для 'code'\\n    result.append(word[i:])\\n```\\n\\n`range(len(word))` даёт позиции от 0 до длины слова минус 1.\\n\\n- [Срезы строк](https://docs.python.org/3/tutorial/introduction.html#strings)\", 3: '```python\\nword = data[0]\\nresult = []\\nfor i in range(len(word)):\\n    result.append(word[...])   # TODO: какой срез даёт слово с позиции i до конца?\\nreturn result\\n```'}, 91: {1: 'Если общая сумма нечётная — разбить точно **нельзя** (половина будет дробной). Иначе ищи подмножество с суммой, равной половине общей. Это классическая задача о сумме подмножеств.', 2: 'Перебери все подмножества через битовые маски (`2^n` вариантов, ок для маленьких списков). Для каждой маски проверь сумму элементов, чьи биты установлены.\\n\\n- [Побитовые операции](https://docs.python.org/3/reference/expressions.html#binary-bitwise-operators)', 3: \"```python\\ntotal = sum(data)\\nif total % 2 != 0:\\n    return '❌ Нельзя'\\ntarget = total // 2\\nn = len(data)\\nfor mask in range(1 << n):\\n    s = sum(data[i] for i in range(n) if mask & (...))  # TODO: что сдвинуть, чтобы проверить бит i?\\n    if s == target:\\n        return '...'  # TODO: какой ответ?\\nreturn '❌ Нельзя'\\n```\"}, 92: {1: 'Нужно взять пары: (первый, последний), (второй, предпоследний) и так далее **до середины**. Сколько таких пар для списка длины n? Подумай про индекс «зеркального» элемента.', 2: 'Для i от 0 до `n // 2 - 1`: пара `(data[i], data[n - 1 - i])`. Собирай в список кортежей.\\n\\n- [range](https://docs.python.org/3/library/stdtypes.html#ranges)', 3: '```python\\nn = len(data)\\nreturn [(data[i], data[...]) for i in range(n // 2)]  # TODO: индекс зеркального элемента\\n```'}, 93: {1: 'Нужно построить словарь, где ключ — слово, а значение — его длина. Какая функция даёт длину строки? Это можно записать одной строкой через dict comprehension.', 2: '`len(word)` — длина. Dict comprehension: `{word: len(word) for word in data}`.\\n\\n- [Словари и comprehensions](https://docs.python.org/3/tutorial/datastructures.html#dictionaries)', 3: '```python\\nreturn {word: ... for word in data}  # TODO: длина слова\\n```'}, 94: {1: 'Элемент «больше соседей», если он **больше и левого, и правого**. Первую и последнюю позиции не проверяем (у них нет двух соседей). Перебирай только внутренние элементы.', 2: 'Для i от 1 до `len(data) - 2`: условие `data[i] > data[i - 1] and data[i] > data[i + 1]`. Собирай подходящие в список.\\n\\n- [range](https://docs.python.org/3/library/stdtypes.html#ranges)', 3: '```python\\nresult = []\\nfor i in range(1, len(data) - 1):\\n    if data[i] > data[...] and data[i] > data[...]:  # TODO: левый и правый соседи\\n        result.append(data[i])\\nreturn result\\n```'}, 95: {1: 'Для каждого слова возьми **первую и последнюю букву** и соедини их в новую строку. Как получить первый и последний символ строки?', 2: '`word[0]` — первая буква, `word[-1]` — последняя. Конкатенация: `word[0] + word[-1]`.\\n\\n- [Индексация строк](https://docs.python.org/3/tutorial/introduction.html#strings)', 3: '```python\\nreturn [word[...] + word[...] for word in data]  # TODO: первая [0] и последняя [-1] буквы\\n```'}, 96: {1: 'Идём по списку и оставляем элемент, **только если он отличается от предыдущего добавленного**. С какого элемента начать? Что сравнивать? Пустой список — отдельный случай.', 2: 'Заведи `result = [data[0]]`. Для каждого следующего: добавляй, если `item != result[-1]` (последнему добавленному).\\n\\n- [Списки и индексация](https://docs.python.org/3/tutorial/datastructures.html#more-on-lists)', 3: '```python\\nif not data:\\n    return []\\nresult = [data[0]]\\nfor item in data[1:]:\\n    if item != result[...]:  # TODO: с чем сравнить (последний добавленный)?\\n        result.append(item)\\nreturn result\\n```'}, 97: {1: 'Считай длину **текущей серии** одинаковых подряд идущих элементов. Когда элемент меняется — сбрасывай счётчик в 1. Постоянно запоминай максимум.', 2: 'Храни `cur` (текущая длина серии) и `best` (максимум). Если `data[i] == data[i-1]`: `cur += 1`, иначе `cur = 1`. Обновляй `best = max(best, cur)`.\\n\\n- [max](https://docs.python.org/3/library/functions.html#max)', 3: '```python\\nif not data:\\n    return 0\\nbest = cur = 1\\nfor i in range(1, len(data)):\\n    if data[i] == data[...]:  # TODO: с чем сравнить (предыдущий)?\\n        cur += 1\\n        best = max(best, cur)\\n    else:\\n        cur = ...  # TODO: сбросить счётчик\\nreturn best\\n```'}, 98: {1: 'Попробуй **удалить каждый элемент по очереди** и проверь, стал ли оставшийся список строго возрастающим. Если хоть один вариант сработал — ответ «можно».', 2: 'Вспомогательная функция `is_increasing(lst)`: `all(lst[i] < lst[i+1] for всех i)`. Для каждого i проверь `data[:i] + data[i+1:]` (выкидываем i-й элемент срезами).\\n\\n- [all](https://docs.python.org/3/library/functions.html#all)\\n- [Срезы списков](https://docs.python.org/3/tutorial/introduction.html#lists)', 3: \"```python\\ndef is_increasing(lst):\\n    return all(lst[i] < lst[i + 1] for i in range(len(lst) - 1))\\nfor i in range(len(data)):\\n    if is_increasing(data[:i] + data[...]):  # TODO: как выкинуть i-й элемент?\\n        return '✅ Можно'\\nreturn '❌ Нельзя'\\n```\"}, 99: {1: 'Нужны подсписки увеличивающейся длины: первый длины 1, второй длины 2 и т.д. Отрезай от `data` куски, **следя за текущей позицией** и увеличивая длину на 1 каждый шаг.', 2: '`result.append(data[i:i + length])`, затем `i += length`, `length += 1`. Повторяй, пока `i < len(data)`.\\n\\n- [Срезы списков](https://docs.python.org/3/tutorial/introduction.html#lists)', 3: '```python\\nresult = []\\ni = 0\\nlength = 1\\nwhile i < len(data):\\n    result.append(data[...])  # TODO: срез длины length начиная с i\\n    i += length\\n    length += 1\\nreturn result\\n```'}, 100: {1: 'Сначала **посчитай, сколько раз встречается каждый элемент**. Потом собери те, у кого счётчик больше 1, без повторов в ответе (и желательно сохраняя порядок первого появления).', 2: 'Словарь счётчиков: `counts[x] = counts.get(x, 0) + 1`. Затем проходи по `data` (чтобы сохранить порядок) и добавляй в результат, если `counts[x] > 1` и `x` ещё не в результате.\\n\\n- [dict.get](https://docs.python.org/3/library/stdtypes.html#dict.get)', 3: '```python\\ncounts = {}\\nfor x in data:\\n    counts[x] = counts.get(x, 0) + 1\\nresult = []\\nfor x in data:\\n    if counts[x] > ... and x not in result:  # TODO: условие (> 1) и проверка дубля\\n        result.append(x)\\nreturn result\\n```'}, 101: {1: 'Максимум — самый большой элемент списка, минимум — самый маленький, а их разница называется **размахом**. Для `[3, 7, 1]`: максимум — 7, минимум — 1, размах 7 - 1 = 6.\\n\\nИ то и другое можно найти одним проходом: до цикла возьми первый элемент и как «текущий максимум», и как «текущий минимум», а в цикле обновляй их, если встретил число побольше или поменьше. В конце верни разницу.', 2: 'Так ищут максимум и минимум одновременно:\\n\\n```\\nmax_value = data[0]\\nmin_value = data[0]\\nfor num in data:\\n    if num > max_value:   # нашли число побольше\\n        max_value = num\\n    if num < min_value:   # нашли число поменьше\\n        min_value = num\\n```\\n\\nСтартовать надо именно с `data[0]`, а не с нуля: для списка из отрицательных чисел «нулевой» максимум оказался бы неверным.\\n\\n- [Цикл for](https://docs.python.org/3/tutorial/controlflow.html#for-statements)', 3: '```python\\nmax_value = data[0]\\nmin_value = data[0]\\nfor num in data:\\n    if num > max_value:\\n        max_value = num\\n    if num < min_value:\\n        min_value = ...   # TODO: какое число запоминаем, если оно поменьше?\\nreturn max_value - ...   # TODO: что вычитаем из максимума?\\n```'}, 102: {1: 'Положительное число — это число строго больше нуля. Ноль не положительное и не отрицательное: 5 — положительное, 0 — нет, -3 — отрицательное.\\n\\nПройди по списку циклом и посчитай, сколько чисел больше нуля. Заведи счётчик, равный 0, и увеличивай его на 1 для каждого подходящего числа.\\n\\nВ примере `[-2, 5, 0, 3, -1, 7]` подходят 5, 3 и 7 — итого 3.', 2: 'Счётчик — обычная переменная, которую наращивают в цикле:\\n\\n```\\ncount = 0\\nfor num in data:\\n    if num > 0:      # строго больше нуля — ноль не считается\\n        count = count + 1\\n```\\n\\nПосле цикла верни `count`.\\n\\n- [Цикл for](https://docs.python.org/3/tutorial/controlflow.html#for-statements)', 3: '```python\\ncount = 0\\nfor num in data:\\n    if num > ...:   # TODO: какое условие у положительного числа?\\n        count += 1\\nreturn count\\n```'}, 103: {1: 'Отрицательное число — меньше нуля: -1, -3, -5. Ноль и положительные числа остаются как есть.\\n\\nСобери **новый список**: идём по исходному и для каждого числа решаем — если оно отрицательное, кладём в новый список 0, иначе кладём само число.\\n\\nВ примере `[-1, 2, -3, 0, 5]` получается `[0, 2, 0, 0, 5]`: -1 и -3 заменились на нули, а 2, 0 и 5 прошли без изменений.', 2: 'Собирай результат в новый список, исходный не меняй:\\n\\n```\\nresult = []\\nfor num in data:\\n    if num < 0:\\n        result.append(0)     # отрицательное заменяем нулём\\n    else:\\n        result.append(num)   # всё остальное проходит как есть\\n```\\n\\n- [append](https://docs.python.org/3/tutorial/datastructures.html#more-on-lists)', 3: '```python\\nresult = []\\nfor num in data:\\n    if num < 0:\\n        result.append(...)\\n    else:\\n        result.append(num)\\nreturn result\\n```'}, 104: {1: 'Индекс — это номер места элемента, и счёт идёт с нуля: в списке `[4, 9, 2]` у четвёрки индекс 0, у девятки — 1, у двойки — 2.\\n\\nНужен индекс самого большого элемента. Если максимум встречается несколько раз — берём первое вхождение (самый левый из них). В примере `[4, 9, 2, 9, 7]` максимум — 9, впервые он стоит на индексе 1, значит ответ 1.\\n\\nЗаведи переменную «индекс лучшего», начни с 0 и в цикле по индексам обновляй её, когда встретишь элемент больше текущего лучшего.', 2: 'Проходи по индексам от 1 и сравнивай элемент с текущим лучшим:\\n\\n```\\nbest_index = 0\\nfor i in range(1, len(data)):\\n    if data[i] > data[best_index]:   # строго больше: равные не сбивают индекс\\n        best_index = i\\n```\\n\\nСравнение именно строгое (`>`), поэтому при равных максимумах остаётся первое вхождение.\\n\\n- [range](https://docs.python.org/3/library/stdtypes.html#ranges)', 3: '```python\\nbest_index = 0\\nfor i in range(1, len(data)):\\n    if data[i] > data[...]:   # TODO: с каким элементом сравниваем?\\n        best_index = i\\nreturn best_index\\n```'}, 105: {1: 'Чётное число делится на 2 без остатка: 2, 4, 6, 8... Нечётное — с остатком: 1, 3, 5, 7...\\n\\n«Все ли чётные» значит, что в списке не должно быть ни одного нечётного. Проверять удобно наоборот: как только встретили нечётное — сразу ответ «нет», не досматривая список до конца. Если цикл прошёл до конца и нечётных не нашлось — «да».\\n\\nВ примере `[2, 3, 8]` тройка нечётная, поэтому ответ — «❌ Есть нечётные».', 2: \"Чётность проверяют через остаток от деления: `num % 2 == 0` — чётное, `num % 2 != 0` — нечётное. Стратегия «выйти сразу при нарушении»:\\n\\n```\\nfor num in data:\\n    if num % 2 != 0:          # нечётное — условие нарушено\\n        return '❌ Есть нечётные'\\n# цикл прошёл без нарушений\\nreturn '✅ Все чётные'\\n```\\n\\nПустой список пройдёт без нарушений — ответ «да». Верни строки точно как в примере.\\n\\n- [Арифметика и %](https://docs.python.org/3/tutorial/introduction.html#numbers)\", 3: \"```python\\nfor num in data:\\n    if num % 2 != ...:   # TODO: какой остаток даёт нечётное число при делении на 2?\\n        return '❌ Есть нечётные'\\nreturn ...   # TODO: какая строка, если нечётных не нашлось?\\n```\"}, 106: {1: 'Список лежит в `data[0]`, а искомое число — в `data[1]`. Нужно посчитать, сколько элементов списка равны этому числу. В примере `[1, 2, 2, 3, 2]` и число 2: двойка встречается 3 раза, ответ — 3.\\n\\nМетод `.count()` запрещён условием, но он и не нужен: пройди по списку циклом со счётчиком и прибавляй 1 каждый раз, когда элемент равен заданному числу.', 2: 'Обычный счётчик в цикле вместо `.count()`:\\n\\n```\\ncount = 0\\nfor num in data[0]:\\n    if num == data[1]:    # элемент равен заданному числу\\n        count = count + 1\\n```\\n\\n- [Цикл for](https://docs.python.org/3/tutorial/controlflow.html#for-statements)', 3: '```python\\ncount = 0\\nfor num in data[0]:\\n    if num == ...:   # TODO: с чем сравнить каждый элемент?\\n        count += 1\\nreturn count\\n```'}, 107: {1: 'Список лежит в `data[0]`, а число, которое прибавляем, — в `data[1]`. К каждому числу списка надо прибавить одно и то же число. В примере `[1, 2, 3]` и 10: 1+10=11, 2+10=12, 3+10=13, получается `[11, 12, 13]`.\\n\\nЗаведи пустой список результата, пройди по всем числам и добавляй в него суммы.', 2: '```\\nresult = []\\nfor num in data[0]:\\n    result.append(num + data[1])\\n```\\n\\n- [append](https://docs.python.org/3/tutorial/datastructures.html#more-on-lists)', 3: '```python\\nresult = []\\nfor num in data[0]:\\n    result.append(num + ...)   # TODO: что прибавляем к каждому числу?\\nreturn result\\n```'}, 108: {1: 'Индекс — номер места элемента, счёт с нуля. В списке `[5, 1, 7, 2, 9]`: у пятёрки индекс 0, у единицы — 1, у семёрки — 2, у двойки — 3, у девятки — 4.\\n\\nНужны элементы на чётных индексах: 0, 2, 4 — то есть числа 5, 7 и 9. Их сумма 5 + 7 + 9 = 21. Внимание: чётными должны быть **индексы**, а не сами числа!\\n\\nИди по индексам 0, 2, 4, ... циклом и складывай элементы на этих местах в аккумулятор.', 2: '`range(0, len(data), 2)` даёт числа 0, 2, 4, ... — то есть каждое второе:\\n\\n```\\nresult = 0\\nfor i in range(0, len(data), 2):   # i = 0, 2, 4, ...\\n    result += data[i]\\n```\\n\\nТретий аргумент `range` — это шаг.\\n\\n- [range](https://docs.python.org/3/library/stdtypes.html#ranges)', 3: '```python\\nresult = 0\\nfor i in range(0, len(data), ...):   # TODO: какой шаг у чётных индексов?\\n    result += data[...]\\nreturn result\\n```'}, 109: {1: 'Двузначное число состоит из двух цифр, то есть лежит от 10 до 99 включительно. Однозначные (0-9) и трёхзначные (100 и больше) не подходят.\\n\\nВ примере `[5, 23, 100, 47, 8]` двузначные — это 23 и 47, их сумма 70.\\n\\nПроверка «число от 10 до 99» записывается двойным неравенством `10 <= num <= 99`. Заведи аккумулятор и прибавляй туда только подходящие числа.', 2: 'Двойное сравнение в Python работает напрямую:\\n\\n```\\nresult = 0\\nfor num in data:\\n    if 10 <= num <= 99:    # одновременно и >= 10, и <= 99\\n        result += num\\n```\\n\\n- [Арифметика и сравнения](https://docs.python.org/3/tutorial/introduction.html#numbers)', 3: '```python\\nresult = 0\\nfor num in data:\\n    if ... <= num <= ...:   # TODO: какие границы у двузначного числа?\\n        result += num\\nreturn result\\n```'}, 110: {1: 'Индекс — номер места элемента, счёт с нуля. Здесь надо посчитать, у скольких элементов **значение совпадает с их индексом**.\\n\\nРазберём `[0, 3, 2, 7, 4]`:\\n\\n- индекс 0, значение 0 — совпало\\n- индекс 1, значение 3 — нет\\n- индекс 2, значение 2 — совпало\\n- индекс 3, значение 7 — нет\\n- индекс 4, значение 4 — совпало\\n\\nИтого 3 совпадения. Иди по индексам циклом и считай совпадения счётчиком.', 2: '```\\ncount = 0\\nfor i in range(len(data)):\\n    if data[i] == i:     # значение равно своему месту\\n        count = count + 1\\n```\\n\\n- [range и len](https://docs.python.org/3/library/stdtypes.html#ranges)', 3: '```python\\ncount = 0\\nfor i in range(len(data)):\\n    if data[i] == ...:   # TODO: с чем сравнить элемент?\\n        count += 1\\nreturn count\\n```'}, 111: {1: \"Каждое слово надо записать с заглавной первой буквой: 'cat' → 'Cat'. Остальные буквы не меняются.\\n\\nУ строк есть готовый метод `.capitalize()` — он возвращает копию слова с заглавной первой буквой: `'cat'.capitalize()` даёт `'Cat'`. Пройди по словам циклом и собери преобразованные слова в новый список.\", 2: '```\\nresult = []\\nfor word in data:\\n    result.append(word.capitalize())\\n```\\n\\n- [Строковые методы](https://docs.python.org/3/library/stdtypes.html#string-methods)', 3: '```python\\nresult = []\\nfor word in data:\\n    result.append(word....())   # TODO: какой метод делает первую букву заглавной?\\nreturn result\\n```'}, 112: {1: \"Надо склеить все слова в одну строку, поставив между ними по одному пробелу: `['Hello', 'world']` → 'Hello world'. Обрати внимание: пробел нужен **между** словами, а не в конце — в 'Hello world' на конце пробела нет.\\n\\nЗаведи пустую строку-аккумулятор и дописывай в неё слова по одному; перед каждым словом, кроме первого, добавь пробел.\", 2: \"Строка — тоже аккумулятор, её наращивают через `+=`:\\n\\n```\\nresult = ''\\nfor word in data:\\n    if result != '':     # слово не первое — нужен разделитель\\n        result += ' '\\n    result += word\\n```\\n\\n(Готовый метод `' '.join(data)` сделал бы то же самое, но ручная склейка понятнее.)\\n\\n- [Строки](https://docs.python.org/3/tutorial/introduction.html#strings)\", 3: \"```python\\nresult = ''\\nfor word in data:\\n    if result != '':\\n        result += ...   # TODO: какой разделитель добавить перед очередным словом?\\n    result += word\\nreturn result\\n```\"}, 113: {1: \"Надо сложить длины всех слов. В примере `['cat', 'dog', 'bird']`: 3 + 3 + 4 = 10.\\n\\nДлину строки даёт функция `len()`: `len('cat')` — это 3. Заведи аккумулятор, равный 0, и прибавляй к нему длину каждого слова в цикле.\", 2: '```\\nresult = 0\\nfor word in data:\\n    result += len(word)\\n```\\n\\n- [len](https://docs.python.org/3/library/functions.html#len)', 3: '```python\\nresult = 0\\nfor word in data:\\n    result += ...(...)   # TODO: как получить длину слова?\\nreturn result\\n```'}, 114: {1: \"Гласные буквы — это a, e, i, o, u (заглавные тоже считаются: слово 'Ice' начинается с гласной). Согласные — все остальные буквы.\\n\\nПервая буква слова — это `word[0]`. У 'apple' это 'a', гласная → ответ «✅ Начинается с гласной». У 'dog' — 'd', согласная → «❌ Начинается с согласной».\\n\\nСлово лежит в `data[0]`. Чтобы заглавная буква не сбила проверку, приведи её к нижнему регистру методом `.lower()`.\", 2: \"```\\nword = data[0]\\nfirst = word[0].lower()    # 'I'.lower() → 'i': регистр больше не мешает\\nif first in 'aeiou':\\n    return '✅ Начинается с гласной'\\nelse:\\n    return '❌ Начинается с согласной'\\n```\\n\\nОператор `in` для строк проверяет, входит ли буква в строку-перечисление.\\n\\n- [Строковые методы](https://docs.python.org/3/library/stdtypes.html#string-methods)\", 3: \"```python\\nword = data[0]\\nfirst = word[0].lower()\\nif first in ...:   # TODO: какая строка-перечисление гласных?\\n    return '✅ Начинается с гласной'\\nreturn '❌ Начинается с согласной'\\n```\"}, 115: {1: \"Каждую букву слова надо повторить два раза: 'cat' → 'ccaatt' (c → cc, a → aa, t → tt).\\n\\nСтроку удобно собирать постепенно: заведи пустую строку и в цикле по буквам дописывай каждую букву дважды. Дописывание — это сцепление: `result += letter` добавляет букву в конец строки.\\n\\nСлово лежит в `data[0]`. По строке можно пройтись циклом `for` напрямую — так же, как по списку.\", 2: \"```\\nword = data[0]\\nresult = ''\\nfor letter in word:\\n    result = result + letter + letter   # каждая буква дважды подряд\\n```\\n\\n- [Строки](https://docs.python.org/3/tutorial/introduction.html#strings)\", 3: \"```python\\nword = data[0]\\nresult = ''\\nfor letter in word:\\n    result += letter + ...   # TODO: что дописать второй раз?\\nreturn result\\n```\"}, 116: {1: \"Ответ — это словарь (dict): «коробка», в которой по ключу лежит значение. Здесь ключ — буква, значение — сколько раз она встречается в слове. Для 'banana': b — 1 раз, a — 3 раза, n — 2 раза, получается `{'b': 1, 'a': 3, 'n': 2}`.\\n\\nИди по буквам слова циклом и веди словарь-счётчик: если буквы в словаре ещё нет — заведи для неё счётчик 0, а потом увеличь его на 1.\", 2: '```\\nword = data[0]\\nresult = {}\\nfor letter in word:\\n    if letter not in result:   # буква встретилась впервые\\n        result[letter] = 0\\n    result[letter] = result[letter] + 1\\n```\\n\\nЗапись `letter not in result` проверяет, есть ли уже такой ключ в словаре.\\n\\n- [Словари](https://docs.python.org/3/tutorial/datastructures.html#dictionaries)', 3: '```python\\nword = data[0]\\nresult = {}\\nfor letter in word:\\n    if letter not in result:\\n        result[letter] = ...   # TODO: с какого счётчика начать новую букву?\\n    result[letter] += 1\\nreturn result\\n```'}, 117: {1: \"Палиндром — слово, которое одинаково читается в обе стороны: 'radar' наоборот тоже 'radar', а 'cat' наоборот — 'tac', значит не палиндром.\\n\\nПроще всего развернуть строку срезом с шагом -1: `word[::-1]`. Слово — палиндром, если оно равно своему развороту.\\n\\nПройди по всем словам, проверь каждое и посчитай подходящие счётчиком. В примере `['radar', 'cat', 'level', 'dog']` палиндромы — radar и level, ответ 2.\", 2: '```\\ncount = 0\\nfor word in data:\\n    if word == word[::-1]:   # слово равно своему развороту\\n        count = count + 1\\n```\\n\\n`word[::-1]` — это слово задом наперёд (срез с отрицательным шагом).\\n\\n- [Срезы строк](https://docs.python.org/3/tutorial/introduction.html#strings)', 3: '```python\\ncount = 0\\nfor word in data:\\n    if word == word[...]:   # TODO: какой срез разворачивает строку?\\n        count += 1\\nreturn count\\n```'}, 118: {1: 'Каждое число превращается в его «знак»:\\n\\n- положительное (больше 0) → 1\\n- отрицательное (меньше 0) → -1\\n- ровно ноль → 0\\n\\nНапример, `[-5, 3, 0]` → `[-1, 1, 0]`.\\n\\nСобери новый список: в цикле выбирай одну из трёх веток через `if` / `elif` / `else` и добавляй в результат нужное число.', 2: '```\\nresult = []\\nfor num in data:\\n    if num > 0:\\n        result.append(1)\\n    elif num < 0:\\n        result.append(-1)\\n    else:\\n        result.append(0)    # сюда попадает только ноль\\n```\\n\\n- [if / elif / else](https://docs.python.org/3/tutorial/controlflow.html#if-statements)', 3: '```python\\nresult = []\\nfor num in data:\\n    if num > 0:\\n        result.append(1)\\n    elif num < 0:\\n        result.append(...)   # TODO: что ставим вместо отрицательного числа?\\n    else:\\n        result.append(...)   # TODO: что ставим вместо нуля?\\nreturn result\\n```'}, 119: {1: 'Складываем числа, стоящие на одинаковых местах: первые с первыми, вторые со вторыми и так далее. Для `[1, 2, 3]` и `[10, 20, 30]`: 1+10=11, 2+20=22, 3+30=33, ответ `[11, 22, 33]`.\\n\\nПервый список лежит в `data[0]`, второй — в `data[1]`. Длины у них одинаковые, поэтому удобно идти по индексам и складывать элементы с одним и тем же индексом.', 2: '```\\nresult = []\\nfor i in range(len(data[0])):\\n    result.append(data[0][i] + data[1][i])   # пара с одинаковым индексом\\n```\\n\\n- [range](https://docs.python.org/3/library/stdtypes.html#ranges)', 3: '```python\\nresult = []\\nfor i in range(len(data[0])):\\n    result.append(data[0][i] + data[...][i])   # TODO: из какого списка берём второе слагаемое?\\nreturn result\\n```'}, 120: {1: 'Смотрим на пары соседей: (1-й элемент, 2-й), (2-й, 3-й) и так далее. Пара засчитывается, если второй элемент пары **больше** первого.\\n\\nВ примере `[1, 3, 2, 5, 4]` пары такие: 1→3 (больше, +1), 3→2 (нет), 2→5 (больше, +1), 5→4 (нет). Итого 2.\\n\\nИди по индексам от 1 до конца: у каждого элемента сравнивай его с предыдущим и считай случаи «больше» счётчиком.', 2: '```\\ncount = 0\\nfor i in range(1, len(data)):   # начинаем со второго — у него есть предыдущий\\n    if data[i] > data[i - 1]:\\n        count = count + 1\\n```\\n\\n`data[i - 1]` — это сосед слева (предыдущий элемент).\\n\\n- [range](https://docs.python.org/3/library/stdtypes.html#ranges)', 3: '```python\\ncount = 0\\nfor i in range(1, len(data)):\\n    if data[i] > data[...]:   # TODO: с каким соседом сравниваем?\\n        count += 1\\nreturn count\\n```'}}",
+          "lineno": 25
+        }
+      ],
+      "stats": {
+        "classes": 0,
+        "dataclasses": 0,
+        "functions": 1,
         "methods": 0,
         "constants": 1
       }
