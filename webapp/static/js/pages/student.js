@@ -86,13 +86,18 @@ function connectWs(ownId) {
     } else if (msg.type === 'attempts_changed') {
       // feat.2: тьютор удалил попытку — статус мог измениться (pass→fail или
       // вовсе пропасть). Перезагружаем индикатор и, если смотрим на эту
-      // задачу, секцию решения и «Мои попытки».
+      // задачу, секцию решения и «Мои попытки». bug.12: заодно гасим панель
+      // «Результаты проверки» — пер-тестовых результатов на сервере нет,
+      // без этого «пройденные» тесты висели бы до смены задания или F5.
       if (msg.status) taskStatus[msg.task_id] = msg.status;
       else delete taskStatus[msg.task_id];
       renderTaskList();
       if (msg.task_id === currentTaskId) {
         updateSolveVisibility();
         loadMyAttemptHistory(currentTaskId);
+        resultsSection.classList.add('is-hidden');
+        summary.innerHTML = '';
+        results.innerHTML = '';
       }
     } else if (msg.type === 'mute_status') {
       renderRemoteMuteStatus(!!msg.muted);

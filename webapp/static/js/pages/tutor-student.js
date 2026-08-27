@@ -172,7 +172,8 @@ async function loadStudentAttempts(taskId) {
 // удачную или нет, в любом порядке. Если удалена последняя удачная — задание
 // перестаёт быть решённым; если удалены все — возвращается в начальное
 // состояние (нет индикатора). Список попыток перезагружается, точка статуса
-// перерисовывается из ответа; ученику летит attempts_changed, чтобы он тоже
+// перерисовывается из ответа, панель последнего сабмита гасится у обеих
+// сторон (bug.12); ученику летит attempts_changed, чтобы он тоже
 // перезагрузился live.
 async function deleteStudentAttempt(attemptId) {
   if (!confirm('Удалить эту попытку ученика? Действие необратимо.')) return false;
@@ -191,6 +192,9 @@ async function deleteStudentAttempt(attemptId) {
     else delete taskStatus[currentTaskId];
     renderTaskList();
     loadStudentAttempts(currentTaskId);
+    // bug.12: панель «Ученик только что отправил решение» может показывать
+    // результат сброшенной попытки — гасим её вместе со сбросом.
+    document.getElementById('student-submit-result').innerHTML = '';
     sendMessage({type: 'attempts_changed', task_id: currentTaskId, status: data.status});
     return true;
   } catch (e) {
