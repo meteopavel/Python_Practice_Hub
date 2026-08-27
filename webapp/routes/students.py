@@ -7,7 +7,14 @@ from pydantic import BaseModel
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from webapp.core.auth import current_user_id, current_user_role, forbidden, hash_password, unauthorized
+from webapp.core.auth import (
+    current_user_id,
+    current_user_role,
+    forbidden,
+    hash_password,
+    password_policy_error,
+    unauthorized,
+)
 from webapp.core.db import get_db
 from webapp.core.models import ROLE_STUDENT, Attempt, User
 from webapp.content.hints import LEVELS, has_hints, reset_reveal_cascade
@@ -17,11 +24,15 @@ router = APIRouter()
 
 
 class CreateStudentRequest(BaseModel):
+    """Завести ученика: логин + стартовый пароль."""
+
     username: str
     password: str
 
 
 class SetPasswordRequest(BaseModel):
+    """Тьютор задаёт ученику новый пароль (старый не нужен — это тьютор)."""
+
     password: str
 
 
@@ -43,6 +54,8 @@ def _require_tutor(request: Request):
 
 @router.get("/api/students")
 def list_students(request: Request, db: Session = Depends(get_db)):
+    """Все ученики тьютора + агрегаты по попыткам (сколько всего, когда
+    последняя) — одним запросом, без N+1."""
     if (err := _require_tutor(request)) is not None:
         return err
     students = db.query(User).filter(User.role == ROLE_STUDENT).order_by(User.username).all()
@@ -70,11 +83,15 @@ def list_students(request: Request, db: Session = Depends(get_db)):
 
 @router.post("/api/students")
 def create_student(payload: CreateStudentRequest, request: Request, db: Session = Depends(get_db)):
+    """Создать ученика: логин уникален, пароль проходит политику, в БД —
+    bcrypt-хэш."""
     if (err := _require_tutor(request)) is not None:
         return err
     username = payload.username.strip()
-    if not username or not payload.password:
-        return JSONResponse(status_code=400, content={"error": "Логин и пароль не должны быть пустыми"})
+    if not username:
+        return JSONResponse(status_code=400, content={"error": "Логин не должен быть пустым"})
+    if (err := password_policy_error(payload.password)) is not None:
+        return JSONResponse(status_code=400, content={"error": err})
     if db.query(User).filter(User.username == username).first() is not None:
         return JSONResponse(status_code=400, content={"error": f"Логин «{username}» уже занят"})
     student = User(username=username, password_hash=hash_password(payload.password), role=ROLE_STUDENT)
@@ -85,10 +102,11 @@ def create_student(payload: CreateStudentRequest, request: Request, db: Session 
 
 @router.post("/api/students/{student_id}/password")
 def set_student_password(student_id: int, payload: SetPasswordRequest, request: Request, db: Session = Depends(get_db)):
+    """Сменить пароль ученика (роль всегда student; политика проверяется)."""
     if (err := _require_tutor(request)) is not None:
         return err
-    if not payload.password:
-        return JSONResponse(status_code=400, content={"error": "Пароль не должен быть пустым"})
+    if (err := password_policy_error(payload.password)) is not None:
+        return JSONResponse(status_code=400, content={"error": err})
     student = require_student(db, student_id)
     if student is None:
         return JSONResponse(status_code=404, content={"error": "Ученик не найден"})
@@ -99,6 +117,7 @@ def set_student_password(student_id: int, payload: SetPasswordRequest, request: 
 
 @router.get("/api/students/{student_id}/attempts/status")
 def student_task_status(student_id: int, request: Request, db: Session = Depends(get_db)):
+    """Статус всех заданий ученика ('pass'/'fail') — для монитора тьютора."""
     if (err := _require_tutor(request)) is not None:
         return err
     if require_student(db, student_id) is None:
@@ -108,6 +127,7 @@ def student_task_status(student_id: int, request: Request, db: Session = Depends
 
 @router.get("/api/students/{student_id}/attempts/{task_id}")
 def student_task_attempts(student_id: int, task_id: int, request: Request, db: Session = Depends(get_db)):
+    """Все попытки ученика по одному заданию: код, passed, время."""
     if (err := _require_tutor(request)) is not None:
         return err
     if require_student(db, student_id) is None:

@@ -15,6 +15,8 @@ router = APIRouter()
 
 
 def _require_tutor(request: Request):
+    """JSONResponse-ошибка (401/403), если запрос не от тьютора, иначе None
+    (тот же контракт, что у students._require_tutor)."""
     if current_user_id(request) is None:
         return unauthorized()
     if current_user_role(request) != "tutor":

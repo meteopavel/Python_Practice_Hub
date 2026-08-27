@@ -8,7 +8,11 @@ from fastapi import WebSocket
 
 
 class Room:
+    """Комната одного ученика: его WebSocket, сокеты тьюторов, последние
+    код/задание/подсказка и висящее приглашение на созвон (feat.9)."""
+
     def __init__(self):
+        """Пустая комната: никого нет, кодов нет, звонка нет."""
         self.student_ws: WebSocket | None = None
         self.tutor_sockets: set[WebSocket] = set()
         self.last_student_code = ""
@@ -25,6 +29,8 @@ rooms: dict[int, Room] = {}
 
 
 def get_room(student_id: int) -> Room:
+    """Комната ученика; создаётся по первому обращению и живёт до рестарта
+    процесса (это сиюминутное состояние, не история)."""
     if student_id not in rooms:
         rooms[student_id] = Room()
     return rooms[student_id]

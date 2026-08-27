@@ -11,7 +11,7 @@ role: student (по умолчанию) | tutor
 import getpass
 import sys
 
-from webapp.core.auth import hash_password
+from webapp.core.auth import hash_password, password_policy_error
 from webapp.core.db import SessionLocal
 from webapp.core.models import ROLE_STUDENT, ROLE_TUTOR, User
 
@@ -33,6 +33,9 @@ def main() -> None:
     password_repeat = getpass.getpass("Повтори пароль: ")
     if password != password_repeat:
         print("Пароли не совпадают")
+        sys.exit(1)
+    if (policy_error := password_policy_error(password)) is not None:
+        print(policy_error)
         sys.exit(1)
 
     db = SessionLocal()

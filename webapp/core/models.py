@@ -10,6 +10,9 @@ ROLE_TUTOR = "tutor"
 
 
 class User(Base):
+    """Пользователь: ученик или тьютор (role). Заводится вручную (create_user.py
+    или API тьютора) — самостоятельной регистрации нет."""
+
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True)
@@ -20,6 +23,9 @@ class User(Base):
 
 
 class Attempt(Base):
+    """Одна попытка решения: код целиком + прошёл ли все тесты. История только
+    пополняется (удалить может лишь тьютор), статус задания — производное."""
+
     __tablename__ = "attempts"
 
     id = Column(Integer, primary_key=True)
@@ -41,6 +47,9 @@ class Attempt(Base):
 
 
 class Hint(Base):
+    """Текст уровня подсказки (markdown) — курированный контент, правится
+    тьютором через админку. Одна запись на (task_id, level)."""
+
     __tablename__ = "hints"
     __table_args__ = (UniqueConstraint("task_id", "level", name="uq_hints_task_level"),)
 
@@ -52,6 +61,9 @@ class Hint(Base):
 
 
 class HintReveal(Base):
+    """Отметка «ученик раскрыл уровень во столько-то» — сервер считает по ним
+    тайминги доступности следующих уровней (клиентским часам не верим)."""
+
     __tablename__ = "hint_reveals"
     __table_args__ = (UniqueConstraint("user_id", "task_id", "level", name="uq_hint_reveals_user_task_level"),)
 

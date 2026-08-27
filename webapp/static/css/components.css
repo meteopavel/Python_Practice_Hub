@@ -323,6 +323,16 @@
 .account-menu-empty { padding: var(--space-2) var(--space-3); font-size: var(--fs-sm); color: var(--c-ink-faint); }
 .account-menu-divider { height: 1px; margin: var(--space-1) 0; background: var(--c-hairline); }
 
+/* Раскрывающаяся форма смены пароля внутри панели — шире пунктов меню,
+   чтобы поля «Текущий/Новый/Повторите» не были ужаты. */
+.account-menu-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-2) var(--space-3);
+  min-width: 240px;
+}
+
 /* --- Аватар — инициалы в акцентной плитке ------------------------------------ */
 /* Внешний отступ — забота контейнера (flex-gap), не самого блока. */
 .avatar {

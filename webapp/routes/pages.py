@@ -16,6 +16,8 @@ router = APIRouter()
 
 @router.get("/")
 def index(request: Request, db: Session = Depends(get_db)):
+    """Главная: тьютору — список учеников (tutor.html, его основная страница),
+    ученику — практика (index.html)."""
     if current_user_id(request) is None:
         return RedirectResponse(url="/login", status_code=303)
     # Тьютор без имперсонации попадает на список учеников — это теперь его
@@ -29,6 +31,8 @@ def index(request: Request, db: Session = Depends(get_db)):
 
 @router.get("/tutor")
 def tutor_page(request: Request):
+    """Легаси /tutor — постоянный редирект на главную (отдельной тьюторской
+    страницы больше нет, список учеников теперь и есть главная тьютора)."""
     if current_user_id(request) is None:
         return RedirectResponse(url="/login", status_code=303)
     return RedirectResponse(url="/", status_code=303)
@@ -36,6 +40,8 @@ def tutor_page(request: Request):
 
 @router.get("/tutor/student/{student_id}")
 def tutor_student_page(student_id: int, request: Request):
+    """Страница тьютора по конкретному ученику: живой мониторинг, попытки,
+    подсказки (данные грузятся отдельными API)."""
     if current_user_id(request) is None:
         return RedirectResponse(url="/login", status_code=303)
     if current_user_role(request) != ROLE_TUTOR:
@@ -55,6 +61,8 @@ def tutor_hints_page(request: Request):
 
 @router.get("/materials/{module}/{lesson}")
 def materials_page(module: str, lesson: str, request: Request):
+    """Страница урока материалов (существование проверяем по манифесту,
+    содержимое фронт грузит отдельным API)."""
     if current_user_id(request) is None:
         return RedirectResponse(url="/login", status_code=303)
     if get_lesson(module, lesson) is None:

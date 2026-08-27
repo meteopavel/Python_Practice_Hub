@@ -28,6 +28,27 @@
       <span class="avatar" id="avatar"></span>
     </summary>
     <div class="account-menu-panel">
+      <button class="account-menu-item" type="button" id="change-password-toggle">Сменить пароль</button>
+      <form id="change-password-form" class="account-menu-form is-hidden">
+        <div class="field">
+          <label class="label" for="pw-current">Текущий пароль</label>
+          <input class="input" id="pw-current" type="password" autocomplete="current-password" required>
+        </div>
+        <div class="field">
+          <label class="label" for="pw-new">Новый пароль</label>
+          <input class="input" id="pw-new" type="password" autocomplete="new-password" minlength="8" required>
+        </div>
+        <div class="field">
+          <label class="label" for="pw-repeat">Повторите новый</label>
+          <input class="input" id="pw-repeat" type="password" autocomplete="new-password" minlength="8" required>
+        </div>
+        <p class="field-error is-hidden m-0" id="change-password-error"></p>
+        <div class="row gap-2">
+          <button class="btn btn-primary btn-sm" type="submit">Сохранить</button>
+          <button class="btn btn-sm" type="button" id="change-password-cancel">Отмена</button>
+        </div>
+      </form>
+      <div class="account-menu-divider"></div>
       <form method="post" action="/logout" class="m-0">
         <button class="account-menu-item" type="submit">Выйти</button>
       </form>

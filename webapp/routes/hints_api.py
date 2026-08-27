@@ -70,6 +70,8 @@ def reveal_hint(task_id: int, payload: HintRevealRequest, request: Request, db: 
 
 
 def _require_tutor(request: Request):
+    """JSONResponse-ошибка (401/403), если запрос не от тьютора, иначе None
+    (тот же контракт, что у students._require_tutor)."""
     if current_user_id(request) is None:
         return unauthorized()
     if current_user_role(request) != "tutor":
@@ -113,6 +115,8 @@ def admin_save_hint(task_id: int, level: int, payload: HintContentRequest, reque
 # чтобы тьютору было понятно, какое задание он правит).
 @router.get("/api/admin/hints/tasks")
 def admin_hinted_tasks(request: Request):
+    """Задания, к которым привязаны подсказки (id + условие) — для селектора
+    в админке, чтобы тьютор понимал, какое задание правит."""
     if (err := _require_tutor(request)) is not None:
         return err
     return [

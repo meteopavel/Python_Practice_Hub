@@ -429,7 +429,9 @@ runFreeBtn.addEventListener('click', async () => {
     const res = await fetch('/api/solve/run_free', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({code: codeEditor.getValue()}),
+      // task_id → «Запустить» с данными на входе: solve() вызывается харнессом
+      // с первым входом задания, иначе решение-задание ничего бы не печатало.
+      body: JSON.stringify({code: codeEditor.getValue(), task_id: currentTaskId}),
     });
     if (redirectToLoginIfUnauthorized(res)) return;
     const result = await res.json();

@@ -41,11 +41,15 @@ _NUM_PREFIX = re.compile(r"^(\d+)_")
 
 
 def _sort_key(filename: str) -> tuple:
+    """Порядок уроков внутри модуля: по числовому префиксу имени файла;
+    без префикса — в конец, по алфавиту."""
     m = _NUM_PREFIX.match(filename)
     return (int(m.group(1)), filename) if m else (10_000, filename)
 
 
 def _extract_title(module: str, slug: str, first_cell_source: str) -> str:
+    """Заголовок урока: ручной override → первая markdown-строка первой
+    code-ячейки → человекочитанный slug (последняя надежда)."""
     override = _TITLE_OVERRIDES.get((module, slug))
     if override:
         return override
@@ -84,6 +88,8 @@ def _load_notebook(path: Path) -> list:
 
 
 def _build_manifest():
+    """Один проход по notebooks/ при старте: манифест {модуль: [уроки]} для
+    оглавления и содержимое всех уроков в память (ноутбуки крошечные)."""
     manifest = {}
     notebooks = {}
     for module, title in _MODULE_TITLES.items():
@@ -109,4 +115,5 @@ MATERIALS_MANIFEST, _NOTEBOOKS = _build_manifest()
 
 
 def get_lesson(module: str, slug: str):
+    """Урок (module, slug) → {"title", "cells"} из памяти; None, если нет."""
     return _NOTEBOOKS.get((module, slug))

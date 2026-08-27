@@ -48,6 +48,7 @@ HINT_DELAYS: dict[int, timedelta] = {
 
 
 def has_hints(task_id: int) -> bool:
+    """Есть ли у задания вообще механика подсказок (см. HINTED_TASK_IDS)."""
     return task_id in HINTED_TASK_IDS
 
 

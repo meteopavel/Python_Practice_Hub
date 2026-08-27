@@ -13,6 +13,8 @@ Base = declarative_base()
 
 
 def get_db():
+    """Зависимость FastAPI: своя сессия на каждый запрос, гарантированно
+    закрывается в finally."""
     db = SessionLocal()
     try:
         yield db

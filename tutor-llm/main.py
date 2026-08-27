@@ -57,6 +57,8 @@ def _build_user_message(req: AskRequest) -> str:
 
 @app.post("/ask")
 def ask(payload: AskRequest):
+    """Спросить DeepSeek: системный промпт репетитора + блоки задача/код/вопрос.
+    Ошибки API и сети наружу отдаются как 502, отсутствие ключа — 500."""
     if not DEEPSEEK_API_KEY:
         raise HTTPException(
             status_code=500,

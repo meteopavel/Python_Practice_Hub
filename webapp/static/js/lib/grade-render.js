@@ -58,13 +58,29 @@ function renderGradeResult(container, data) {
 }
 
 function renderFreeRunResult(container, data) {
-  if (!data.ok) {
-    container.innerHTML = `<div class="result-summary is-fail"><span>${escapeHtml(data.error || 'Ошибка выполнения')}</span></div>`;
+  // Два режима. Без data.input (редактор подсказки тьютора) — код исполнялся
+  // как plain-скрипт, показываем только stdout. С data.input («Запустить» у
+  // ученика, bug.4) — код гонялся через харнесс с входом задания: показываем
+  // вход, print-вывод и что вернула solve().
+  if (data.input === undefined) {
+    if (!data.ok) {
+      container.innerHTML = `<div class="result-summary is-fail"><span>${escapeHtml(data.error || 'Ошибка выполнения')}</span></div>`;
+      return;
+    }
+    const output = data.stdout ? escapeHtml(data.stdout) : '(нет вывода)';
+    container.innerHTML = `<div class="stack stack-3">
+      <div class="result-summary is-pass"><span>Код выполнен</span></div>
+      <pre class="block" style="white-space: pre-wrap; margin: 0">${output}</pre>
+    </div>`;
     return;
   }
-  const output = data.stdout ? escapeHtml(data.stdout) : '(нет вывода)';
-  container.innerHTML = `<div class="stack stack-3">
-    <div class="result-summary is-pass"><span>Код выполнен</span></div>
-    <pre class="block" style="white-space: pre-wrap; margin: 0">${output}</pre>
-  </div>`;
+  const head = data.ok
+    ? `<div class="result-summary is-pass"><span>Код выполнен</span></div>`
+    : `<div class="result-summary is-fail"><span>${escapeHtml(data.error || 'Ошибка выполнения')}</span></div>`;
+  const rows = [
+    `<dt>Вход</dt><dd>${escapeHtml(JSON.stringify(data.input))}</dd>`,
+    `<dt>Вывод</dt><dd>${data.stdout ? escapeHtml(data.stdout) : '(нет вывода)'}</dd>`,
+  ];
+  if (data.ok) rows.push(`<dt>solve() вернула</dt><dd>${escapeHtml(JSON.stringify(data.value))}</dd>`);
+  container.innerHTML = `<div class="stack stack-3">${head}<dl class="test-io" style="padding: 0">${rows.join('')}</dl></div>`;
 }

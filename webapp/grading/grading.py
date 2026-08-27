@@ -19,10 +19,15 @@ EXECUTOR_URL = os.environ.get("EXECUTOR_URL", "http://127.0.0.1:8010")
 
 
 class ExecutorUnavailable(Exception):
+    """Исполнитель (executor на роутере) не ответил — проверка невозможна.
+    Это системный сбой, а не вина ученика: попытка в этом случае не пишется."""
+
     pass
 
 
 def _run_student_code(code: str, test_input) -> dict:
+    """Один прогон кода ученика в исполнителе на заданном входе; сетевой сбой
+    на роутере/тоннеле → ExecutorUnavailable."""
     try:
         response = httpx.post(
             f"{EXECUTOR_URL}/run",
@@ -54,7 +59,28 @@ def run_free(code: str) -> dict:
         return {"ok": False, "error": "Запуск кода временно недоступен. Попробуй чуть позже."}
 
 
+def run_with_sample(task_id: int, code: str) -> dict:
+    """«Запустить» у ученика: код гоняется через тот же харнесс, что и при
+    проверке, с первым курированным входом — без сверки с эталоном. Без этого
+    решение-задание (def solve(data)) молча не печатало ничего: solve() никто
+    не звал (bug.4). Возвращает вход, print-вывод и результат solve()."""
+    test_inputs = TEST_CASES.get(task_id)
+    if not test_inputs:
+        return run_free(code)
+    try:
+        outcome = _run_student_code(code, copy.deepcopy(test_inputs[0]))
+    except ExecutorUnavailable:
+        return {"ok": False, "error": "Запуск кода временно недоступен. Попробуй чуть позже."}
+    outcome["input"] = _normalize(test_inputs[0])
+    return outcome
+
+
 def grade(task_id: int, code: str) -> dict:
+    """Проверка решения: каждый тестовый вход прогоняется и в исполнителе
+    (код ученика), и в эталоне; сравнение — после JSON-нормализации типов
+    (_normalize). Возвращает {'all_passed', 'total', 'passed', 'results'};
+    системные проблемы (нет тестов/эталона, исполнитель лежит) — {'error': …}
+    без 'all_passed', по ним попытка не записывается."""
     test_inputs = TEST_CASES.get(task_id)
     if not test_inputs:
         return {"error": f"Для задания {task_id} пока нет тестовых наборов в веб-грейдере"}

@@ -27,3 +27,60 @@ async function initHeaderUser() {
   document.getElementById('avatar').textContent = initials(data.username);
   return data;
 }
+
+// Смена собственного пароля — раскрывающаяся форма в account-menu (base.html),
+// общая для всех страниц (на /login элементов нет — ранний выход). Сервер
+// проверяет текущий пароль и минимальную длину нового; совпадение повтора —
+// на клиенте, до отправки. Успех — форма схлопывается, у кнопки на 3 секунды
+// подтверждение (тот же приём, что «Принято» у звонка в tutor-student.js).
+function initChangePasswordForm() {
+  const toggle = document.getElementById('change-password-toggle');
+  const form = document.getElementById('change-password-form');
+  if (!toggle || !form) return;
+  const errorEl = document.getElementById('change-password-error');
+  const currentEl = document.getElementById('pw-current');
+  const newEl = document.getElementById('pw-new');
+  const repeatEl = document.getElementById('pw-repeat');
+
+  const showError = (msg) => {
+    errorEl.textContent = msg;
+    errorEl.classList.remove('is-hidden');
+  };
+  const collapse = () => {
+    form.classList.add('is-hidden');
+    errorEl.classList.add('is-hidden');
+    [currentEl, newEl, repeatEl].forEach(el => { el.value = ''; });
+  };
+
+  toggle.addEventListener('click', () => {
+    errorEl.classList.add('is-hidden');
+    form.classList.toggle('is-hidden');
+    currentEl.focus();
+  });
+  document.getElementById('change-password-cancel').addEventListener('click', collapse);
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errorEl.classList.add('is-hidden');
+    if (newEl.value !== repeatEl.value) {
+      showError('Новые пароли не совпадают');
+      return;
+    }
+    const res = await fetch('/api/me/password', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({current_password: currentEl.value, new_password: newEl.value}),
+    });
+    if (redirectToLoginIfUnauthorized(res)) return;
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      showError(data.error || 'Не удалось сменить пароль');
+      return;
+    }
+    collapse();
+    toggle.textContent = 'Пароль изменён';
+    setTimeout(() => { toggle.textContent = 'Сменить пароль'; }, 3000);
+  });
+}
+
+initChangePasswordForm();

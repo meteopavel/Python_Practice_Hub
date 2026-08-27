@@ -36,6 +36,8 @@ def task_status_map(db: Session, user_id: int) -> dict:
 
 
 def task_attempts(db: Session, user_id: int, task_id: int) -> list:
+    """Все попытки пользователя по одному заданию в хронологии — общий вид
+    для своей истории (ученик) и истории конкретного ученика (тьютор)."""
     rows = (
         db.query(Attempt)
         .filter(Attempt.user_id == user_id, Attempt.task_id == task_id)
@@ -66,6 +68,7 @@ def hints_response(db: Session, user_id: int, task_id: int) -> dict:
 
 
 def require_student(db: Session, student_id: int):
+    """User по id, если это ученик, иначе None (вызывающий отдаёт 404)."""
     return db.query(User).filter(User.id == student_id, User.role == ROLE_STUDENT).first()
 
 
@@ -73,9 +76,13 @@ def require_student(db: Session, student_id: int):
 # SubmissionRequest / HintFreeRunRequest шарятся между учеником (submit,
 # solve/run_free) и тьютором (hint/run, hint/run_free) — поэтому живут здесь.
 class SubmissionRequest(BaseModel):
+    """Отправка решения: задание + код ученика целиком."""
+
     task_id: int
     code: str
 
 
 class HintFreeRunRequest(BaseModel):
+    """Свободный запуск кода без привязки к заданию (print и любые операторы)."""
+
     code: str

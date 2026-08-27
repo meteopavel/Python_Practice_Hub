@@ -91,12 +91,11 @@ ssh -o ConnectTimeout=5 -o BatchMode=yes "$DEPLOY_FRANKFURT_ALIAS" "echo ok" > /
 log "✅ SSH-доступ есть"
 log "----------------------------------------"
 
-log "🔐 Этап 1/4: backup sensitive files"
+log "🔐 Этап 1/4: backup (sensitive-файлы + дамп БД)"
 
 BACKUP_OK=1
 if [[ -z "$ARCHIVE_PASSWORD" || -z "$SECURE_RSYNC_USER" || -z "$SECURE_RSYNC_HOST" || -z "$SECURE_RSYNC_PATH" ]]; then
     log "⚠️  Backup: переменные ARCHIVE_PASSWORD / SECURE_RSYNC_* не заданы — пропускаем"
-    log "   (пока нечего бэкапить кроме .env — ни БД, ни секретов ещё нет)"
     BACKUP_OK=0
 fi
 
@@ -107,19 +106,61 @@ if [[ "$BACKUP_OK" -eq 1 ]]; then
     fi
 fi
 
+# Сколько датированных дампов БД хранить (локально в secure/db/ и на backup-сервере).
+DB_BACKUP_RETENTION=$(get_env "DB_BACKUP_RETENTION" "$ENV_FILE")
+DB_BACKUP_RETENTION="${DB_BACKUP_RETENTION:-14}"
+DB_BACKUP_DIR="${ARCHIVE_DIR}/db"
+DB_BACKUP_REMOTE_DIR="${SECURE_RSYNC_PATH}/db-backup"
+
 if [[ "$BACKUP_OK" -eq 1 ]]; then
-    mkdir -p "${ARCHIVE_DIR}"
+    mkdir -p "${ARCHIVE_DIR}" "${DB_BACKUP_DIR}"
+    # Каталоги на backup-сервере под этот проект: при первом деплое их ещё нет,
+    # а rsync каталог назначения сам не создаёт (ключ тот же, что у
+    # rsync_via_tunnel — см. deploy_helpers.sh).
+    ssh -i ~/.ssh/timeweb_shared -o StrictHostKeyChecking=no \
+        "${SECURE_RSYNC_USER}@${SECURE_RSYNC_HOST}" \
+        "mkdir -p '${SECURE_RSYNC_PATH}' '${DB_BACKUP_REMOTE_DIR}'" || true
+
     [[ -f "${ARCHIVE_PATH}" ]] && rm -f "${ARCHIVE_PATH}"
-    log "🔒 Создаём зашифрованный архив (.env)..."
+    log "🔒 Создаём зашифрованный архив (приватные файлы + docs/)..."
     (
         cd "${PROJECT_ROOT}"
-        7z a -p"${ARCHIVE_PASSWORD}" -mhe=on "${ARCHIVE_PATH}" ".env" > /dev/null
+        7z a -p"${ARCHIVE_PASSWORD}" -mhe=on "${ARCHIVE_PATH}" "${ENV_FILE##*/}" "docs" > /dev/null
     )
     log "📤 Отправляем архив на backup-сервер..."
     run_with_heartbeat "отправка backup" \
         rsync_via_tunnel "${SECURE_RSYNC_USER}" "${SECURE_RSYNC_HOST}" \
         "${ARCHIVE_PATH}" "${SECURE_RSYNC_PATH}"
     log "✅ Архив отправлен на backup-сервер."
+
+    log "🗄  Снимаем дамп БД (MySQL через контейнер app на Frankfurt)..."
+    DUMP_TS="$(date +%Y%m%d-%H%M%S)"
+    DUMP_SQL="${DB_BACKUP_DIR}/db-${DUMP_TS}.sql"
+    if ssh "$DEPLOY_FRANKFURT_ALIAS" \
+        "cd '$DEPLOY_FRANKFURT_REPO_DIR' && docker compose exec -T app python -m webapp.scripts.dump_db" \
+        > "${DUMP_SQL}" && [[ -s "${DUMP_SQL}" ]]; then
+        7z a -p"${ARCHIVE_PASSWORD}" -mhe=on "${DUMP_SQL}.7z" "${DUMP_SQL}" > /dev/null
+        rm -f "${DUMP_SQL}"
+        cp -f "${DUMP_SQL}.7z" "${DB_BACKUP_DIR}/db-latest.sql.7z"
+        # Локальная ротация: храним последние N датированных (db-latest не трогаем).
+        ls -1t "${DB_BACKUP_DIR}"/db-[0-9]*.sql.7z 2>/dev/null \
+            | tail -n +"$((DB_BACKUP_RETENTION + 1))" | while read -r old; do rm -f "${old}"; done || true
+        log "📤 Отправляем дамп БД на backup-сервер (хранится ${DB_BACKUP_RETENTION} последних)..."
+        run_with_heartbeat "отправка db dump" \
+            rsync_via_tunnel "${SECURE_RSYNC_USER}" "${SECURE_RSYNC_HOST}" \
+            "${DB_BACKUP_DIR}/" "${DB_BACKUP_REMOTE_DIR}/"
+        # Ротация на сервере — теми же N; при сбое старые копии просто остаются.
+        ssh -i ~/.ssh/timeweb_shared -o StrictHostKeyChecking=no \
+            "${SECURE_RSYNC_USER}@${SECURE_RSYNC_HOST}" \
+            "cd '${DB_BACKUP_REMOTE_DIR}' && ls -1t db-[0-9]*.sql.7z 2>/dev/null | tail -n +$((DB_BACKUP_RETENTION + 1)) | xargs -r rm -f" \
+            || log "⚠️  Ротация дампов на сервере не выполнилась (старые копии останутся — не критично)"
+        log "✅ Дамп БД отправлен (${DUMP_TS})."
+    else
+        echo "⚠️  Дамп БД не снялся — пропускаем (деплой продолжается)."
+        echo "    webapp.scripts.dump_db попадает в контейнер на этапе 4 этого деплоя;"
+        echo "    со следующего деплоя дамп снимется штатно."
+        rm -f "${DUMP_SQL}"
+    fi
 fi
 
 log "----------------------------------------"

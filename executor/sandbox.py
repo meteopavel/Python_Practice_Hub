@@ -49,6 +49,8 @@ if __name__ == "__main__":
 
 
 def _limit_resources():
+    """Лимиты CPU/памяти на процесс кода ученика; вызывается как preexec_fn
+    (в дочернем после fork, до exec) — сервер не затрагивается."""
     # preexec_fn выполняется в дочернем процессе после fork, до exec —
     # лимиты применяются только к процессу ученика, не к серверу.
     try:
@@ -63,7 +65,9 @@ def _limit_resources():
 
 def run_student_code(code: str, test_input) -> dict:
     """Ученик обязан определить функцию solve(data). Возвращает
-    {"ok": True, "value": ...} либо {"ok": False, "error": "..."}."""
+    {"ok": True, "value": ..., "stdout": ...} либо {"ok": False, "error": "...",
+    "stdout": ...} — stdout несёт то, что код напечатал сам (до маркера
+    результата), нужен «Запустить» с данными на входе (bug.4)."""
     harness = HARNESS_TEMPLATE.format(student_code=code, marker=RESULT_MARKER)
 
     with tempfile.NamedTemporaryFile("w", suffix=".py", delete=False, encoding="utf-8") as f:
@@ -91,12 +95,15 @@ def run_student_code(code: str, test_input) -> dict:
         return {
             "ok": False,
             "error": stderr_tail or "Код не вернул результат — убедись, что функция называется solve(data)",
+            "stdout": proc.stdout,
         }
 
     try:
-        return json.loads(proc.stdout[idx + len(RESULT_MARKER):])
+        result = json.loads(proc.stdout[idx + len(RESULT_MARKER):])
     except json.JSONDecodeError:
         return {"ok": False, "error": "Не удалось разобрать результат выполнения"}
+    result["stdout"] = proc.stdout[:idx]
+    return result
 
 
 def run_free_code(code: str) -> dict:
