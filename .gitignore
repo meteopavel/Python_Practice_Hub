@@ -20,3 +20,8 @@ local.db
 # impeccable: детектор UI. Вся папка — личный локальный tooling (sidecar
 # дизайн-системы, runtime-артефакты с абсолютными путями и session IDs).
 .impeccable/
+
+# Локальные скриншоты GUI-тестов (browser-use прогоны), артефакты проверки
+# — не контент репозитория. Наряду с docs/screenshots (docs/ целиком
+# игнорируется выше).
+/gui-test-screenshots/

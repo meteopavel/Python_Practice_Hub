@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Одноразовая загрузка курированных подсказок для заданий 0, 81..100 и 101..120.
+"""Одноразовая загрузка курированных подсказок для заданий 0 и 81..150.
 
 Запуск (внутри контейнера app на Frankfurt, WORKDIR=/app):
     docker compose exec app python -m webapp.scripts.seed_hints
@@ -231,6 +231,156 @@ HINTS_DATA: dict[int, dict[int, str]] = {
         1: "Смотрим на пары соседей: (1-й элемент, 2-й), (2-й, 3-й) и так далее. Пара засчитывается, если второй элемент пары **больше** первого.\n\nВ примере `[1, 3, 2, 5, 4]` пары такие: 1→3 (больше, +1), 3→2 (нет), 2→5 (больше, +1), 5→4 (нет). Итого 2.\n\nИди по индексам от 1 до конца: у каждого элемента сравнивай его с предыдущим и считай случаи «больше» счётчиком.",
         2: "```\ncount = 0\nfor i in range(1, len(data)):   # начинаем со второго — у него есть предыдущий\n    if data[i] > data[i - 1]:\n        count = count + 1\n```\n\n`data[i - 1]` — это сосед слева (предыдущий элемент).\n\n- [range](https://docs.python.org/3/library/stdtypes.html#ranges)",
         3: "```python\ncount = 0\nfor i in range(1, len(data)):\n    if data[i] > data[...]:   # TODO: с каким соседом сравниваем?\n        count += 1\nreturn count\n```",
+    },
+    121: {
+        1: "Оба списка уже отсортированы. Пройди их **двумя индексами одновременно**: смотри на текущий элемент первого и текущий элемент второго, меньший из них кладём в результат и сдвигаем его индекс. Когда один список закончился — допиши остаток второго целиком.\n\nДля `[1, 3, 5]` и `[2, 4, 6]`: сравниваем 1 и 2 → берём 1; 3 и 2 → берём 2; 3 и 4 → берём 3; 5 и 4 → берём 4; 5 и 6 → берём 5; первый кончился, дописываем 6. Итог `[1, 2, 3, 4, 5, 6]`.",
+        2: "```\nresult = []\ni = 0\nj = 0\na = data[0]\nb = data[1]\nwhile i < len(a) and j < len(b):\n    if a[i] <= b[j]:      # элемент первого не больше — берём его\n        result.append(a[i])\n        i = i + 1\n    else:\n        result.append(b[j])\n        j = j + 1\n```\n\nПосле цикла один из списков «не дописан»: добавь его хвост отдельным циклом `while i < len(a)` (и аналогично для `j`).\n\n- [while](https://docs.python.org/3/tutorial/introduction.html#first-steps-towards-programming)\n- [Оператор and](https://docs.python.org/3/library/stdtypes.html#boolean-operations-and-or-not)",
+        3: "```python\nresult = []\ni = 0\nj = 0\nwhile i < len(data[0]) and j < len(data[1]):\n    if data[0][i] <= data[1][j]:\n        result.append(data[0][i])\n        i += 1\n    else:\n        result.append(...)\n        j += 1\n# TODO: дописать хвост первого и хвост второго двумя отдельными while\nreturn result\n```",
+    },
+    122: {
+        1: "Нужна «разность» списков: берём из первого списка только те элементы, которых **нет во втором**. Порядок первого сохраняем, повторы в ответе не нужны.\n\nДля `[1, 2, 3, 4]` и `[2, 4, 5]`: двойка и четвёрка есть во втором — вычёркиваем; остаются 1 и 3 → `[1, 3]`.\n\nПроходи по первому списку циклом и добавляй элемент в результат, только если его нет ни во втором списке, ни уже в результате.",
+        2: "Проверка вхождения — оператор `in`:\n\n```\nresult = []\nfor item in data[0]:\n    if item not in data[1] and item not in result:\n        result.append(item)\n```\n\nВторое условие (`not in result`) убирает повторы в ответе, если они были в первом списке.\n\n- [Оператор in](https://docs.python.org/3/reference/expressions.html#membership-test-operations)",
+        3: "```python\nresult = []\nfor item in data[0]:\n    if item not in ... and item not in result:   # TODO: в каком списке элемента быть не должно?\n        result.append(item)\nreturn result\n```",
+    },
+    123: {
+        1: "Слова надо расставить от самых коротких к самым длинным. Сортировка по алфавиту не подходит — сравниваем **длины** слов: 'cat' (3 буквы), 'dog' (3), 'elephant' (8) → `['cat', 'dog', 'elephant']` (при равной длине порядок исходный).\n\nУ функции `sorted()` есть параметр `key` — правило, по которому сравниваются элементы: Python для каждого элемента вызывает функцию key и сравнивает результаты. Нам подойдёт `key=len`: сравнивать слова по их длине.",
+        2: "```\nresult = sorted(data, key=len)\n```\n\n`len` передаётся **без скобок** — мы даём саму функцию, а не результат её вызова; Python сам вызовет её для каждого слова.\n\n- [Сортировка и key](https://docs.python.org/3/howto/sorting.html#key-functions)",
+        3: "```python\nresult = sorted(data, key=...)   # TODO: какая функция даёт длину слова?\nreturn result\n```",
+    },
+    124: {
+        1: "Сравнивать числа нужно не целиком, а по **последней цифре**: у 3 это 3, у 17 — 7, у 28 — 8, у 9 — 9. Расставляем по возрастанию этих цифр: 3, затем 17, затем 28, и в конце 9 → `[3, 17, 28, 9]` (по цифрам: 3 < 7 < 8 < 9).\n\nПоследняя цифра числа — остаток от деления на 10: `17 % 10` даёт 7.\n\nУ `sorted()` есть параметр `key` — функция, которая для каждого элемента выдаёт «величину для сравнения». Здесь удобно написать мини-функцию через `lambda`.",
+        2: "```\nresult = sorted(data, key=lambda num: num % 10)\n```\n\n`lambda num: num % 10` — мини-функция без имени: принимает `num` и возвращает `num % 10`. Именно эти остатки sorted и сравнивает.\n\n- [Сортировка и key](https://docs.python.org/3/howto/sorting.html#key-functions)\n- [Остаток %](https://docs.python.org/3/tutorial/introduction.html#numbers)",
+        3: "```python\nresult = sorted(data, key=lambda num: num % ...)   # TODO: на что делить, чтобы получить последнюю цифру?\nreturn result\n```",
+    },
+    125: {
+        1: "Перебираем все пары соседей и ищем пару с самой большой суммой. Для `[1, 5, 2, 8, 3]`:\n\n- (1, 5) → 6\n- (5, 2) → 7\n- (2, 8) → 10\n- (8, 3) → 11 ← максимум\n\nОтвет — кортеж `(8, 3)`. Заведи «лучшую пару» и «лучшую сумму» (начни с первой пары) и обновляй их в цикле, когда текущая сумма больше.",
+        2: "```\nbest_pair = (data[0], data[1])\nbest_sum = data[0] + data[1]\nfor i in range(1, len(data) - 1):\n    cur_sum = data[i] + data[i + 1]\n    if cur_sum > best_sum:      # нашли пару побольше\n        best_sum = cur_sum\n        best_pair = (data[i], data[i + 1])\n```\n\nОтвет — `best_pair`. У списка длины 2 пара одна, цикл не сработает — ответ уже готов.\n\n- [range](https://docs.python.org/3/library/stdtypes.html#ranges)",
+        3: "```python\nbest_pair = (data[0], data[1])\nbest_sum = data[0] + data[1]\nfor i in range(1, len(data) - 1):\n    if data[i] + data[i + 1] > ...:   # TODO: с чем сравниваем текущую сумму?\n        best_sum = data[i] + data[i + 1]\n        best_pair = (data[i], data[...])\nreturn best_pair\n```",
+    },
+    126: {
+        1: "Складываем элементы **до первого отрицательного**, сам его не считаем и дальше по списку не идём. Для `[3, 5, -1, 10, 2]`: 3 + 5 = 8, а на -1 останавливаемся → 8. Если отрицательных нет — складываем весь список.\n\nЭто задача на **досрочный выход**: в цикле проверяй, не отрицательное ли число — если да, сразу `return результат` прямо из цикла.",
+        2: "```\nresult = 0\nfor num in data:\n    if num < 0:\n        return result   # досрочный выход: дальше не смотрим\n    result += num\n```\n\n`return` внутри цикла немедленно завершает функцию.\n\n- [Цикл for](https://docs.python.org/3/tutorial/controlflow.html#for-statements)",
+        3: "```python\nresult = 0\nfor num in data:\n    if num < ...:   # TODO: какое условие означает «стоп»?\n        return result\n    result += num\nreturn result\n```",
+    },
+    127: {
+        1: "Список отсортирован, число надо вставить **на правильное место**, чтобы порядок сохранился. Для `[1, 3, 5, 7]` и 4: идём слева и ищем первый элемент, который **больше** вставляемого — это 5, значит четвёрка встаёт перед ней → `[1, 3, 4, 5, 7]`.\n\nЕсли таких элементов нет (вставляемое число больше всех) — добавь его в конец.",
+        2: "Скопируй список и пользуйся методом `insert(индекс, значение)`:\n\n```\nresult = list(data[0])          # копия, чтобы не менять исходный\nfor i in range(len(result)):\n    if result[i] > data[1]:     # первое место, где новый элемент меньше\n        result.insert(i, data[1])\n        return result\nresult.append(data[1])          # больше всех — в конец\nreturn result\n```\n\n- [insert](https://docs.python.org/3/tutorial/datastructures.html#more-on-lists)",
+        3: "```python\nresult = list(data[0])\nfor i in range(len(result)):\n    if result[i] > ...:   # TODO: с чем сравниваем элемент списка?\n        result.insert(i, data[1])\n        return result\nresult.append(data[1])\nreturn result\n```",
+    },
+    128: {
+        1: "Инверсия — это пара элементов, стоящих «не в порядке»: первый идёт раньше (i < j), но **больше** второго. Для `[3, 1, 2]`:\n\n- пара (3, 1): 3 > 1 и 3 раньше — инверсия\n- пара (3, 2): 3 > 2 и 3 раньше — инверсия\n- пара (1, 2): 1 < 2 — порядок\n\nИтого 2. Нужны **два вложенных цикла**: внешний фиксирует первый элемент пары, внутренний перебирает всех, кто правее.",
+        2: "```\ncount = 0\nfor i in range(len(data)):\n    for j in range(i + 1, len(data)):   # только правее i\n        if data[i] > data[j]:\n            count = count + 1\n```\n\n`range(i + 1, ...)` — индексы строго после i, поэтому каждая пара берётся ровно один раз.\n\n- [Вложенные циклы](https://docs.python.org/3/tutorial/controlflow.html#for-statements)",
+        3: "```python\ncount = 0\nfor i in range(len(data)):\n    for j in range(i + 1, len(data)):\n        if data[i] > ...:   # TODO: с кем сравниваем левый элемент пары?\n            count += 1\nreturn count\n```",
+    },
+    129: {
+        1: "Окно длины k — это k подряд идущих элементов. Для `[1, 5, 2, 8, 3]` и k=2 окна такие: (1,5)=6, (5,2)=7, (2,8)=10, (8,3)=11. Самая большая сумма — 11.\n\nСчитать каждую сумму заново можно, но есть приём «**скользящее окно**»: посчитай сумму первых k элементов, а потом при сдвиге окна на один вправо **прибавляй новый элемент и вычитай ушедший**.",
+        2: "```\nk = data[1]\nlst = data[0]\ncur = 0\nfor i in range(k):        # сумма первого окна\n    cur += lst[i]\nbest = cur\nfor i in range(k, len(lst)):   # справа приходит lst[i], слева выпадает lst[i-k]\n    cur = cur + lst[i] - lst[i - k]\n    if cur > best:\n        best = cur\n```\n\n- [range](https://docs.python.org/3/library/stdtypes.html#ranges)",
+        3: "```python\nk = data[1]\nlst = data[0]\ncur = 0\nfor i in range(k):\n    cur += lst[i]\nbest = cur\nfor i in range(k, len(lst)):\n    cur = cur + lst[i] - lst[...]   # TODO: какой элемент выпадает из окна слева?\n    if cur > best:\n        best = cur\nreturn best\n```",
+    },
+    130: {
+        1: "Медиана — середина **отсортированного** списка. Шаги:\n\n1. Отсортируй список.\n2. Если длина нечётная — медиана это средний элемент: для `[1, 3, 5]` это 3.\n3. Если чётная — среднее двух средних: для `[1, 2, 3, 4]` это (2 + 3) / 2 = 2.5.\n\nСередина списка длины n — индекс `n // 2`, а при чётной длине нужны индексы `n // 2 - 1` и `n // 2`.",
+        2: "```\ns = sorted(data)\nn = len(s)\nif n % 2 == 1:\n    return s[n // 2]\nelse:\n    return (s[n // 2 - 1] + s[n // 2]) / 2\n```\n\nДеление `/` даёт дробное число — для чётной длины это и нужно (2.5).\n\n- [sorted](https://docs.python.org/3/howto/sorting.html)\n- [Деление //](https://docs.python.org/3/tutorial/introduction.html#numbers)",
+        3: "```python\ns = sorted(data)\nn = len(s)\nif n % 2 == 1:\n    return s[n // ...]\nreturn (s[n // 2 - 1] + s[...]) / 2\n```",
+    },
+    131: {
+        1: "Меняем местами первый со вторым, третий с четвёртым и так далее. Для `[1, 2, 3, 4, 5]`: пара (1,2) → (2,1), пара (3,4) → (4,3), пятёрка без пары остаётся → `[2, 1, 4, 3, 5]`.\n\nПроходи индексы 0, 2, 4, ... (шаг 2) и меняй местами элемент на i и на i+1. Обмен в Python делается одной строкой: `a, b = b, a`.",
+        2: "```\nfor i in range(0, len(data) - 1, 2):   # i = 0, 2, 4 ...; -1, чтобы не выйти за край\n    data[i], data[i + 1] = data[i + 1], data[i]\n```\n\nСтрока `data[i], data[i + 1] = data[i + 1], data[i]` — обмен двух значений без временной переменной.\n\n- [range с шагом](https://docs.python.org/3/library/stdtypes.html#ranges)",
+        3: "```python\nfor i in range(0, len(data) - 1, 2):\n    data[i], data[i + 1] = data[...], data[i]   # TODO: кто встаёт на место i?\nreturn data\n```",
+    },
+    132: {
+        1: "Нарастающий итог — это «сколько набежало». Для `[1, 2, 3, 4]`:\n\n- после 1: 1\n- после 2: 1+2 = 3\n- после 3: 3+3 = 6\n- после 4: 6+4 = 10\n\nОтвет `[1, 3, 6, 10]`. Заведи переменную-аккумулятор и список результата: в цикле прибавляй элемент к аккумулятору и сразу клади аккумулятор в список.",
+        2: "```\nresult = []\ntotal = 0\nfor num in data:\n    total += num          # нарастающий итог\n    result.append(total)  # кладём ТЕКУЩИЙ итог, а не само число\n```\n\n- [Цикл for](https://docs.python.org/3/tutorial/controlflow.html#for-statements)",
+        3: "```python\nresult = []\ntotal = 0\nfor num in data:\n    total += num\n    result.append(...)   # TODO: что кладём в результат — элемент или нарастающий итог?\nreturn result\n```",
+    },
+    133: {
+        1: "Перевод в двоичную систему: делим число на 2 и записываем остатки, пока число не станет нулём. Для 13:\n\n- 13 // 2 = 6, остаток **1**\n- 6 // 2 = 3, остаток **0**\n- 3 // 2 = 1, остаток **1**\n- 1 // 2 = 0, остаток **1**\n\nОстатки снизу вверх: 1101. Цикл `while n > 0` повторяет деление, а очередную цифру удобно **приписывать слева**: `result = str(остаток) + result`.",
+        2: "```\nn = data[0]\nresult = ''\nwhile n > 0:\n    result = str(n % 2) + result   # новый остаток — в начало строки\n    n = n // 2\n```\n\n`n % 2` — остаток, `n // 2` — деление нацело. Случай n = 0 обработай отдельно (ответ '0').\n\n- [while](https://docs.python.org/3/tutorial/introduction.html#first-steps-towards-programming)\n- [Целочисленное деление](https://docs.python.org/3/tutorial/introduction.html#numbers)",
+        3: "```python\nn = data[0]\nif n == 0:\n    return '0'\nresult = ''\nwhile n > 0:\n    result = str(n % ...) + result   # TODO: остаток от деления на что?\n    n = n // 2\nreturn result\n```",
+    },
+    134: {
+        1: "В списке лежат все числа от 1 до n, кроме одного. Для `[1, 2, 4, 5]`: длина 4, значит n = 5 (числа 1..5), не хватает 3.\n\nПриём — **сумма арифметической прогрессии**: сумма 1..n считается по формуле n·(n+1)/2. Для n=5 это 15. Осталось вычесть сумму списка: 15 − (1+2+4+5) = 3.\n\nЗначит: n = длина списка + 1, ожидаемая сумма по формуле минус фактическая сумма списка.",
+        2: "```\nn = len(data) + 1            # сколько чисел должно быть всего\nexpected = n * (n + 1) // 2 # сумма 1..n по формуле\nreturn expected - sum(data) # разница — пропущенное число\n```\n\n`//` — целочисленное деление: n·(n+1) всегда чётное, дробей не будет.\n\n- [Арифметика](https://docs.python.org/3/tutorial/introduction.html#numbers)",
+        3: "```python\nn = len(data) + 1\nexpected = n * (n + 1) // ...   # TODO: на что делить в формуле суммы?\nreturn expected - sum(data)\n```",
+    },
+    135: {
+        1: "Каждая буква заменяется на **следующую** по алфавиту: c→d, o→p. Особый случай — последняя буква z превращается в a (алфавит замыкается в круг). Для 'zoo': z→a, o→p, o→p → 'appa'.\n\nЗапиши алфавит строкой `'abcdefghijklmnopqrstuvwxyz'`. Для каждой буквы: найди её номер методом `.index()`, прибавь 1, а если получилось 26 — возьми 0. Остаток от деления на 26 делает это автоматически.",
+        2: "```\nalphabet = 'abcdefghijklmnopqrstuvwxyz'\nresult = ''\nfor ch in data[0]:\n    i = alphabet.index(ch)            # позиция буквы: 0..25\n    result += alphabet[(i + 1) % 26]  # % 26 замыкает круг: z (25) → 0 → a\n```\n\n`alphabet.index('c')` даёт 2. Для i = 25 (буква z) получаем (25+1) % 26 = 0 — буква a.\n\n- [str.index](https://docs.python.org/3/library/stdtypes.html#str.index)\n- [Остаток %](https://docs.python.org/3/tutorial/introduction.html#numbers)",
+        3: "```python\nalphabet = 'abcdefghijklmnopqrstuvwxyz'\nresult = ''\nfor ch in data[0]:\n    i = alphabet.index(ch)\n    result += alphabet[(i + ...) % 26]   # TODO: на сколько сдвигаем позицию?\nreturn result\n```",
+    },
+    136: {
+        1: "Порядок слов меняется на обратный, сами слова не трогаем: 'hello world foo' → 'foo world hello'.\n\nТри шага: разбей фразу на слова методом `.split()` (даёт список), собери из них новый список **с конца** (цикл от последнего индекса к нулю), склей обратно через пробел методом `' '.join(...)`.",
+        2: "```\nwords = data[0].split()\nresult = []\nfor i in range(len(words) - 1, -1, -1):   # от последнего индекса к 0\n    result.append(words[i])\nreturn ' '.join(result)\n```\n\n`range(старт, стоп, шаг)` с шагом -1 перебирает индексы в обратную сторону. `' '.join(список)` склеивает список в строку через пробел.\n\n- [split](https://docs.python.org/3/library/stdtypes.html#str.split)\n- [join](https://docs.python.org/3/library/stdtypes.html#str.join)",
+        3: "```python\nwords = data[0].split()\nresult = []\nfor i in range(len(words) - 1, ..., -1):   # TODO: до какого индекса идём (не включая его)?\n    result.append(words[i])\nreturn ' '.join(result)\n```",
+    },
+    137: {
+        1: "Акроним — слово из первых букв: 'hello world foo' → 'hwf'.\n\nШаги: разбей фразу на слова методом `.split()`, в цикле возьми у каждого слова первую букву (`word[0]`) и дописывай её в строку-аккумулятор.",
+        2: "```\nwords = data[0].split()\nresult = ''\nfor word in words:\n    result += word[0]    # первая буква слова\n```\n\n- [split](https://docs.python.org/3/library/stdtypes.html#str.split)",
+        3: "```python\nwords = data[0].split()\nresult = ''\nfor word in words:\n    result += word[...]   # TODO: какой индекс у первой буквы?\nreturn result\n```",
+    },
+    138: {
+        1: "Вход — **словарь**: в нём по ключу лежит значение. Словарь лежит в `data[0]`. Нужно найти ключ, у которого самое большое значение: для `{'apple': 3, 'banana': 7}` ответ 'banana' (7 > 3).\n\nПройди по ключам словаря циклом (`for key in d:`), запоминай лучший ключ и его значение, обновляй, когда встретишь больше. При равных значениях остаётся тот, что встретился раньше (сравнение строгое).",
+        2: "Цикл по словарю перебирает его ключи:\n\n```\nd = data[0]\nbest_key = None\nbest_value = None\nfor key in d:\n    if best_value is None or d[key] > best_value:\n        best_value = d[key]\n        best_key = key\n```\n\n`d[key]` — значение по ключу. Проверка `is None` — «лучшего ещё нет», срабатывает на первом ключе.\n\n- [Словари](https://docs.python.org/3/tutorial/datastructures.html#dictionaries)",
+        3: "```python\nd = data[0]\nbest_key = None\nbest_value = None\nfor key in d:\n    if best_value is None or d[key] > ...:   # TODO: с чем сравниваем значение?\n        best_value = d[key]\n        best_key = key\nreturn best_key\n```",
+    },
+    139: {
+        1: "Два словаря лежат в `data[0]` и `data[1]`. Значения общих ключей складываются, остальные ключи берутся как есть: `{'a': 1, 'b': 2}` + `{'b': 3, 'c': 5}` → `{'a': 1, 'b': 5, 'c': 5}`.\n\nШаги: возьми **копию** первого словаря как заготовку результата, потом иди по ключам второго: если ключ уже есть — прибавь к значению, если нет — создай со значением из второго.",
+        2: "```\nresult = dict(data[0])       # копия первого словаря\nfor key in data[1]:\n    if key in result:        # ключ был и в первом — складываем\n        result[key] = result[key] + data[1][key]\n    else:                    # новый ключ — просто берём значение\n        result[key] = data[1][key]\n```\n\n`dict(...)` делает копию, чтобы не менять исходный `data[0]`.\n\n- [Словари](https://docs.python.org/3/tutorial/datastructures.html#dictionaries)",
+        3: "```python\nresult = dict(data[0])\nfor key in data[1]:\n    if key in result:\n        result[key] = result[key] + ...   # TODO: что прибавляем к старому значению?\n    else:\n        result[key] = data[1][key]\nreturn result\n```",
+    },
+    140: {
+        1: "Номер шестизначный. Счастливый — если сумма первых трёх цифр равна сумме последних трёх: 123321 → 1+2+3 = 6 и 3+2+1 = 6, равны → счастливый; 123456 → 6 и 15, не равны → нет.\n\nЧисло лежит в `data[0]`. Преврати его в строку через `str()` — тогда цифры можно брать по индексам: `s[0]` — первая цифра (символ!), каждую обратно в число через `int()`.",
+        2: "```\ns = str(data[0])\nleft = int(s[0]) + int(s[1]) + int(s[2])\nright = int(s[3]) + int(s[4]) + int(s[5])\nif left == right:\n    return '✅ Счастливый'\nelse:\n    return '❌ Несчастливый'\n```\n\n`s[0]` — символ '1', а не число 1, поэтому каждый `int(...)` обязателен.\n\n- [Строки и индексы](https://docs.python.org/3/tutorial/introduction.html#strings)",
+        3: "```python\ns = str(data[0])\nleft = int(s[0]) + int(s[1]) + int(s[2])\nright = int(s[...]) + int(s[4]) + int(s[5])   # TODO: с какого индекса начинается вторая тройка цифр?\nif left == right:\n    return '✅ Счастливый'\nreturn '❌ Несчастливый'\n```",
+    },
+    141: {
+        1: "Каждое число превращается в строку по правилам:\n\n- делится на 15 → 'fizzbuzz'\n- делится на 3 → 'fizz'\n- делится на 5 → 'buzz'\n- не делится ни на что — строка самого числа, например '7'\n\nГлавная тонкость — **порядок проверок**: 15 делится и на 3, и на 5, поэтому проверку на 15 надо делать **первой**, иначе 15 превратится просто в 'fizz'. Неподходящие числа превращаются в строку через `str()`.",
+        2: "```\nresult = []\nfor num in data:\n    if num % 15 == 0:        # сначала самое строгое условие!\n        result.append('fizzbuzz')\n    elif num % 3 == 0:\n        result.append('fizz')\n    elif num % 5 == 0:\n        result.append('buzz')\n    else:\n        result.append(str(num))   # число → строка\n```\n\n- [if / elif / else](https://docs.python.org/3/tutorial/controlflow.html#if-statements)",
+        3: "```python\nresult = []\nfor num in data:\n    if num % ... == 0:        # TODO: какую делимость проверять первой?\n        result.append('fizzbuzz')\n    elif num % 3 == 0:\n        result.append('fizz')\n    elif num % 5 == 0:\n        result.append('buzz')\n    else:\n        result.append(str(num))\nreturn result\n```",
+    },
+    142: {
+        1: "Монеты 10, 5, 2 и 1. Жадный приём: бери **самую большую монету, сколько влезет**, потом следующую. Для 63: шесть монет по 10 (60), остаётся 3 → одна двойка и одна единица. Итого 6+1+1 = 8 монет.\n\nСколько монет достоинства c влезает в сумму: `сумма // c` (целочисленное деление). Остаток после этого: `сумма % c`. Иди по монетам от большой к меньшей циклом.",
+        2: "```\namount = data[0]\ncount = 0\nfor coin in [10, 5, 2, 1]:\n    count += amount // coin   # сколько таких монет берём\n    amount = amount % coin    # что осталось разменять\n```\n\n- [Деление // и остаток %](https://docs.python.org/3/tutorial/introduction.html#numbers)",
+        3: "```python\namount = data[0]\ncount = 0\nfor coin in [10, 5, 2, 1]:\n    count += amount // coin\n    amount = amount % ...   # TODO: что остаётся после монеты coin?\nreturn count\n```",
+    },
+    143: {
+        1: "Признак делимости на 3: число делится на 3 тогда и только тогда, когда **сумма его цифр** делится на 3. Для 453: 4+5+3 = 12, а 12 делится на 3 → делится. Для 452: 4+5+2 = 11, на 3 не делится → нет.\n\nШаги: преврати число в строку `str()`, сложи все цифры (каждую через `int()`), проверь остаток суммы при делении на 3 — именно суммы, само число не делим.",
+        2: "```\ntotal = 0\nfor digit in str(data[0]):   # идём по символам-цифрам\n    total += int(digit)\nif total % 3 == 0:           # делимость СУММЫ ЦИФР, не самого числа\n    return '✅ Делится'\nelse:\n    return '❌ Не делится'\n```\n\n- [str и int](https://docs.python.org/3/library/functions.html#func-str)",
+        3: "```python\ntotal = 0\nfor digit in str(data[0]):\n    total += int(digit)\nif total % ... == 0:   # TODO: на что делим сумму цифр?\n    return '✅ Делится'\nreturn '❌ Не делится'\n```",
+    },
+    144: {
+        1: "Ищем пары **соседних** одинаковых букв: в 'letterr' — 'tt' и 'rr', итого 2. Одинаковые буквы через разные позиции не считаются — только вплотную.\n\nИди по индексам от 0 до len−2 и сравнивай букву на i с буквой на i+1: равны — это пара, считай её.",
+        2: "```\nword = data[0]\ncount = 0\nfor i in range(len(word) - 1):   # до len-2: у последней буквы нет соседа справа\n    if word[i] == word[i + 1]:\n        count = count + 1\n```\n\n- [Индексация строк](https://docs.python.org/3/tutorial/introduction.html#strings)",
+        3: "```python\nword = data[0]\ncount = 0\nfor i in range(len(word) - 1):\n    if word[i] == word[...]:   # TODO: с какой буквой сравниваем (сосед справа)?\n        count += 1\nreturn count\n```",
+    },
+    145: {
+        1: "Рекорд — новый максимум: элемент **больше всех** предыдущих. Для `[3, 1, 4, 1, 5]`:\n\n- 3 — первый элемент, сразу рекорд (счёт 1)\n- 1 — не больше 3\n- 4 — больше 3, рекорд (счёт 2)\n- 1 — нет\n- 5 — больше 4, рекорд (счёт 3)\n\nДержи «текущий максимум» и счётчик: обновил максимум — увеличь счётчик. Сравнение строгое `>` (число, равное максимуму, — не новый рекорд).",
+        2: "```\nmax_so_far = data[0]   # первый элемент — уже рекорд\ncount = 1\nfor num in data[1:]:\n    if num > max_so_far:    # строго больше — новый рекорд\n        max_so_far = num\n        count = count + 1\n```\n\n`data[1:]` — список без первого элемента (он уже учтён).\n\n- [Срезы списков](https://docs.python.org/3/tutorial/introduction.html#lists)",
+        3: "```python\nmax_so_far = data[0]\ncount = 1\nfor num in data[1:]:\n    if num > ...:   # TODO: с чем сравниваем очередной элемент?\n        max_so_far = num\n        count += 1\nreturn count\n```",
+    },
+    146: {
+        1: "Нужны позиции первого нуля и последнего нуля, а потом сумма элементов **строго между** ними. Для `[1, 0, 5, 3, 0, 2]`: первый ноль на индексе 1, последний — на 4, между ними 5 и 3 → 8. Нули сами не считаются.\n\nПервый ноль ищет метод `.index(0)`. Для последнего удобно идти индексами с конца: начни с len−1 и уменьшай, пока не встретишь ноль. Сумму после этого можно взять срезом между индексами.",
+        2: "```\nfirst = data.index(0)\nlast = len(data) - 1\nwhile data[last] != 0:     # ищем последний ноль с конца\n    last = last - 1\ntotal = 0\nfor num in data[first + 1:last]:   # строго между нулями\n    total += num\n```\n\n- [index](https://docs.python.org/3/tutorial/datastructures.html#more-on-lists)\n- [Срезы списков](https://docs.python.org/3/tutorial/introduction.html#lists)",
+        3: "```python\nfirst = data.index(0)\nlast = len(data) - 1\nwhile data[last] != 0:\n    last = last - 1\ntotal = 0\nfor num in data[first + 1:...]:   # TODO: до какого индекса берём срез (не включая его)?\n    total += num\nreturn total\n```",
+    },
+    147: {
+        1: "Делитель — число, на которое n делится без остатка. У 6 делители 1, 2, 3, 6 — четыре штуки. У 13 (простое) — только 1 и 13, две. Нужно каждое число заменить на количество его делителей: `[6, 10, 13] → [4, 4, 2]`.\n\nДва вложенных цикла: внешний идёт по числам списка, внутренний перебирает кандидатов от 1 до самого числа и считает те, на которые оно делится без остатка.",
+        2: "```\nresult = []\nfor num in data:\n    count = 0\n    for d in range(1, num + 1):   # кандидаты в делители\n        if num % d == 0:\n            count = count + 1\n    result.append(count)\n```\n\n- [Вложенные циклы](https://docs.python.org/3/tutorial/controlflow.html#for-statements)\n- [Остаток %](https://docs.python.org/3/tutorial/introduction.html#numbers)",
+        3: "```python\nresult = []\nfor num in data:\n    count = 0\n    for d in range(1, num + 1):\n        if num % ... == 0:   # TODO: остаток от деления на кого проверяем?\n            count += 1\n    result.append(count)\nreturn result\n```",
+    },
+    148: {
+        1: "В часе 3600 секунд, в минуте 60. Для 3725: сколько целых часов? 3725 // 3600 = 1. Остаток: 3725 % 3600 = 125 секунд. Минуты: 125 // 60 = 2, остаток 125 % 60 = 5. Ответ '1:2:5'.\n\nПорядок: сначала часы из всего количества, из остатка — минуты, из нового остатка — секунды. Склей ответ через двоеточия, превратив каждое число в строку `str()`.",
+        2: "```\nseconds = data[0]\nhours = seconds // 3600\nseconds = seconds % 3600        # остаток после часов\nminutes = seconds // 60\nseconds = seconds % 60          # остаток после минут\nreturn str(hours) + ':' + str(minutes) + ':' + str(seconds)\n```\n\n`//` — сколько целых раз, `%` — остаток.\n\n- [Деление и остаток](https://docs.python.org/3/tutorial/introduction.html#numbers)",
+        3: "```python\nseconds = data[0]\nhours = seconds // 3600\nseconds = seconds % 3600\nminutes = seconds // ...\nseconds = seconds % 60\nreturn str(hours) + ':' + str(minutes) + ':' + str(seconds)\n```",
+    },
+    149: {
+        1: "Подходит число, у которого **первая цифра меньше последней**: 13 (1 < 3) — да; 21 (2 > 1) — нет; 45 (4 < 5) — да. Складываем только подходящие: 13 + 45 = 58.\n\nПреврати число в строку: первая цифра — `s[0]`, последняя — `s[-1]`. Сравнивать их можно прямо как символы: для одиночных цифр порядок символов совпадает с порядком чисел ('1' < '3').",
+        2: "```\ntotal = 0\nfor num in data:\n    s = str(num)\n    if s[0] < s[-1]:    # сравнение символов-цифр работает как чисел\n        total += num\n```\n\n`s[-1]` — последний символ строки.\n\n- [Индексация строк](https://docs.python.org/3/tutorial/introduction.html#strings)",
+        3: "```python\ntotal = 0\nfor num in data:\n    s = str(num)\n    if s[0] < s[...]:   # TODO: какой индекс у последнего символа?\n        total += num\nreturn total\n```",
+    },
+    150: {
+        1: "Запись 'a3b2' читается парами «буква + цифра»: a три раза, b два раза → 'aaabb'. В паре первый символ — буква, второй (следующий за ним) — количество.\n\nИди индексами 0, 2, 4, ... (шаг 2): на i лежит буква, на i+1 — цифра. Цифру-символ преврати в число `int()`, а повторение строки делается умножением: `'a' * 3` даёт 'aaa'.",
+        2: "```\npacked = data[0]\nresult = ''\nfor i in range(0, len(packed), 2):   # i = 0, 2, 4 ...\n    letter = packed[i]\n    count = int(packed[i + 1])        # символ '3' → число 3\n    result = result + letter * count  # 'a' * 3 = 'aaa'\n```\n\n- [range с шагом](https://docs.python.org/3/library/stdtypes.html#ranges)\n- [int](https://docs.python.org/3/library/functions.html#int)",
+        3: "```python\npacked = data[0]\nresult = ''\nfor i in range(0, len(packed), 2):\n    letter = packed[i]\n    count = int(packed[...])   # TODO: где в паре лежит цифра-количество?\n    result = result + letter * count\nreturn result\n```",
     },
 }
 

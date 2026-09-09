@@ -984,6 +984,294 @@ def solve_task_120(data):
     return count
 
 
+def solve_task_121(data):
+    a = data[0]
+    b = data[1]
+    result = []
+    i = 0
+    j = 0
+    while i < len(a) and j < len(b):
+        if a[i] <= b[j]:
+            result.append(a[i])
+            i += 1
+        else:
+            result.append(b[j])
+            j += 1
+    while i < len(a):
+        result.append(a[i])
+        i += 1
+    while j < len(b):
+        result.append(b[j])
+        j += 1
+    return result
+
+
+def solve_task_122(data):
+    result = []
+    for item in data[0]:
+        if item not in data[1] and item not in result:
+            result.append(item)
+    return result
+
+
+def solve_task_123(data):
+    return sorted(data, key=len)
+
+
+def solve_task_124(data):
+    return sorted(data, key=lambda num: num % 10)
+
+
+def solve_task_125(data):
+    best_pair = (data[0], data[1])
+    best_sum = data[0] + data[1]
+    for i in range(1, len(data) - 1):
+        cur_sum = data[i] + data[i + 1]
+        if cur_sum > best_sum:
+            best_sum = cur_sum
+            best_pair = (data[i], data[i + 1])
+    return best_pair
+
+
+def solve_task_126(data):
+    result = 0
+    for num in data:
+        if num < 0:
+            return result
+        result += num
+    return result
+
+
+def solve_task_127(data):
+    result = list(data[0])
+    for i in range(len(result)):
+        if result[i] > data[1]:
+            result.insert(i, data[1])
+            return result
+    result.append(data[1])
+    return result
+
+
+def solve_task_128(data):
+    count = 0
+    for i in range(len(data)):
+        for j in range(i + 1, len(data)):
+            if data[i] > data[j]:
+                count += 1
+    return count
+
+
+def solve_task_129(data):
+    lst = data[0]
+    k = data[1]
+    best = 0
+    for i in range(k):
+        best += lst[i]
+    cur = best
+    for i in range(k, len(lst)):
+        cur = cur + lst[i] - lst[i - k]
+        if cur > best:
+            best = cur
+    return best
+
+
+def solve_task_130(data):
+    s = sorted(data)
+    n = len(s)
+    if n % 2 == 1:
+        return s[n // 2]
+    return (s[n // 2 - 1] + s[n // 2]) / 2
+
+
+def solve_task_131(data):
+    for i in range(0, len(data) - 1, 2):
+        data[i], data[i + 1] = data[i + 1], data[i]
+    return data
+
+
+def solve_task_132(data):
+    result = []
+    total = 0
+    for num in data:
+        total += num
+        result.append(total)
+    return result
+
+
+def solve_task_133(data):
+    n = data[0]
+    if n == 0:
+        return '0'
+    result = ''
+    while n > 0:
+        result = str(n % 2) + result
+        n = n // 2
+    return result
+
+
+def solve_task_134(data):
+    n = len(data) + 1
+    expected = n * (n + 1) // 2
+    return expected - sum(data)
+
+
+def solve_task_135(data):
+    word = data[0]
+    alphabet = 'abcdefghijklmnopqrstuvwxyz'
+    result = ''
+    for ch in word:
+        index = alphabet.index(ch)
+        result += alphabet[(index + 1) % 26]
+    return result
+
+
+def solve_task_136(data):
+    words = data[0].split()
+    result = []
+    for i in range(len(words) - 1, -1, -1):
+        result.append(words[i])
+    return ' '.join(result)
+
+
+def solve_task_137(data):
+    words = data[0].split()
+    result = ''
+    for word in words:
+        result += word[0]
+    return result
+
+
+def solve_task_138(data):
+    d = data[0]
+    best_key = None
+    best_value = None
+    for key in d:
+        if best_value is None or d[key] > best_value:
+            best_value = d[key]
+            best_key = key
+    return best_key
+
+
+def solve_task_139(data):
+    result = dict(data[0])
+    for key in data[1]:
+        if key in result:
+            result[key] = result[key] + data[1][key]
+        else:
+            result[key] = data[1][key]
+    return result
+
+
+def solve_task_140(data):
+    digits = str(data[0])
+    left = int(digits[0]) + int(digits[1]) + int(digits[2])
+    right = int(digits[3]) + int(digits[4]) + int(digits[5])
+    if left == right:
+        return '✅ Счастливый'
+    return '❌ Несчастливый'
+
+
+def solve_task_141(data):
+    result = []
+    for num in data:
+        if num % 15 == 0:
+            result.append('fizzbuzz')
+        elif num % 3 == 0:
+            result.append('fizz')
+        elif num % 5 == 0:
+            result.append('buzz')
+        else:
+            result.append(str(num))
+    return result
+
+
+def solve_task_142(data):
+    amount = data[0]
+    count = 0
+    for coin in [10, 5, 2, 1]:
+        count += amount // coin
+        amount = amount % coin
+    return count
+
+
+def solve_task_143(data):
+    total = 0
+    for digit in str(data[0]):
+        total += int(digit)
+    if total % 3 == 0:
+        return '✅ Делится'
+    return '❌ Не делится'
+
+
+def solve_task_144(data):
+    word = data[0]
+    count = 0
+    for i in range(len(word) - 1):
+        if word[i] == word[i + 1]:
+            count += 1
+    return count
+
+
+def solve_task_145(data):
+    max_so_far = data[0]
+    count = 1
+    for num in data[1:]:
+        if num > max_so_far:
+            max_so_far = num
+            count += 1
+    return count
+
+
+def solve_task_146(data):
+    first = data.index(0)
+    last = len(data) - 1
+    while data[last] != 0:
+        last -= 1
+    total = 0
+    for num in data[first + 1:last]:
+        total += num
+    return total
+
+
+def solve_task_147(data):
+    result = []
+    for num in data:
+        count = 0
+        for d in range(1, num + 1):
+            if num % d == 0:
+                count += 1
+        result.append(count)
+    return result
+
+
+def solve_task_148(data):
+    seconds = data[0]
+    hours = seconds // 3600
+    seconds = seconds % 3600
+    minutes = seconds // 60
+    seconds = seconds % 60
+    return str(hours) + ':' + str(minutes) + ':' + str(seconds)
+
+
+def solve_task_149(data):
+    total = 0
+    for num in data:
+        digits = str(num)
+        if digits[0] < digits[-1]:
+            total += num
+    return total
+
+
+def solve_task_150(data):
+    packed = data[0]
+    result = ''
+    for i in range(0, len(packed), 2):
+        letter = packed[i]
+        count = int(packed[i + 1])
+        result = result + letter * count
+    return result
+
+
 def solve_task_0(data):
     result = 0
     for x in data:
