@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Одноразовая загрузка курированных подсказок для заданий 0 и 81..150.
+"""Одноразовая загрузка курированных подсказок для заданий 0 и 81..175.
 
 Запуск (внутри контейнера app на Frankfurt, WORKDIR=/app):
     docker compose exec app python -m webapp.scripts.seed_hints
@@ -381,6 +381,131 @@ HINTS_DATA: dict[int, dict[int, str]] = {
         1: "Запись 'a3b2' читается парами «буква + цифра»: a три раза, b два раза → 'aaabb'. В паре первый символ — буква, второй (следующий за ним) — количество.\n\nИди индексами 0, 2, 4, ... (шаг 2): на i лежит буква, на i+1 — цифра. Цифру-символ преврати в число `int()`, а повторение строки делается умножением: `'a' * 3` даёт 'aaa'.",
         2: "```\npacked = data[0]\nresult = ''\nfor i in range(0, len(packed), 2):   # i = 0, 2, 4 ...\n    letter = packed[i]\n    count = int(packed[i + 1])        # символ '3' → число 3\n    result = result + letter * count  # 'a' * 3 = 'aaa'\n```\n\n- [range с шагом](https://docs.python.org/3/library/stdtypes.html#ranges)\n- [int](https://docs.python.org/3/library/functions.html#int)",
         3: "```python\npacked = data[0]\nresult = ''\nfor i in range(0, len(packed), 2):\n    letter = packed[i]\n    count = int(packed[...])   # TODO: где в паре лежит цифра-количество?\n    result = result + letter * count\nreturn result\n```",
+    },
+    151: {
+        1: "Общий префикс — одинаковое **начало** всех слов. У 'flower', 'flow', 'flight' это 'fl': все три слова начинаются на эти две буквы, а третья уже различается.\n\nПриём: возьми первое слово как текущий префикс и по очереди сравнивай его со следующими словами — **буква за буквой, пока совпадают**. Как только буквы разошлись или слово кончилось, префикс обрезается до совпавшей части.",
+        2: "```\nprefix = data[0]\nfor word in data[1:]:\n    i = 0\n    while i < len(prefix) and i < len(word) and prefix[i] == word[i]:\n        i = i + 1\n    prefix = prefix[:i]   # обрезаем до совпавшей части\n```\n\nУсловие цикла — три проверки сразу: не вышли за префикс, не вышли за слово, буквы равны.\n\n- [Срезы строк](https://docs.python.org/3/tutorial/introduction.html#strings)\n- [Оператор and](https://docs.python.org/3/library/stdtypes.html#boolean-operations-and-or-not)",
+        3: "```python\nprefix = data[0]\nfor word in data[1:]:\n    i = 0\n    while i < len(prefix) and i < len(word) and prefix[i] == word[...]:\n        i += 1\n    prefix = prefix[:i]\nreturn prefix\n```",
+    },
+    152: {
+        1: "Каждое слово длиннее двух букв сворачивается: первая буква + количество букв **между** первой и последней + последняя буква. 'internationalization' (20 букв) → 'i' + '18' + 'n' = 'i18n'. 'cat' (3 буквы) → 'c' + '1' + 't' = 'c1t'.\n\nКоличество «внутренних» букв — это длина минус 2: `len(word) - 2`. Число надо превратить в строку `str()`, чтобы склеивать с буквами. Слова из одной-двух букв оставь как есть.",
+        2: "```\nword = data[0]\nif len(word) <= 2:\n    return word\nreturn word[0] + str(len(word) - 2) + word[-1]\n```\n\n`word[0]` — первая буква, `word[-1]` — последняя, `str(...)` — число строкой.\n\n- [Индексация строк](https://docs.python.org/3/tutorial/introduction.html#strings)\n- [str](https://docs.python.org/3/library/functions.html#func-str)",
+        3: "```python\nword = data[0]\nif len(word) <= 2:\n    return word\nreturn word[0] + str(len(word) - ...) + word[-1]   # TODO: сколько букв «внутри»?\n```",
+    },
+    153: {
+        1: "Регистр каждой буквы меняется на противоположный: заглавные становятся строчными, строчные — заглавными. 'Hello World' → 'hELLO wORLD'. Пробелы и другие символы не трогаем.\n\nПроверить регистр можно методами `.isupper()` («заглавная?») и `.islower()`, поменять — `.upper()` и `.lower()`. Пройди по строке циклом и собери новую по буквам.",
+        2: "```\nresult = ''\nfor ch in data[0]:\n    if ch.isupper():      # заглавная — делаем строчной\n        result += ch.lower()\n    else:                 # всё остальное (вкл. строчные) — заглавной\n        result += ch.upper()\n```\n\n`' '.upper()` даёт пробел без изменений, так что пробелы не сломаются.\n\n- [Строковые методы](https://docs.python.org/3/library/stdtypes.html#string-methods)",
+        3: "```python\nresult = ''\nfor ch in data[0]:\n    if ch.isupper():\n        result += ch....()   # TODO: во что превращаем заглавную букву?\n    else:\n        result += ch.upper()\nreturn result\n```",
+    },
+    154: {
+        1: "Палиндром читается одинаково в обе стороны. Здесь пробелы **не учитываются**: сначала собери из фразы строку без пробелов, потом сравни её с разворотом.\n\n'never odd or even' без пробелов — 'neveroddoreven'. Задом наперёд — тоже 'neveroddoreven' → палиндром. А 'helloworld' наоборот — 'dlrowolleh', не совпадает.\n\nПройди по фразе циклом и дописывай в новую строку только символы, отличные от пробела. Разворот — срезом `[::-1]`.",
+        2: "```\nletters = ''\nfor ch in data[0]:\n    if ch != ' ':        # пробел пропускаем\n        letters += ch\nif letters == letters[::-1]:\n    return '✅ Палиндром'\nelse:\n    return '❌ Не палиндром'\n```\n\n- [Срезы строк](https://docs.python.org/3/tutorial/introduction.html#strings)",
+        3: "```python\nletters = ''\nfor ch in data[0]:\n    if ch != ...:   # TODO: какой символ пропускаем?\n        letters += ch\nif letters == letters[::-1]:\n    return '✅ Палиндром'\nreturn '❌ Не палиндром'\n```",
+    },
+    155: {
+        1: "Сначала посчитай, **сколько раз встречается каждый элемент** (словарём-счётчиком), потом пройди по списку ещё раз и собери те, у кого счётчик ровно k, без повторов в ответе.\n\nДля `[1, 1, 2, 2, 2, 3]` и k=2: единица встречается 2 раза — подходит; двойка 3 раза — нет; тройка 1 раз — нет → `[1]`.",
+        2: "```\ncounts = {}\nfor x in data[0]:\n    counts[x] = counts.get(x, 0) + 1\nresult = []\nfor x in data[0]:               # второй проход — порядок сохраняется\n    if counts[x] == data[1] and x not in result:\n        result.append(x)\n```\n\n`counts.get(x, 0)` — «значение по ключу x, а если ключа нет — 0».\n\n- [dict.get](https://docs.python.org/3/library/stdtypes.html#dict.get)",
+        3: "```python\ncounts = {}\nfor x in data[0]:\n    counts[x] = counts.get(x, 0) + 1\nresult = []\nfor x in data[0]:\n    if counts[x] == ... and x not in result:   # TODO: с каким счётчиком сравниваем?\n        result.append(x)\nreturn result\n```",
+    },
+    156: {
+        1: "Серия — подряд идущие одинаковые элементы. Новая серия начинается там, где элемент **отличается от предыдущего**. В `[1, 1, 2, 2, 2, 3]`: индекс 0 — начало первой серии; на индексе 2 двойка сменила единицу — новая серия; на индексе 5 тройка сменила двойку — ещё одна → `[0, 2, 5]`.\n\nПервый элемент — всегда начало серии (индекс 0). Дальше иди с индекса 1 и сравнивай элемент с предыдущим: отличается — запомни индекс.",
+        2: "```\nresult = [0]\nfor i in range(1, len(data)):\n    if data[i] != data[i - 1]:   # серия сменилась\n        result.append(i)\n```\n\n- [range](https://docs.python.org/3/library/stdtypes.html#ranges)",
+        3: "```python\nresult = [0]\nfor i in range(1, len(data)):\n    if data[i] != data[...]:   # TODO: с кем сравниваем (сосед слева)?\n        result.append(i)\nreturn result\n```",
+    },
+    157: {
+        1: "Идём по списку и собираем элементы, **пока не встретим уже виденный** — на нём останавливаемся, и его самого не берём. `[1, 2, 3, 2, 4]`: 1, 2, 3 — новые, потом снова 2 — стоп → `[1, 2, 3]`. Если повторов нет, возвращается весь список.\n\nДержи список «уже виденных»: перед тем как взять элемент, проверь, нет ли его там. Есть — сразу `return`.",
+        2: "```\nseen = []\nresult = []\nfor x in data:\n    if x in seen:        # уже видели — стоп\n        return result\n    seen.append(x)\n    result.append(x)\n```\n\nСписок `seen` копит всё встреченное; `result` здесь с ним совпадает, но их удобно держать отдельно для ясности.\n\n- [Оператор in](https://docs.python.org/3/reference/expressions.html#membership-test-operations)",
+        3: "```python\nseen = []\nresult = []\nfor x in data:\n    if x in ...:   # TODO: где ищем повтор?\n        return result\n    seen.append(x)\n    result.append(x)\nreturn result\n```",
+    },
+    158: {
+        1: "Анаграммы — слова из одних и тех же букв ('cat' и 'tac'). Хитрость: если отсортировать буквы слова, у всех анаграмм получится **одна и та же строка-ключ**: и 'cat', и 'tac' → 'act'.\n\nИди по словам и для каждого строй ключ из отсортированных букв. Если такой ключ уже встречался — добавь слово в его группу; нет — заведи новую группу. Группы возвращаются в порядке первых появлений.",
+        2: "```\nkeys = []       # отсортированные буквы — ключи групп\ngroups = []     # сами группы слов\nfor word in data:\n    key = ''.join(sorted(word))\n    if key in keys:\n        index = keys.index(key)\n        groups[index].append(word)\n    else:\n        keys.append(key)\n        groups.append([word])\n```\n\n`sorted('cat')` даёт `['a', 'c', 't']`, а `''.join(...)` склеивает буквы в 'act'. Позиция ключа в `keys` — номер его группы в `groups`.\n\n- [sorted](https://docs.python.org/3/howto/sorting.html)\n- [join](https://docs.python.org/3/library/stdtypes.html#str.join)",
+        3: "```python\nkeys = []\ngroups = []\nfor word in data:\n    key = ''.join(sorted(word))\n    if key in keys:\n        index = keys.index(key)\n        groups[index].append(...)\n    else:\n        keys.append(key)\n        groups.append([...])\nreturn groups\n```",
+    },
+    159: {
+        1: "Нужны буквы, которые есть **в обоих** словах; в ответе каждая — по одному разу, порядок алфавитный. 'hello' и 'world': общие l и o → `['l', 'o']`.\n\nПриём: возьми буквы первого слова и **отсортируй** (алфавитный порядок готов сам собой), потом добавляй в результат те, что есть во втором слове, пропуская повторы.",
+        2: "```\nresult = []\nfor ch in sorted(data[0]):     # сразу по алфавиту\n    if ch in data[1] and ch not in result:\n        result.append(ch)\n```\n\n`sorted('hello')` даёт `['e', 'h', 'l', 'l', 'o']` — повторы отсеивает проверка `not in result`.\n\n- [sorted](https://docs.python.org/3/howto/sorting.html)",
+        3: "```python\nresult = []\nfor ch in sorted(data[0]):\n    if ch in ... and ch not in result:   # TODO: в каком слове буква должна быть?\n        result.append(ch)\nreturn result\n```",
+    },
+    160: {
+        1: "Подходят элементы, которые есть **во всех трёх** списках. `[1, 2, 3]`, `[2, 3, 4]`, `[3, 2, 9]`: двойка есть везде и тройка есть везде → `[2, 3]`. Порядок — как в первом списке, без повторов в ответе.\n\nИди по первому списку и для каждого элемента проверяй сразу два вхождения: во второй список и в третий.",
+        2: "```\nresult = []\nfor x in data[0]:\n    if x in data[1] and x in data[2] and x not in result:\n        result.append(x)\n```\n\nТри проверки через `and`: во втором, в третьем и ещё не в результате.\n\n- [Оператор in](https://docs.python.org/3/reference/expressions.html#membership-test-operations)",
+        3: "```python\nresult = []\nfor x in data[0]:\n    if x in data[1] and x in ... and x not in result:\n        result.append(x)\nreturn result\n```",
+    },
+    161: {
+        1: "Вход — список списков («матрица»). Для каждого вложенного списка нужна его сумма: `[[1, 2], [3, 4, 5], [1]]` → `[3, 12, 1]`.\n\nДва вложенных цикла: внешний идёт по строкам, внутренний складывает числа текущей строки в аккумулятор. Сумма каждой строки кладётся в результат.",
+        2: "```\nresult = []\nfor row in data:\n    total = 0\n    for num in row:      # числа одной строки\n        total += num\n    result.append(total)\n```\n\nАккумулятор `total` обнуляется на каждой строке — поэтому он внутри внешнего цикла.\n\n- [Вложенные циклы](https://docs.python.org/3/tutorial/controlflow.html#for-statements)",
+        3: "```python\nresult = []\nfor row in data:\n    total = ...\n    for num in row:\n        total += num\n    result.append(total)\nreturn result\n```",
+    },
+    162: {
+        1: "Транспонирование — строки становятся столбцами: `[[1, 2], [3, 4], [5, 6]]` → `[[1, 3, 5], [2, 4, 6]]`. Первый столбец (1, 3, 5) становится первой строкой.\n\nИди по **номерам столбцов** j первой строки; для каждого j собери список из элементов `data[i][j]` по всем строкам i. Собранные столбцы и есть результат.",
+        2: "```\nresult = []\nfor j in range(len(data[0])):     # номера столбцов\n    column = []\n    for i in range(len(data)):     # спуск по строкам\n        column.append(data[i][j])\n    result.append(column)\n```\n\nПервый индекс — номер строки, второй — столбца: `data[i][j]` — элемент строки i на столбце j.\n\n- [Вложенные циклы](https://docs.python.org/3/tutorial/controlflow.html#for-statements)",
+        3: "```python\nresult = []\nfor j in range(len(data[0])):\n    column = []\n    for i in range(len(data)):\n        column.append(data[...][j])   # TODO: какой индекс — номер строки?\n    result.append(column)\nreturn result\n```",
+    },
+    163: {
+        1: "Скобки сбалансированы, если каждой открывающей находится своя закрывающая и ни одна закрывающая не встретилась раньше своей открывающей. '(()())' — ок; '(()' — одна осталась без пары; ')(' — закрывающая пришла раньше открывающей.\n\nПриём «баланс»: держи счётчик. Открывающая — прибавь 1, закрывающая — вычти 1. Если баланс стал **отрицательным** — сразу «нет». В конце баланс должен быть ровно 0.",
+        2: "```\nbalance = 0\nfor ch in data[0]:\n    if ch == '(':\n        balance += 1\n    if ch == ')':\n        balance -= 1\n    if balance < 0:            # закрывающая без пары\n        return '❌ Несбалансированы'\nif balance == 0:\n    return '✅ Сбалансированы'\nreturn '❌ Несбалансированы'\n```\n\n- [Условия](https://docs.python.org/3/tutorial/controlflow.html#if-statements)",
+        3: "```python\nbalance = 0\nfor ch in data[0]:\n    if ch == '(':\n        balance += 1\n    if ch == ')':\n        balance -= ...\n    if balance < 0:\n        return '❌ Несбалансированы'\nif balance == ...:   # TODO: каким должен быть баланс в конце?\n    return '✅ Сбалансированы'\nreturn '❌ Несбалансированы'\n```",
+    },
+    164: {
+        1: "Обратная задача к разворачиванию 'a3b2': теперь серии одинаковых букв надо **сжать** в «буква + количество». 'aaabb' → 'a3b2'; одиночная буква даёт 'b1'.\n\nИди по слову и следи за текущей серией: помни текущую букву и её счётчик. Буква повторилась — увеличь счётчик; сменилась — допиши в результат «буква + str(счётчик)» и начни новую серию. Последнюю серию надо дописать после цикла.",
+        2: "```\nword = data[0]\nresult = ''\ncurrent = word[0]\ncount = 1\nfor ch in word[1:]:\n    if ch == current:\n        count += 1\n    else:\n        result = result + current + str(count)\n        current = ch\n        count = 1\nresult = result + current + str(count)   # последняя серия\n```\n\n- [str](https://docs.python.org/3/library/functions.html#func-str)",
+        3: "```python\nword = data[0]\nresult = ''\ncurrent = word[0]\ncount = 1\nfor ch in word[1:]:\n    if ch == current:\n        count += 1\n    else:\n        result = result + current + str(count)\n        current = ch\n        count = ...\nresult = result + current + str(count)\nreturn result\n```",
+    },
+    165: {
+        1: "Из фразы берутся только слова, начинающиеся с **заглавной** буквы, и из их первых букв собирается аббревиатура: 'Hello world Foo bar' → слова с заглавной — Hello и Foo → 'HF'.\n\nШаги: разбей фразу методом `.split()`, для каждого слова проверь первую букву методом `.isupper()`, подходящие первые буквы дописывай в строку-аккумулятор.",
+        2: "```\nresult = ''\nfor word in data[0].split():\n    if word[0].isupper():    # начинается с заглавной\n        result += word[0]\n```\n\n- [split](https://docs.python.org/3/library/stdtypes.html#str.split)\n- [Строковые методы](https://docs.python.org/3/library/stdtypes.html#string-methods)",
+        3: "```python\nresult = ''\nfor word in data[0].split():\n    if word[...].isupper():   # TODO: какая буква слова нас интересует?\n        result += word[0]\nreturn result\n```",
+    },
+    166: {
+        1: "Из цифр нужно составить **самое большое** число: `[1, 9, 3]` → 931. Для этого цифры расставляют по убыванию, склеивают в строку, а строку превращают в число.\n\nШаги: отсортируй список по убыванию (`sorted(..., reverse=True)`), собери строку из цифр (каждую через `str()`), в конце — `int()` от всей строки.",
+        2: "```\ndigits = sorted(data, reverse=True)   # от большей к меньшей\nresult = ''\nfor d in digits:\n    result += str(d)\nreturn int(result)                    # строка '931' → число 931\n```\n\n- [sorted и reverse](https://docs.python.org/3/howto/sorting.html)\n- [int](https://docs.python.org/3/library/functions.html#int)",
+        3: "```python\ndigits = sorted(data, reverse=...)\nresult = ''\nfor d in digits:\n    result += str(d)\nreturn int(result)\n```",
+    },
+    167: {
+        1: "Каждый символ в компьютере имеет код — число. Функция `ord()` даёт код буквы: `ord('a')` = 97, `ord('b')` = 98, `ord('c')` = 99.\n\nНужно сложить коды всех букв слова: 'abc' → 97 + 98 + 99 = 294. Пройди по слову циклом и прибавляй `ord(буквы)` к аккумулятору.",
+        2: "```\ntotal = 0\nfor ch in data[0]:\n    total += ord(ch)\n```\n\nОбратная функция — `chr(97)` даёт 'a'.\n\n- [ord](https://docs.python.org/3/library/functions.html#ord)",
+        3: "```python\ntotal = 0\nfor ch in data[0]:\n    total += ...(ch)   # TODO: какая функция даёт код символа?\nreturn total\n```",
+    },
+    168: {
+        1: "Степень — это умножение много раз: 2 в 10-й = 2·2·…·2 (десять раз) = 1024. Оператор `**` запрещён, но он и не нужен: заведи аккумулятор, равный 1, и умножай его на основание **n раз** циклом.\n\nОснование лежит в `data[0]`, показатель — в `data[1]`. Степень 0 даёт 1 — аккумулятор с единицы это и обеспечивает.",
+        2: "```\nresult = 1\nfor _ in range(data[1]):     # ровно n повторов\n    result = result * data[0]\n```\n\n`_` — обычное имя переменной для значения, которое внутри цикла не нужно.\n\n- [range](https://docs.python.org/3/library/stdtypes.html#ranges)",
+        3: "```python\nresult = 1\nfor _ in range(data[...]):   # TODO: сколько раз умножаем?\n    result = result * data[0]\nreturn result\n```",
+    },
+    169: {
+        1: "Последовательность Фибоначчи: 0, 1, 1, 2, 3, 5, 8, 13... Каждое следующее число — сумма двух предыдущих. Нужно n-е число (нумерация с нуля: 0-е = 0, 1-е = 1, 7-е = 13).\n\nДержи две переменные `a` и `b` — два соседних числа. Каждый шаг сдвигает пару вперёд: `a, b = b, a + b`. После нужного числа шагов ответ в `b`.",
+        2: "```\nn = data[0]\nif n == 0:\n    return 0\na = 0\nb = 1\nfor _ in range(n - 1):\n    a, b = b, a + b    # сдвиг пары вперёд\nreturn b\n```\n\nПрогон для n=7: (0,1) → (1,1) → (1,2) → (2,3) → (3,5) → (5,8) → (8,13) → ответ 13.\n\n- [Присваивание кортежей](https://docs.python.org/3/tutorial/datastructures.html#tuples-and-sequences)",
+        3: "```python\nn = data[0]\nif n == 0:\n    return 0\na = 0\nb = 1\nfor _ in range(n - 1):\n    a, b = b, ...   # TODO: чем становится новое a?\nreturn b\n```",
+    },
+    170: {
+        1: "Сложить числа от 1 до n, **кроме** кратных 3 и кратных 5. Для n=10: вычёркиваем 3, 5, 6, 9 и 10 — остаются 1, 2, 4, 7, 8, их сумма 22.\n\n«Не кратно ни 3, ни 5» — это два условия сразу: `num % 3 != 0 and num % 5 != 0`. Иди циклом `range(1, n + 1)` и прибавляй только подходящие.",
+        2: "```\ntotal = 0\nfor num in range(1, data[0] + 1):\n    if num % 3 != 0 and num % 5 != 0:\n        total += num\n```\n\n`range(1, n + 1)` даёт числа от 1 до n включительно.\n\n- [range](https://docs.python.org/3/library/stdtypes.html#ranges)\n- [Оператор and](https://docs.python.org/3/library/stdtypes.html#boolean-operations-and-or-not)",
+        3: "```python\ntotal = 0\nfor num in range(1, data[0] + 1):\n    if num % 3 != 0 and num % ... != 0:   # TODO: кратность чему ещё проверяем?\n        total += num\nreturn total\n```",
+    },
+    171: {
+        1: "Считаем, сколько раз число можно поделить нацело на 2, пока не получится 1: 13 → 6 → 3 → 1 — это 3 деления. Единице деления не нужны (0 шагов).\n\nЦикл `while n > 1`: внутри делим нацело `n = n // 2` и увеличиваем счётчик.",
+        2: "```\nn = data[0]\ncount = 0\nwhile n > 1:\n    n = n // 2\n    count += 1\n```\n\n- [while](https://docs.python.org/3/tutorial/introduction.html#first-steps-towards-programming)\n- [Деление нацело](https://docs.python.org/3/tutorial/introduction.html#numbers)",
+        3: "```python\nn = data[0]\ncount = 0\nwhile n > ...:   # TODO: до какого значения делим?\n    n = n // 2\n    count += 1\nreturn count\n```",
+    },
+    172: {
+        1: "Перевод двоичной записи в число: строка '1101' — это 1·8 + 1·4 + 0·2 + 1·1 = 13.\n\nПриём без степеней: держи аккумулятор-число и иди по символам слева направо; на каждом шаге **умножай накопленное на 2 и прибавляй текущую цифру**. Прогон для '1101': 0 → 1 → 3 → 6 → 13.\n\nЦифру-символ превращай в число через `int()`.",
+        2: "```\nnumber = 0\nfor ch in data[0]:\n    number = number * 2 + int(ch)\n```\n\n- [int](https://docs.python.org/3/library/functions.html#int)",
+        3: "```python\nnumber = 0\nfor ch in data[0]:\n    number = number * ... + int(ch)   # TODO: на что умножаем накопленное?\nreturn number\n```",
+    },
+    173: {
+        1: "Число Армстронга равно сумме **кубов своих цифр**: 153 = 1³ + 5³ + 3³ = 1 + 125 + 27. А 154 не подходит: 1 + 125 + 64 = 190.\n\nПреврати число в строку, пройди по цифрам (каждую через `int()`), прибавляй её куб (`** 3`), в конце сравни сумму с самим числом.",
+        2: "```\nn = data[0]\ntotal = 0\nfor digit in str(n):\n    total = total + int(digit) ** 3\nif total == n:\n    return '✅ Число Армстронга'\nelse:\n    return '❌ Не число Армстронга'\n```\n\n- [str и int](https://docs.python.org/3/library/functions.html#func-str)",
+        3: "```python\nn = data[0]\ntotal = 0\nfor digit in str(n):\n    total = total + int(digit) ** ...\nif total == n:\n    return '✅ Число Армстронга'\nreturn '❌ Не число Армстронга'\n```",
+    },
+    174: {
+        1: "Вход — список из трёх элементов: число, операция-строка, число: `[3, '+', 4]` → 7. Операции: '+', '-', '*', '/'.\n\nДостань элементы по индексам (`data[0][0]`, `data[0][1]`, `data[0][2]`) и выбери действие цепочкой `if`. Деление — обычное `/`, даёт дробное: 9 / 2 = 4.5.",
+        2: "```\na = data[0][0]\nop = data[0][1]\nb = data[0][2]\nif op == '+':\n    return a + b\nif op == '-':\n    return a - b\nif op == '*':\n    return a * b\nreturn a / b\n```\n\nСравнение строк — тоже через `==`.\n\n- [Условия](https://docs.python.org/3/tutorial/controlflow.html#if-statements)",
+        3: "```python\na = data[0][0]\nop = data[0][1]\nb = data[0][2]\nif op == '+':\n    return a + b\nif op == ...:   # TODO: какие ещё операции надо разобрать?\n    return a - b\nif op == '*':\n    return a * b\nreturn a / b\n```",
+    },
+    175: {
+        1: "Нужны **разные** буквы слова, каждая по одному разу, в алфавитном порядке: 'banana' → `['a', 'b', 'n']`.\n\nПриём: отсортируй буквы слова через `sorted(...)` — одинаковые встанут рядом, и алфавитный порядок готов сам собой. Дальше иди по ним и добавляй букву, только если такой в результате ещё нет.",
+        2: "```\nresult = []\nfor ch in sorted(data[0]):\n    if ch not in result:   # такая буква уже была\n        result.append(ch)\n```\n\nПосле `sorted` повторы идут подряд, поэтому можно сравнивать и с последней добавленной — но проверка `not in` проще.\n\n- [sorted](https://docs.python.org/3/howto/sorting.html)",
+        3: "```python\nresult = []\nfor ch in sorted(data[0]):\n    if ch not in ...:   # TODO: где проверяем, что буква новая?\n        result.append(ch)\nreturn result\n```",
     },
 }
 

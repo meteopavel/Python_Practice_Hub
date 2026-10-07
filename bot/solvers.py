@@ -1272,6 +1272,249 @@ def solve_task_150(data):
     return result
 
 
+def solve_task_151(data):
+    prefix = data[0]
+    for word in data[1:]:
+        i = 0
+        while i < len(prefix) and i < len(word) and prefix[i] == word[i]:
+            i += 1
+        prefix = prefix[:i]
+    return prefix
+
+
+def solve_task_152(data):
+    word = data[0]
+    if len(word) <= 2:
+        return word
+    return word[0] + str(len(word) - 2) + word[-1]
+
+
+def solve_task_153(data):
+    result = ''
+    for ch in data[0]:
+        if ch.isupper():
+            result += ch.lower()
+        else:
+            result += ch.upper()
+    return result
+
+
+def solve_task_154(data):
+    letters = ''
+    for ch in data[0]:
+        if ch != ' ':
+            letters += ch
+    if letters == letters[::-1]:
+        return '✅ Палиндром'
+    return '❌ Не палиндром'
+
+
+def solve_task_155(data):
+    counts = {}
+    for x in data[0]:
+        counts[x] = counts.get(x, 0) + 1
+    result = []
+    for x in data[0]:
+        if counts[x] == data[1] and x not in result:
+            result.append(x)
+    return result
+
+
+def solve_task_156(data):
+    result = [0]
+    for i in range(1, len(data)):
+        if data[i] != data[i - 1]:
+            result.append(i)
+    return result
+
+
+def solve_task_157(data):
+    seen = []
+    result = []
+    for x in data:
+        if x in seen:
+            return result
+        seen.append(x)
+        result.append(x)
+    return result
+
+
+def solve_task_158(data):
+    keys = []
+    groups = []
+    for word in data:
+        key = ''.join(sorted(word))
+        if key in keys:
+            index = keys.index(key)
+            groups[index].append(word)
+        else:
+            keys.append(key)
+            groups.append([word])
+    return groups
+
+
+def solve_task_159(data):
+    result = []
+    for ch in sorted(data[0]):
+        if ch in data[1] and ch not in result:
+            result.append(ch)
+    return result
+
+
+def solve_task_160(data):
+    result = []
+    for x in data[0]:
+        if x in data[1] and x in data[2] and x not in result:
+            result.append(x)
+    return result
+
+
+def solve_task_161(data):
+    result = []
+    for row in data:
+        total = 0
+        for num in row:
+            total += num
+        result.append(total)
+    return result
+
+
+def solve_task_162(data):
+    result = []
+    for j in range(len(data[0])):
+        column = []
+        for i in range(len(data)):
+            column.append(data[i][j])
+        result.append(column)
+    return result
+
+
+def solve_task_163(data):
+    balance = 0
+    for ch in data[0]:
+        if ch == '(':
+            balance += 1
+        if ch == ')':
+            balance -= 1
+        if balance < 0:
+            return '❌ Несбалансированы'
+    if balance == 0:
+        return '✅ Сбалансированы'
+    return '❌ Несбалансированы'
+
+
+def solve_task_164(data):
+    word = data[0]
+    result = ''
+    current = word[0]
+    count = 1
+    for ch in word[1:]:
+        if ch == current:
+            count += 1
+        else:
+            result = result + current + str(count)
+            current = ch
+            count = 1
+    result = result + current + str(count)
+    return result
+
+
+def solve_task_165(data):
+    result = ''
+    for word in data[0].split():
+        if word[0].isupper():
+            result += word[0]
+    return result
+
+
+def solve_task_166(data):
+    digits = sorted(data, reverse=True)
+    result = ''
+    for d in digits:
+        result += str(d)
+    return int(result)
+
+
+def solve_task_167(data):
+    total = 0
+    for ch in data[0]:
+        total += ord(ch)
+    return total
+
+
+def solve_task_168(data):
+    result = 1
+    for _ in range(data[1]):
+        result = result * data[0]
+    return result
+
+
+def solve_task_169(data):
+    n = data[0]
+    if n == 0:
+        return 0
+    a = 0
+    b = 1
+    for _ in range(n - 1):
+        a, b = b, a + b
+    return b
+
+
+def solve_task_170(data):
+    total = 0
+    for num in range(1, data[0] + 1):
+        if num % 3 != 0 and num % 5 != 0:
+            total += num
+    return total
+
+
+def solve_task_171(data):
+    n = data[0]
+    count = 0
+    while n > 1:
+        n = n // 2
+        count += 1
+    return count
+
+
+def solve_task_172(data):
+    number = 0
+    for ch in data[0]:
+        number = number * 2 + int(ch)
+    return number
+
+
+def solve_task_173(data):
+    n = data[0]
+    total = 0
+    for digit in str(n):
+        total += int(digit) ** 3
+    if total == n:
+        return '✅ Число Армстронга'
+    return '❌ Не число Армстронга'
+
+
+def solve_task_174(data):
+    a = data[0][0]
+    op = data[0][1]
+    b = data[0][2]
+    if op == '+':
+        return a + b
+    if op == '-':
+        return a - b
+    if op == '*':
+        return a * b
+    return a / b
+
+
+def solve_task_175(data):
+    result = []
+    for ch in sorted(data[0]):
+        if ch not in result:
+            result.append(ch)
+    return result
+
+
 def solve_task_0(data):
     result = 0
     for x in data:
