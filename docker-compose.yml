@@ -2,6 +2,13 @@ services:
   app:
     build: .
     restart: unless-stopped
+    # ВРЕМЕННЫЙ ПИН (outage 2026-10-14): после переезда сервера БД на таймвебе
+    # DNS vh430.timeweb.ru сломан — A-запись ведёт на посторонний адрес, AAAA
+    # (приоритетный для getaddrinfo) в никуда, pymysql получал errno 101.
+    # Пинем актуальный IP БД из /etc/hosts контейнера. Убрать, когда
+    # vh430.timeweb.ru снова начнёт резолвиться корректно.
+    extra_hosts:
+      - "vh430.timeweb.ru:87.249.38.34"
     environment:
       - EXECUTOR_URL=${EXECUTOR_URL}
       - TUTOR_LLM_URL=${TUTOR_LLM_URL}
