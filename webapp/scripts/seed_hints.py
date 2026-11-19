@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Одноразовая загрузка курированных подсказок для заданий 0 и 81..175.
+"""Одноразовая загрузка курированных подсказок для заданий 0 и 81..200.
 
 Запуск (внутри контейнера app на Frankfurt, WORKDIR=/app):
     docker compose exec app python -m webapp.scripts.seed_hints
@@ -506,6 +506,131 @@ HINTS_DATA: dict[int, dict[int, str]] = {
         1: "Нужны **разные** буквы слова, каждая по одному разу, в алфавитном порядке: 'banana' → `['a', 'b', 'n']`.\n\nПриём: отсортируй буквы слова через `sorted(...)` — одинаковые встанут рядом, и алфавитный порядок готов сам собой. Дальше иди по ним и добавляй букву, только если такой в результате ещё нет.",
         2: "```\nresult = []\nfor ch in sorted(data[0]):\n    if ch not in result:   # такая буква уже была\n        result.append(ch)\n```\n\nПосле `sorted` повторы идут подряд, поэтому можно сравнивать и с последней добавленной — но проверка `not in` проще.\n\n- [sorted](https://docs.python.org/3/howto/sorting.html)",
         3: "```python\nresult = []\nfor ch in sorted(data[0]):\n    if ch not in ...:   # TODO: где проверяем, что буква новая?\n        result.append(ch)\nreturn result\n```",
+    },
+    176: {
+        1: "Пароль подходит, если выполнены **все три правила**: длина не меньше 8, есть хотя бы одна заглавная буква, есть хотя бы одна цифра. 'Passw0rd' — 9 символов, есть 'P' и '0' → подходит. 'password' — нет ни заглавной, ни цифры → нет.\n\nПроверяй правила по отдельности: длину — сразу через `len()`, а заглавную и цифру — двумя «флажками» (`has_upper`, `has_digit`), которые переключаются в True при первом подходящем символе.",
+        2: "```\npassword = data[0]\nif len(password) < 8:\n    return '❌ Не подходит'\nhas_upper = False\nhas_digit = False\nfor ch in password:\n    if ch.isupper():\n        has_upper = True\n    if ch.isdigit():\n        has_digit = True\n```\n\nПосле цикла верни '✅ Подходит', только если оба флажка True (`has_upper and has_digit`).\n\n- [Строковые методы](https://docs.python.org/3/library/stdtypes.html#string-methods)",
+        3: "```python\npassword = data[0]\nif len(password) < 8:\n    return '❌ Не подходит'\nhas_upper = False\nhas_digit = False\nfor ch in password:\n    if ch.isupper():\n        has_upper = True\n    if ch....():   # TODO: какой метод проверяет цифру?\n        has_digit = True\nif has_upper and has_digit:\n    return '✅ Подходит'\nreturn '❌ Не подходит'\n```",
+    },
+    177: {
+        1: "Нужны только цифры, всё остальное (пробелы, +, -) выбрасывается: '+7 999 123-45-67' → '79991234567'.\n\nИди по строке циклом и дописывай в результат символ, только если он цифра. Проверить «цифра ли» умеет метод `.isdigit()`: `'5'.isdigit()` — True, `'+'.isdigit()` — False.",
+        2: "```\nresult = ''\nfor ch in data[0]:\n    if ch.isdigit():\n        result += ch\n```\n\n- [isdigit](https://docs.python.org/3/library/stdtypes.html#str.isdigit)",
+        3: "```python\nresult = ''\nfor ch in data[0]:\n    if ch....():   # TODO: какой метод распознаёт цифру?\n        result += ch\nreturn result\n```",
+    },
+    178: {
+        1: "Хэштег строится из фразы так: каждое слово с заглавной буквы, все слитно, впереди '#'. 'hello big world' → '#HelloBigWorld'.\n\nШаги: разбей фразу `.split()`, к каждому слову примени `.capitalize()`, дописывай в строку-аккумулятор, которая начинается с '#'.",
+        2: "```\nresult = '#'\nfor word in data[0].split():\n    result += word.capitalize()\n```\n\n- [split](https://docs.python.org/3/library/stdtypes.html#str.split)\n- [capitalize](https://docs.python.org/3/library/stdtypes.html#str.capitalize)",
+        3: "```python\nresult = '#'\nfor word in data[0].split():\n    result += word....()   # TODO: какой метод делает первую букву заглавной?\nreturn result\n```",
+    },
+    179: {
+        1: "Из 'pavel@mail.ru' надо получить 'p****@mail.ru': имя маскируется — первая буква остаётся, остальные становятся звёздочками (по одной на каждый скрытый символ), домен с @ не меняется.\n\nНайди позицию '@' методом `.index('@')`. Срез до неё — имя, с неё — домен. Звёздочки нужной длины даёт умножение: `'*' * 4` — '****'.",
+        2: "```\nemail = data[0]\nat_index = email.index('@')\nname = email[:at_index]      # всё до @\ndomain = email[at_index:]    # @ и домен\nresult = name[0] + '*' * (len(name) - 1) + domain\n```\n\nДлина звёздочек — все символы имени, кроме первого.\n\n- [index и срезы](https://docs.python.org/3/tutorial/introduction.html#strings)",
+        3: "```python\nemail = data[0]\nat_index = email.index('@')\nname = email[:at_index]\ndomain = email[at_index:]\nreturn name[0] + '*' * (len(name) - ...) + domain   # TODO: сколько звёздочек?\n```",
+    },
+    180: {
+        1: "Строка '12,34,56' — это числа, записанные через запятую. Их нужно превратить в список и сложить: 12 + 34 + 56 = 102.\n\nРазбей строку методом `.split(',')` (разделитель — запятая), каждое кусочек преврати в число `int()` и прибавь к аккумулятору. Не забудь: '12' — строка, а складывать надо числа.",
+        2: "```\ntotal = 0\nfor part in data[0].split(','):\n    total += int(part)   # '12' → 12\n```\n\n- [split с разделителем](https://docs.python.org/3/library/stdtypes.html#str.split)\n- [int](https://docs.python.org/3/library/functions.html#int)",
+        3: "```python\ntotal = 0\nfor part in data[0].split(','):\n    total += ...(part)   # TODO: как строку превратить в число?\nreturn total\n```",
+    },
+    181: {
+        1: "Адрес вида '192.168.0.1' корректен, если в нём **ровно четыре части** и каждая — число от 0 до 255. '300.1.1.1' не подходит (300 > 255), '1.2.3' — частей только три.\n\nШаги: разбей строку `.split('.')`; проверь, что частей ровно 4 (иначе сразу «нет»); для каждой части проверь, что она состоит только из цифр (`.isdigit()`), и что число не больше 255.",
+        2: "```\nparts = data[0].split('.')\nif len(parts) != 4:\n    return '❌ Некорректный'\nfor part in parts:\n    if not part.isdigit():\n        return '❌ Некорректный'\n    if int(part) > 255:\n        return '❌ Некорректный'\nreturn '✅ Корректный'\n```\n\n`isdigit()` нужен, чтобы отсечь пустые кусочки и мусор вроде '1a'.\n\n- [isdigit](https://docs.python.org/3/library/stdtypes.html#str.isdigit)",
+        3: "```python\nparts = data[0].split('.')\nif len(parts) != ...:   # TODO: сколько частей у IPv4?\n    return '❌ Некорректный'\nfor part in parts:\n    if not part.isdigit():\n        return '❌ Некорректный'\n    if int(part) > ...:   # TODO: какой максимум у части?\n        return '❌ Некорректный'\nreturn '✅ Корректный'\n```",
+    },
+    182: {
+        1: "Нужна первая буква, которая встречается в слове **ровно один раз**: в 'aabbcdd' это 'c' (a и b по два раза, d тоже). Если такой буквы нет — верни пустую строку ''.\n\nДва прохода: сначала словарём-счётчиком посчитай, сколько раз встречается каждая буква; потом иди по слову с начала и верни первую, у которой счётчик равен 1.",
+        2: "```\nword = data[0]\ncounts = {}\nfor ch in word:\n    counts[ch] = counts.get(ch, 0) + 1\nfor ch in word:              # второй проход — порядок сохраняется\n    if counts[ch] == 1:\n        return ch\nreturn ''                    # уникальной буквы нет\n```\n\n- [dict.get](https://docs.python.org/3/library/stdtypes.html#dict.get)",
+        3: "```python\nword = data[0]\ncounts = {}\nfor ch in word:\n    counts[ch] = counts.get(ch, 0) + 1\nfor ch in word:\n    if counts[ch] == ...:   # TODO: какой счётчик у «один раз»?\n        return ch\nreturn ''\n```",
+    },
+    183: {
+        1: "Слова расставляются по количеству гласных: у 'sky' гласных 0, у 'cat' — 1, у 'banana' — 3 → `['sky', 'cat', 'banana']`.\n\nДля `sorted()` нужен параметр `key` — функция, дающая «величину для сравнения». Напиши **свою функцию** `vowel_count(word)`, которая считает гласные циклом, и передай её в key без скобок.",
+        2: "```\ndef vowel_count(word):\n    vowels = 'aeiou'\n    count = 0\n    for ch in word:\n        if ch in vowels:\n            count += 1\n    return count\n\nreturn sorted(data, key=vowel_count)\n```\n\n`key=vowel_count` без скобок — передаём саму функцию, Python вызовет её для каждого слова.\n\n- [Сортировка и key](https://docs.python.org/3/howto/sorting.html#key-functions)",
+        3: "```python\ndef vowel_count(word):\n    vowels = 'aeiou'\n    count = 0\n    for ch in word:\n        if ch in ...:   # TODO: где ищем букву?\n            count += 1\n    return count\n\nreturn sorted(data, key=vowel_count)\n```",
+    },
+    184: {
+        1: "В Скрабле у каждой буквы своя цена: частые буквы дешёвые (a, e — по 1), редкие дорогие (q, z — по 10). Слово стоит сумму цен своих букв: 'cat' = c(3) + a(1) + t(1) = 5.\n\nЗаведи **словарь-таблицу** `scores` с ценами всех 26 букв и в цикле прибавляй `scores[буква]` к аккумулятору.",
+        2: "```\nscores = {'a': 1, 'b': 3, 'c': 3, 'd': 2, 'e': 1, ...}\ntotal = 0\nfor ch in data[0]:\n    total += scores[ch]   # цена буквы из таблицы\n```\n\n(Таблицу скопируй из условия: a=1, b=3, c=3, d=2, e=1, f=4, g=2, h=4, i=1, j=8, k=5, l=1, m=3, n=1, o=1, p=3, q=10, r=1, s=1, t=1, u=1, v=4, w=4, x=8, y=4, z=10.)\n\n- [Словари](https://docs.python.org/3/tutorial/datastructures.html#dictionaries)",
+        3: "```python\nscores = {'a': 1, 'b': 3, ...}\ntotal = 0\nfor ch in data[0]:\n    total += scores[...]   # TODO: как достать цену буквы из таблицы?\nreturn total\n```",
+    },
+    185: {
+        1: "Каждая буква переводится в свой код Морзе: s — '...', o — '---'. Слово 'sos' → '... --- ...' (коды через пробел).\n\nЗаведи **словарь-таблицу** `morse` с кодами всех 26 букв (есть в любых шпаргалках Морзе). Иди по слову, собирай коды в список, а в конце склей их через пробел методом `' '.join(...)`.",
+        2: "```\nmorse = {'a': '.-', 'b': '-...', 'c': '-.-.', 'd': '-..', 'e': '.', ...}\ncodes = []\nfor ch in data[0]:\n    codes.append(morse[ch])\nreturn ' '.join(codes)\n```\n\n- [join](https://docs.python.org/3/library/stdtypes.html#str.join)\n- [Словари](https://docs.python.org/3/tutorial/datastructures.html#dictionaries)",
+        3: "```python\nmorse = {'a': '.-', 'b': '-...', ...}\ncodes = []\nfor ch in data[0]:\n    codes.append(morse[...])   # TODO: как достать код буквы?\nreturn ' '.join(codes)\n```",
+    },
+    186: {
+        1: "Шифр A1Z26 заменяет букву её номером: a=1, b=2, ..., z=26. Слово 'cab' → c(3) a(1) b(2) → '3 1 2' (номера через пробел).\n\nЗапиши алфавит строкой `'abcdefghijklmnopqrstuvwxyz'`. Номер буквы даст `.index(ch)` — но индексация с нуля, поэтому прибавь 1. Номера превращай в строки `str()` и склеи через пробел `' '.join(...)`.",
+        2: "```\nalphabet = 'abcdefghijklmnopqrstuvwxyz'\ncodes = []\nfor ch in data[0]:\n    codes.append(str(alphabet.index(ch) + 1))\nreturn ' '.join(codes)\n```\n\n`alphabet.index('c')` — 2 (позиция с нуля), значит буква c — номер 3.\n\n- [str.index](https://docs.python.org/3/library/stdtypes.html#str.index)\n- [join](https://docs.python.org/3/library/stdtypes.html#str.join)",
+        3: "```python\nalphabet = 'abcdefghijklmnopqrstuvwxyz'\ncodes = []\nfor ch in data[0]:\n    codes.append(str(alphabet.index(ch) + ...))   # TODO: почему +1?\nreturn ' '.join(codes)\n```",
+    },
+    187: {
+        1: "Римские цифры: I=1, V=5, X=10, L=50, C=100, D=500, M=1000. Обычно буквы складываются, но если **меньшая стоит перед большей** — она вычитается: XIV = X(10) + IV(4) = 14, потому что I(1) стоит перед V(5).\n\nИди по строке и сравнивай букву со следующей: следующая больше — вычитай текущую из следующей и перескакивай через обе; иначе прибавляй текущую и шагай на одну.",
+        2: "```\nvalues = {'I': 1, 'V': 5, 'X': 10, 'L': 50, 'C': 100, 'D': 500, 'M': 1000}\ntotal = 0\ni = 0\nroman = data[0]\nwhile i < len(roman):\n    if i + 1 < len(roman) and values[roman[i]] < values[roman[i + 1]]:\n        total += values[roman[i + 1]] - values[roman[i]]   # пара IV, IX...\n        i += 2\n    else:\n        total += values[roman[i]]\n        i += 1\n```\n\nПервая часть условия (`i + 1 < len`) проверяет, что следующая буква вообще есть.\n\n- [while](https://docs.python.org/3/tutorial/introduction.html#first-steps-towards-programming)\n- [Словари](https://docs.python.org/3/tutorial/datastructures.html#dictionaries)",
+        3: "```python\nvalues = {'I': 1, 'V': 5, 'X': 10, 'L': 50, 'C': 100, 'D': 500, 'M': 1000}\ntotal = 0\ni = 0\nroman = data[0]\nwhile i < len(roman):\n    if i + 1 < len(roman) and values[roman[i]] < values[roman[i + 1]]:\n        total += values[roman[i + 1]] - values[roman[...]]   # TODO: какую букву вычитаем?\n        i += 2\n    else:\n        total += values[roman[i]]\n        i += 1\nreturn total\n```",
+    },
+    188: {
+        1: "Год високосный, если он кратен 4, **но** не кратен 100, **а если** кратен 400 — всё равно високосный. Примеры: 2024 — високосный (кратен 4, не кратен 100); 1900 — обычный (кратен 100, но не 400); 2000 — високосный (кратен 400).\n\nПроверяй **от частного к общему**: сначала кратность 400, потом 100, потом 4 — так ветки не перекроются.",
+        2: "```\nyear = data[0]\nif year % 400 == 0:\n    return '✅ Високосный'\nif year % 100 == 0:\n    return '❌ Обычный'\nif year % 4 == 0:\n    return '✅ Високосный'\nreturn '❌ Обычный'\n```\n\nПорядок проверок важен: проверив 400 и 100 раньше 4, мы не пропустим исключения.\n\n- [Остаток %](https://docs.python.org/3/tutorial/introduction.html#numbers)",
+        3: "```python\nyear = data[0]\nif year % ... == 0:      # TODO: какую кратность проверить самой первой?\n    return '✅ Високосный'\nif year % 100 == 0:\n    return '❌ Обычный'\nif year % 4 == 0:\n    return '✅ Високосный'\nreturn '❌ Обычный'\n```",
+    },
+    189: {
+        1: "Скидка задаётся в процентах: при скидке 25% от 1000 вычитается четверть цены, остаётся 750.0. Цена в `data[0]`, процент — в `data[1]`.\n\nОдно действие: из цены вычесть `цена * процент / 100`. Деление `/` (не `//`) — результат дробный, 750.0.",
+        2: "```\nprice = data[0]\ndiscount = data[1]\nreturn price - price * discount / 100\n```\n\n- [Арифметика](https://docs.python.org/3/tutorial/introduction.html#numbers)",
+        3: "```python\nprice = data[0]\ndiscount = data[1]\nreturn price - price * discount / ...   # TODO: делим на сколько процентов?\n```",
+    },
+    190: {
+        1: "Это задача про секунды (№148), но теперь с **ведущими нулями**: 3725 секунд — это '01:02:05', а не '1:2:5'. Часы, минуты и секунды всегда двузначные.\n\nСчитай как раньше: часы `// 3600`, из остатка минуты `// 60`, остаток — секунды. А перед склейкой допиши нолик слева: метод `.zfill(2)` превращает '1' в '01'.",
+        2: "```\nseconds = data[0]\nhours = seconds // 3600\nseconds = seconds % 3600\nminutes = seconds // 60\nseconds = seconds % 60\nreturn str(hours).zfill(2) + ':' + str(minutes).zfill(2) + ':' + str(seconds).zfill(2)\n```\n\n`.zfill(2)` дополняет строку нулями слева до длины 2.\n\n- [zfill](https://docs.python.org/3/library/stdtypes.html#str.zfill)",
+        3: "```python\nseconds = data[0]\nhours = seconds // 3600\nseconds = seconds % 3600\nminutes = seconds // 60\nseconds = seconds % 60\nreturn str(hours)....() + ':' + str(minutes).zfill(2) + ':' + str(seconds).zfill(2)   # TODO: как дополнить часы нулём?\n```",
+    },
+    191: {
+        1: "Простые множители — это простые числа, которые при перемножении дают исходное: 60 = 2 · 2 · 3 · 5. Каждый множитель входит столько раз, сколько нужно.\n\nПриём: бери делитель 2 и дели на него число, **пока делится без остатка**, записывая двойку в результат; когда перестало — увеличь делитель на 1 и продолжай. Так дойдёшь до 1.",
+        2: "```\nn = data[0]\nresult = []\ndivisor = 2\nwhile n > 1:\n    while n % divisor == 0:   # делится — забираем делитель\n        result.append(divisor)\n        n = n // divisor\n    divisor += 1\n```\n\nВнутренний while выжимает делитель полностью (для 60: 2, 2), только потом внешний наращивает его.\n\n- [while](https://docs.python.org/3/tutorial/introduction.html#first-steps-towards-programming)\n- [Остаток %](https://docs.python.org/3/tutorial/introduction.html#numbers)",
+        3: "```python\nn = data[0]\nresult = []\ndivisor = 2\nwhile n > 1:\n    while n % divisor == ...:   # TODO: какое условие «делится без остатка»?\n        result.append(divisor)\n        n = n // divisor\n    divisor += 1\nreturn result\n```",
+    },
+    192: {
+        1: "Классика про акции: купить в один день, продать в более поздний. Для `[7, 1, 5, 3, 6, 4]`: выгоднее всего купить за 1 (день 2) и продать за 6 (день 5) → прибыль 5. Если цена только падает — прибыль 0.\n\nПриём «бегущий минимум»: помни самую дешёвую цену слева. Для каждой новой цены прибыль — `цена - минимум`; обновляй лучший результат и сам минимум по ходу.",
+        2: "```\nmin_price = data[0]\nbest = 0\nfor price in data[1:]:\n    if price - min_price > best:   # продажа сегодня выгоднее\n        best = price - min_price\n    if price < min_price:           # новая минимальная цена\n        min_price = price\n```\n\n- [Срезы списков](https://docs.python.org/3/tutorial/introduction.html#lists)",
+        3: "```python\nmin_price = data[0]\nbest = 0\nfor price in data[1:]:\n    if price - min_price > ...:   # TODO: с чем сравниваем текущую прибыль?\n        best = price - min_price\n    if price < min_price:\n        min_price = price\nreturn best\n```",
+    },
+    193: {
+        1: "Интервалы `[1, 3]` и `[2, 6]` пересекаются (2 ≤ 3) и сливаются в `[1, 6]`. Непересекающиеся остаются как есть: `[8, 10]`.\n\nШаги: сначала отсортируй интервалы по началу (`sorted(..., key=...)` с lambda), потом иди по ним и сравнивай каждый с **последним добавленным в результат**: начало ≤ его конца — расширь конец (возьми больший из концов), иначе добавь новый интервал.",
+        2: "```\nintervals = sorted(data, key=lambda pair: pair[0])\nresult = []\nfor start, end in intervals:\n    if result and start <= result[-1][1]:   # пересекается с последним\n        if end > result[-1][1]:\n            result[-1][1] = end             # расширяем конец\n    else:\n        result.append([start, end])\n```\n\n`result[-1]` — последний добавленный интервал, `result[-1][1]` — его конец.\n\n- [Сортировка и key](https://docs.python.org/3/howto/sorting.html#key-functions)",
+        3: "```python\nintervals = sorted(data, key=lambda pair: pair[0])\nresult = []\nfor start, end in intervals:\n    if result and start <= result[-1][...]:   # TODO: с чем сравниваем начало?\n        if end > result[-1][1]:\n            result[-1][1] = end\n    else:\n        result.append([start, end])\nreturn result\n```",
+    },
+    194: {
+        1: "Подстрока может входить в текст несколько раз, **перекрытия считаются**: в 'ababab' строка 'abab' встречается дважды — с позиции 0 и с позиции 2. В 'aaaa' строка 'aa' — трижды (позиции 0, 1, 2).\n\nТекст в `data[0]`, подстрока в `data[1]`. Иди индексами от 0 до `len(текст) - len(подстрока) + 1` и сравнивай срез `text[i:i + len(подстрока)]` с подстрокой.",
+        2: "```\ntext = data[0]\npattern = data[1]\ncount = 0\nfor i in range(len(text) - len(pattern) + 1):\n    if text[i:i + len(pattern)] == pattern:   # окно совпало\n        count += 1\n```\n\n`+ 1` в range нужен, чтобы окно могло начинаться и на последней возможной позиции.\n\n- [Срезы строк](https://docs.python.org/3/tutorial/introduction.html#strings)\n- [range](https://docs.python.org/3/library/stdtypes.html#ranges)",
+        3: "```python\ntext = data[0]\npattern = data[1]\ncount = 0\nfor i in range(len(text) - len(pattern) + ...):   # TODO: почему +1?\n    if text[i:i + len(pattern)] == pattern:\n        count += 1\nreturn count\n```",
+    },
+    195: {
+        1: "Сравниваем старый и новый списки: **добавилось** — то, что есть в новом, но не было в старом; **удалилось** — то, что было в старом, но нет в новом. Для `[1, 2]` → `[2, 3]`: добавилась 3, удалилась 1 → `[[3], [1]]`.\n\nДва отдельных прохода (как задача про разность списков, но в обе стороны): собери список добавленных и список удалённых, верни их списком из двух элементов.",
+        2: "```\nold = data[0]\nnew = data[1]\nadded = []\nfor x in new:\n    if x not in old and x not in added:\n        added.append(x)\nremoved = []\nfor x in old:\n    if x not in new and x not in removed:\n        removed.append(x)\nreturn [added, removed]\n```\n\n- [Оператор in](https://docs.python.org/3/reference/expressions.html#membership-test-operations)",
+        3: "```python\nold = data[0]\nnew = data[1]\nadded = []\nfor x in new:\n    if x not in ... and x not in added:   # TODO: где элемента быть не должно?\n        added.append(x)\nremoved = []\nfor x in old:\n    if x not in new and x not in removed:\n        removed.append(x)\nreturn [added, removed]\n```",
+    },
+    196: {
+        1: "Общие элементы с учётом повторов: каждая пара «одно вхождение из первого + одно из второго» идёт в ответ. Для `[1, 1, 2, 2]` и `[1, 2, 2, 2]`: 1 встречается в обоих (минимум по одному разу) → одна, 2 — в обоих минимум по два раза → две → `[1, 2, 2]`.\n\nПриём: сделай **копию** второго списка и иди по первому: элемент есть в копии — забирай его в ответ и **удаляй из копии** (`remove`), чтобы повтор не сработал дважды.",
+        2: "```\nresult = []\nsecond = list(data[1])   # копия, её будем укорачивать\nfor x in data[0]:\n    if x in second:\n        result.append(x)\n        second.remove(x)  # это вхождение уже «израсходовано»\n```\n\n- [remove](https://docs.python.org/3/tutorial/datastructures.html#more-on-lists)",
+        3: "```python\nresult = []\nsecond = list(data[1])\nfor x in data[0]:\n    if x in second:\n        result.append(x)\n        second....(x)   # TODO: как убрать израсходованное вхождение?\nreturn result\n```",
+    },
+    197: {
+        1: "Нужно посчитать, сколько раз встречается каждое слово фразы: 'the cat and the dog' → `{'the': 2, 'cat': 1, 'and': 1, 'dog': 1}`.\n\nРазбей фразу `.split()` и веди словарь-счётчик: слово встретилось — прибавь 1 к его счётчику (`counts.get(слово, 0) + 1`).",
+        2: "```\ncounts = {}\nfor word in data[0].split():\n    counts[word] = counts.get(word, 0) + 1\nreturn counts\n```\n\n- [split](https://docs.python.org/3/library/stdtypes.html#str.split)\n- [dict.get](https://docs.python.org/3/library/stdtypes.html#dict.get)",
+        3: "```python\ncounts = {}\nfor word in data[0].split():\n    counts[word] = counts.get(word, 0) + ...\nreturn counts\n```",
+    },
+    198: {
+        1: "Главная диагональ квадратной матрицы — элементы, у которых номер строки и столбца **совпадают**: `data[0][0]`, `data[1][1]`, `data[2][2]`... Для `[[1, 2], [3, 4]]` это 1 и 4, сумма 5.\n\nОдин цикл по i от 0 до размера матрицы: прибавляй `data[i][i]`.",
+        2: "```\ntotal = 0\nfor i in range(len(data)):\n    total += data[i][i]   # элемент на пересечении строки i и столбца i\n```\n\n- [Списки списков](https://docs.python.org/3/tutorial/introduction.html#lists)",
+        3: "```python\ntotal = 0\nfor i in range(len(data)):\n    total += data[...][i]   # TODO: какой индекс у строки?\nreturn total\n```",
+    },
+    199: {
+        1: "Нужно перебрать всю матрицу и выписать позиции нулей **парами (строка, столбец)**: в `[[1, 0], [2, 3]]` ноль один — строка 0, столбец 1 → `[(0, 1)]`.\n\nДва вложенных цикла: внешний по номерам строк i, внутренний по номерам столбцов j. Нашёл `data[i][j] == 0` — добавь кортеж `(i, j)` в результат.",
+        2: "```\nresult = []\nfor i in range(len(data)):\n    for j in range(len(data[i])):\n        if data[i][j] == 0:\n            result.append((i, j))\n```\n\nПорядок пар получится «по строкам» — это нормально.\n\n- [Вложенные циклы](https://docs.python.org/3/tutorial/controlflow.html#for-statements)",
+        3: "```python\nresult = []\nfor i in range(len(data)):\n    for j in range(len(data[i])):\n        if data[i][j] == ...:   # TODO: какое значение ищем?\n            result.append((i, j))\nreturn result\n```",
+    },
+    200: {
+        1: "Если список короче k, в его конец добавляются нули до длины k: `[1, 2]` при k=4 → `[1, 2, 0, 0]`. Если длина уже не меньше k — список возвращается как есть.\n\nСкопируй список (`list(...)`) и добавляй нули циклом `while len(result) < k`.",
+        2: "```\nresult = list(data[0])\nwhile len(result) < data[1]:\n    result.append(0)\n```\n\n- [while](https://docs.python.org/3/tutorial/introduction.html#first-steps-towards-programming)",
+        3: "```python\nresult = list(data[0])\nwhile len(result) < ...:   # TODO: до какой длины дополняем?\n    result.append(0)\nreturn result\n```",
     },
 }
 

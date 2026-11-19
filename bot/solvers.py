@@ -1515,6 +1515,258 @@ def solve_task_175(data):
     return result
 
 
+def solve_task_176(data):
+    password = data[0]
+    if len(password) < 8:
+        return '❌ Не подходит'
+    has_upper = False
+    has_digit = False
+    for ch in password:
+        if ch.isupper():
+            has_upper = True
+        if ch.isdigit():
+            has_digit = True
+    if has_upper and has_digit:
+        return '✅ Подходит'
+    return '❌ Не подходит'
+
+
+def solve_task_177(data):
+    result = ''
+    for ch in data[0]:
+        if ch.isdigit():
+            result += ch
+    return result
+
+
+def solve_task_178(data):
+    result = '#'
+    for word in data[0].split():
+        result += word.capitalize()
+    return result
+
+
+def solve_task_179(data):
+    email = data[0]
+    at_index = email.index('@')
+    name = email[:at_index]
+    domain = email[at_index:]
+    return name[0] + '*' * (len(name) - 1) + domain
+
+
+def solve_task_180(data):
+    total = 0
+    for part in data[0].split(','):
+        total += int(part)
+    return total
+
+
+def solve_task_181(data):
+    parts = data[0].split('.')
+    if len(parts) != 4:
+        return '❌ Некорректный'
+    for part in parts:
+        if not part.isdigit():
+            return '❌ Некорректный'
+        if int(part) > 255:
+            return '❌ Некорректный'
+    return '✅ Корректный'
+
+
+def solve_task_182(data):
+    word = data[0]
+    counts = {}
+    for ch in word:
+        counts[ch] = counts.get(ch, 0) + 1
+    for ch in word:
+        if counts[ch] == 1:
+            return ch
+    return ''
+
+
+def solve_task_183(data):
+    def vowel_count(word):
+        vowels = 'aeiou'
+        count = 0
+        for ch in word:
+            if ch in vowels:
+                count += 1
+        return count
+    return sorted(data, key=vowel_count)
+
+
+def solve_task_184(data):
+    scores = {'a': 1, 'b': 3, 'c': 3, 'd': 2, 'e': 1, 'f': 4, 'g': 2, 'h': 4,
+              'i': 1, 'j': 8, 'k': 5, 'l': 1, 'm': 3, 'n': 1, 'o': 1, 'p': 3,
+              'q': 10, 'r': 1, 's': 1, 't': 1, 'u': 1, 'v': 4, 'w': 4, 'x': 8,
+              'y': 4, 'z': 10}
+    total = 0
+    for ch in data[0]:
+        total += scores[ch]
+    return total
+
+
+def solve_task_185(data):
+    morse = {'a': '.-', 'b': '-...', 'c': '-.-.', 'd': '-..', 'e': '.',
+             'f': '..-.', 'g': '--.', 'h': '....', 'i': '..', 'j': '.---',
+             'k': '-.-', 'l': '.-..', 'm': '--', 'n': '-.', 'o': '---',
+             'p': '.--.', 'q': '--.-', 'r': '.-.', 's': '...', 't': '-',
+             'u': '..-', 'v': '...-', 'w': '.--', 'x': '-..-', 'y': '-.--',
+             'z': '--..'}
+    codes = []
+    for ch in data[0]:
+        codes.append(morse[ch])
+    return ' '.join(codes)
+
+
+def solve_task_186(data):
+    alphabet = 'abcdefghijklmnopqrstuvwxyz'
+    codes = []
+    for ch in data[0]:
+        codes.append(str(alphabet.index(ch) + 1))
+    return ' '.join(codes)
+
+
+def solve_task_187(data):
+    values = {'I': 1, 'V': 5, 'X': 10, 'L': 50, 'C': 100, 'D': 500, 'M': 1000}
+    total = 0
+    i = 0
+    roman = data[0]
+    while i < len(roman):
+        if i + 1 < len(roman) and values[roman[i]] < values[roman[i + 1]]:
+            total += values[roman[i + 1]] - values[roman[i]]
+            i += 2
+        else:
+            total += values[roman[i]]
+            i += 1
+    return total
+
+
+def solve_task_188(data):
+    year = data[0]
+    if year % 400 == 0:
+        return '✅ Високосный'
+    if year % 100 == 0:
+        return '❌ Обычный'
+    if year % 4 == 0:
+        return '✅ Високосный'
+    return '❌ Обычный'
+
+
+def solve_task_189(data):
+    price = data[0]
+    discount = data[1]
+    return price - price * discount / 100
+
+
+def solve_task_190(data):
+    seconds = data[0]
+    hours = seconds // 3600
+    seconds = seconds % 3600
+    minutes = seconds // 60
+    seconds = seconds % 60
+    return str(hours).zfill(2) + ':' + str(minutes).zfill(2) + ':' + str(seconds).zfill(2)
+
+
+def solve_task_191(data):
+    n = data[0]
+    result = []
+    divisor = 2
+    while n > 1:
+        while n % divisor == 0:
+            result.append(divisor)
+            n = n // divisor
+        divisor += 1
+    return result
+
+
+def solve_task_192(data):
+    min_price = data[0]
+    best = 0
+    for price in data[1:]:
+        if price - min_price > best:
+            best = price - min_price
+        if price < min_price:
+            min_price = price
+    return best
+
+
+def solve_task_193(data):
+    intervals = sorted(data, key=lambda pair: pair[0])
+    result = []
+    for start, end in intervals:
+        if result and start <= result[-1][1]:
+            if end > result[-1][1]:
+                result[-1][1] = end
+        else:
+            result.append([start, end])
+    return result
+
+
+def solve_task_194(data):
+    text = data[0]
+    pattern = data[1]
+    count = 0
+    for i in range(len(text) - len(pattern) + 1):
+        if text[i:i + len(pattern)] == pattern:
+            count += 1
+    return count
+
+
+def solve_task_195(data):
+    old = data[0]
+    new = data[1]
+    added = []
+    for x in new:
+        if x not in old and x not in added:
+            added.append(x)
+    removed = []
+    for x in old:
+        if x not in new and x not in removed:
+            removed.append(x)
+    return [added, removed]
+
+
+def solve_task_196(data):
+    result = []
+    second = list(data[1])
+    for x in data[0]:
+        if x in second:
+            result.append(x)
+            second.remove(x)
+    return result
+
+
+def solve_task_197(data):
+    counts = {}
+    for word in data[0].split():
+        counts[word] = counts.get(word, 0) + 1
+    return counts
+
+
+def solve_task_198(data):
+    total = 0
+    for i in range(len(data)):
+        total += data[i][i]
+    return total
+
+
+def solve_task_199(data):
+    result = []
+    for i in range(len(data)):
+        for j in range(len(data[i])):
+            if data[i][j] == 0:
+                result.append((i, j))
+    return result
+
+
+def solve_task_200(data):
+    result = list(data[0])
+    while len(result) < data[1]:
+        result.append(0)
+    return result
+
+
 def solve_task_0(data):
     result = 0
     for x in data:
